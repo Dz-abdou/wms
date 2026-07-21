@@ -4,7 +4,8 @@
   },
   "navigation": {
     "home": "Accueil",
-    "products": "Produits"
+    "products": "Produits",
+    "warehouses": "Entrepôts"
   },
   "language": {
     "label": "Langue",
@@ -25,7 +26,8 @@
       "validation.required": "Ce champ est obligatoire.",
       "validation.max_length": "Cette valeur est trop longue.",
       "product.not_found": "Le produit est introuvable.",
-      "product.sku_conflict": "Un produit avec cette référence existe déjà."
+      "warehouse.not_found": "L’entrepôt est introuvable.",
+      "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",      "product.sku_conflict": "Un produit avec cette référence existe déjà."
     }
   },
   "products": {
@@ -80,5 +82,11 @@
       "status": "Le statut du produit n’a pas pu être modifié."
     },
     "missingDescription": "—"
+  },
+  "warehouses": {
+    "title": "Entrepôts", "subtitle": "Gérez les emplacements utilisés par les futurs flux de stock.", "new": "Nouvel entrepôt", "createTitle": "Nouvel entrepôt", "editTitle": "Modifier l’entrepôt", "create": "Créer l’entrepôt", "save": "Enregistrer les modifications", "edit": "Modifier", "view": "Voir", "activate": "Activer", "deactivate": "Désactiver", "cancel": "Annuler", "confirmStatusTitle": "{{action}} l’entrepôt", "confirmStatusDescription": "Voulez-vous vraiment {{action}} cet entrepôt ?", "loadingList": "Chargement des entrepôts…", "loadingOne": "Chargement de l’entrepôt…", "empty": "Aucun entrepôt n’existe encore.", "missingDescription": "—",
+    "table": { "code": "Code", "name": "Nom", "description": "Description", "status": "Statut", "actions": "Actions", "created": "Créé le", "updated": "Dernière modification" },
+    "form": { "code": "Code", "name": "Nom", "description": "Description", "codeRequired": "Le code d’entrepôt est obligatoire.", "nameRequired": "Le nom de l’entrepôt est obligatoire.", "codeMax": "Le code d’entrepôt ne peut pas dépasser {{max}} caractères.", "nameMax": "Le nom de l’entrepôt ne peut pas dépasser {{max}} caractères.", "descriptionMax": "La description ne peut pas dépasser {{max}} caractères." },
+    "errors": { "load": "L’entrepôt n’a pas pu être chargé.", "loadList": "Les entrepôts n’ont pas pu être chargés.", "create": "L’entrepôt n’a pas pu être créé.", "update": "L’entrepôt n’a pas pu être mis à jour.", "status": "Le statut de l’entrepôt n’a pas pu être modifié." }
   }
 }

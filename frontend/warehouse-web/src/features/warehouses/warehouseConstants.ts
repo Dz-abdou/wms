@@ -1,0 +1,4 @@
+export const warehouseApiPaths = { base: '/api/warehouses', byId: (id: string) => `/api/warehouses/${id}`, status: (id: string) => `/api/warehouses/${id}/status` } as const
+export const warehouseRoutes = { list: '/warehouses', listPattern: 'warehouses', create: '/warehouses/new', detail: (id: string) => `/warehouses/${id}`, detailPattern: 'warehouses/:id', edit: (id: string) => `/warehouses/${id}/edit`, editPattern: 'warehouses/:id/edit' } as const
+export const warehousePagination = { defaultPage: 1, defaultPageSize: 20 } as const
+export const warehouseValidation = { maxCodeLength: 32, maxNameLength: 200, maxDescriptionLength: 500 } as const
