@@ -10,7 +10,9 @@ namespace Warehouse.Api.Endpoints.Auth;
 
 public static class AuthEndpoints
 {
-    private const string RefreshCookieName = "refresh_token";
+    // Versioned to prevent legacy browser cookies with the previous name from
+    // being selected when a request contains duplicate cookie names.
+    private const string RefreshCookieName = "wms_refresh_token_v1";
 
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder endpoints)
     {
