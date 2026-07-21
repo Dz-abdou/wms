@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Errors;
+using Warehouse.Application.Common.Models;
 using Warehouse.Application.Products;
 using Warehouse.Infrastructure.Persistence;
 
