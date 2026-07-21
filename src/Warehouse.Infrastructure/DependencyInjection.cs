@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Infrastructure.Auditing;
 using Warehouse.Infrastructure.Identity;
 using Warehouse.Infrastructure.Persistence;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'WarehouseDb' is required.");
 
         services.AddDbContext<WarehouseDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddAuditing();
         services.AddIdentityCore<ApplicationUser>(options =>
         {
             options.User.RequireUniqueEmail = true;
