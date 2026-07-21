@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\..\src\Warehouse.Application\Warehouse.Application.csproj" />
+    <ProjectReference Include="..\..\src\Warehouse.Infrastructure\Warehouse.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Warehouse.Domain\Warehouse.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>

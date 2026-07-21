@@ -169,13 +169,13 @@ Add an opt-in, transaction-safe, property-level audit subsystem before Inventory
 
 ### Deliverables
 
-- `IAuditableEntity`/`AuditableEntity`, `[AuditEntity]`, `[AuditIgnore]`, `[AuditDisabled]`, and explicit per-entity sink-routing customization.
+- A shared `PersistentEntity` for common persistence metadata, plus explicit `[AuditEntity]`, `[AuditIgnore]`, and `[AuditDisabled]` opt-in controls. Persistent-entity inheritance alone must not create audit trails.
 - Per-entity `<Table>_AuditTrails` mappings in the same PostgreSQL schema; no generic audit table or EF inheritance table.
 - Audit rows containing generated audit ID, parent ID, database transaction timestamp, actor ID, action, property path, safely serialized old/new values, correlation ID, and optional reason.
 - A two-phase save pipeline covering synchronous and asynchronous saves: update/delete diffs before parent persistence, creation snapshots after generated keys are final.
 - Transaction handling that commits or rolls back parent and audit rows together, respects caller-owned transactions, and preserves `acceptAllChangesOnSuccess: false` semantics.
 - `IAuditContext` implementations for HTTP, workers, CLI tools, and tests.
-- One DI registration extension, default table sink, router, profile provider, diff engine, event factory, and optional explicitly routed sinks.
+- One DI registration extension, default transactional table writer, profile provider, diff engine, event factory, and safe serializer. Additional sinks are explicit extensions, not implicit routing.
 - On-demand audit-history query helpers; normal entity queries never eager-load audit trails.
 - PostgreSQL integration tests for creation snapshots, updates, deletes, ignored/disabled rules, metadata, rollback, and asynchronous saves.
 
@@ -189,7 +189,7 @@ Add an opt-in, transaction-safe, property-level audit subsystem before Inventory
 
 ### Exit Criteria
 
-- Opted-in Product and Warehouse changes produce correct, queryable per-entity history.
+- An explicitly opted-in entity produces correct, queryable per-entity history; Product and Warehouse remain non-audited until a documented business requirement opts them in.
 - Parent data and audit rows are atomic for successful and failed saves.
 - Creation snapshots use final database-generated keys.
 - Audit context, correlation, and optional reason are retained without recording secrets.

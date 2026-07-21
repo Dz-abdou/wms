@@ -146,10 +146,11 @@ Audit is an opt-in, property-level history subsystem for business entities. It u
 
 ### Opt-in
 
-- Only entities that implement `IAuditableEntity` or inherit `AuditableEntity` participate.
+- `PersistentEntity` provides normal persistent-entity metadata (`Id`, timestamps, and GUID actor IDs); it is deliberately separate from auditing.
+- Only entities decorated with `[AuditEntity]` participate. Base-class inheritance alone never enables auditing.
+- Product and Warehouse are intentionally not opted in. A later business feature must document and add its own opt-in before it creates audit trails for them.
 - `[AuditEntity(SnapshotOnCreate = true|false)]` configures creation snapshots; the opted-in default is `true`.
 - `[AuditIgnore]` excludes a property, and `[AuditDisabled]` excludes an entity.
-- Per-entity sink routing is supported only through an explicit attribute or profile; the table sink remains the default.
 
 ### Persistence and querying
 
@@ -157,15 +158,15 @@ Each audited entity is mapped to an append-only `<Table>_AuditTrails` table in t
 
 ### Save pipeline and transaction rules
 
-The audit pipeline scans only Added, Modified, and Deleted EF Core entries. It writes only real non-ignored changes, one `__deleted__` marker for deletes, and creation snapshots after the parent save has generated final keys. Parent and audit rows commit or roll back together, including when the caller already owns the transaction. `SaveChanges`, `SaveChangesAsync`, and `acceptAllChangesOnSuccess: false` must preserve normal EF Core change tracking.
+The audit pipeline scans only attributed Added, Modified, and Deleted EF Core entries. It writes only real non-ignored changes, one `__deleted__` marker for deletes, and creation snapshots after the parent save has generated final keys. Parent and audit rows commit or roll back together, including caller-owned transactions through a savepoint. `SaveChanges`, `SaveChangesAsync`, and `acceptAllChangesOnSuccess: false` preserve normal EF Core change tracking.
 
 ### Context and sinks
 
-`IAuditContext` provides the actor ID, correlation ID, and optional reason. HTTP requests derive it from the authenticated user and request trace; workers, CLI tools, and tests provide an explicit safe context. A single DI extension registers profiles, diffing, event creation, routing, and the default table sink. Optional sinks such as structured logging or an outbox are opt-in and must not weaken the transactional table audit.
+`IAuditContext` provides the actor ID, correlation ID, and optional reason. HTTP requests derive it from the authenticated user and request trace; workers, CLI tools, and tests provide an explicit safe context. A single DI extension registers profiles, diffing, event creation, serialization, and the transactional PostgreSQL table writer. Additional sinks must be explicitly added and must not weaken the table audit.
 
 ### Safety and boundaries
 
-Values use stable, safe serialization for PostgreSQL. Passwords, access tokens, refresh tokens, token hashes, and sensitive protected data are excluded or redacted. Inventory movements remain business records and are not replaced by audit trails. The developer generates and applies required EF Core migrations manually; Codex never edits migrations or the model snapshot.
+Values use stable JSON serialization. Passwords, access tokens, refresh tokens, token hashes, credentials, secrets, security stamps, and protected data are excluded by default; `[AuditIgnore]` excludes additional fields. Owned navigations and non-GUID/composite keys are rejected until explicitly supported. Inventory movements remain business records and are not replaced by audit trails. The developer generates and applies required EF Core migrations manually; Codex never edits migrations or the model snapshot.
 
 ## Initial Data Model
 
