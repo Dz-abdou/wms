@@ -1,0 +1,84 @@
+{
+  "app": {
+    "brand": "Système de gestion d’entrepôt"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "products": "Produits"
+  },
+  "language": {
+    "label": "Langue",
+    "en": "Anglais",
+    "fr": "Français"
+  },
+  "home": {
+    "title": "Fondation prête",
+    "description": "L’interface de base, l’API, la connexion PostgreSQL et les environnements de test sont prêts pour la première fonctionnalité approuvée.",
+    "phase": "Phase 0"
+  },
+  "errors": {
+    "requestFailed": "Cette requête n’a pas pu être effectuée.",
+    "validationFailed": "Veuillez corriger les champs mis en évidence.",
+    "codes": {
+      "system.unexpected": "Une erreur inattendue s’est produite. Veuillez réessayer.",
+      "validation.failed": "Veuillez corriger les champs mis en évidence.",
+      "validation.required": "Ce champ est obligatoire.",
+      "validation.max_length": "Cette valeur est trop longue.",
+      "product.not_found": "Le produit est introuvable.",
+      "product.sku_conflict": "Un produit avec cette référence existe déjà."
+    }
+  },
+  "products": {
+    "title": "Produits",
+    "subtitle": "Gérez le catalogue utilisé par les futurs flux d’entrepôt.",
+    "new": "Nouveau produit",
+    "createTitle": "Nouveau produit",
+    "editTitle": "Modifier le produit",
+    "create": "Créer le produit",
+    "save": "Enregistrer les modifications",
+    "edit": "Modifier",
+    "view": "Voir",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "cancel": "Annuler",
+    "confirmStatusTitle": "{{action}} le produit",
+    "confirmStatusDescription": "Voulez-vous vraiment {{action}} ce produit ?",
+    "searchPlaceholder": "Rechercher par référence ou nom",
+    "loadingList": "Chargement des produits…",
+    "loadingOne": "Chargement du produit…",
+    "empty": "Aucun produit ne correspond à cette recherche.",
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "table": {
+      "sku": "Référence",
+      "name": "Nom",
+      "description": "Description",
+      "status": "Statut",
+      "actions": "Actions",
+      "created": "Créé le",
+      "updated": "Dernière modification"
+    },
+    "form": {
+      "sku": "Référence",
+      "name": "Nom",
+      "description": "Description",
+      "skuPlaceholder": "REF-001",
+      "namePlaceholder": "Nom du produit",
+      "skuRequired": "La référence est obligatoire.",
+      "nameRequired": "Le nom est obligatoire.",
+      "skuMax": "La référence ne peut pas dépasser {{max}} caractères.",
+      "nameMax": "Le nom ne peut pas dépasser {{max}} caractères.",
+      "descriptionMax": "La description ne peut pas dépasser {{max}} caractères."
+    },
+    "errors": {
+      "load": "Le produit n’a pas pu être chargé.",
+      "loadList": "Les produits n’ont pas pu être chargés.",
+      "create": "Le produit n’a pas pu être créé.",
+      "update": "Le produit n’a pas pu être mis à jour.",
+      "status": "Le statut du produit n’a pas pu être modifié."
+    },
+    "missingDescription": "—"
+  }
+}

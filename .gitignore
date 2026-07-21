@@ -1,0 +1,12 @@
+bin/
+obj/
+TestResults/
+coverage/
+*.user
+*.suo
+.vs/
+.env
+frontend/warehouse-web/node_modules/
+frontend/warehouse-web/dist/
+frontend/warehouse-web/coverage/
+frontend/warehouse-web/.vite/
