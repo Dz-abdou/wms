@@ -1,6 +1,8 @@
+using Warehouse.Domain.Auditing;
+
 namespace Warehouse.Domain.Warehouses;
 
-public sealed class Warehouse
+public sealed class Warehouse : AuditableEntity
 {
     private Warehouse(
         Guid id,
