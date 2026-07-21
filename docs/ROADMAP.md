@@ -161,35 +161,39 @@ Standardize list pagination before more business features add tables and filters
 
 ---
 
-## Phase 2.3 — Audit and Entity Metadata Foundation
+## Phase 2.3 — Advanced Audit Foundation
 
 ### Goal
 
-Establish a consistent, extensible ownership and lifecycle convention before Inventory introduces high-value operational records.
+Add an opt-in, transaction-safe, property-level audit subsystem before Inventory introduces high-value operational records.
 
 ### Deliverables
 
-- A shared domain base type or interface for auditable business entities; no EF Core inheritance table is introduced.
-- Standard metadata for applicable entities: `Id`, `CreatedAtUtc`, `UpdatedAtUtc`, `CreatedByUserId`, and `UpdatedByUserId`.
-- A narrow current-user abstraction in Application for assigning the authenticated actor without coupling Domain to ASP.NET Core Identity.
-- Infrastructure configuration for optional user relationships and UTC timestamps.
-- An append-only `AuditEntry` history record for significant cross-feature operations.
-- Safe audit payload rules that exclude credentials, access tokens, refresh tokens, token hashes, and other secrets.
-- Tests for actor attribution, UTC timestamps, and audit-event creation.
+- `IAuditableEntity`/`AuditableEntity`, `[AuditEntity]`, `[AuditIgnore]`, `[AuditDisabled]`, and explicit per-entity sink-routing customization.
+- Per-entity `<Table>_AuditTrails` mappings in the same PostgreSQL schema; no generic audit table or EF inheritance table.
+- Audit rows containing generated audit ID, parent ID, database transaction timestamp, actor ID, action, property path, safely serialized old/new values, correlation ID, and optional reason.
+- A two-phase save pipeline covering synchronous and asynchronous saves: update/delete diffs before parent persistence, creation snapshots after generated keys are final.
+- Transaction handling that commits or rolls back parent and audit rows together, respects caller-owned transactions, and preserves `acceptAllChangesOnSuccess: false` semantics.
+- `IAuditContext` implementations for HTTP, workers, CLI tools, and tests.
+- One DI registration extension, default table sink, router, profile provider, diff engine, event factory, and optional explicitly routed sinks.
+- On-demand audit-history query helpers; normal entity queries never eager-load audit trails.
+- PostgreSQL integration tests for creation snapshots, updates, deletes, ignored/disabled rules, metadata, rollback, and asynchronous saves.
 
 ### Guardrails
 
-- Do not create a database base table or use table-per-hierarchy merely to share columns.
-- Keep identity types out of Domain; entity actor fields contain GUIDs only.
-- Do not replace inventory movements with generic audit events.
+- Audit only opted-in entities and properties; redact or ignore passwords, tokens, hashes, and protected/sensitive data.
+- Validate GUID, composite-key, inheritance, owned-type, and shadow-property behavior before finalizing the mapping approach.
+- Do not copy reference-project namespaces or types; reuse WMS conventions and clean-architecture boundaries.
+- Do not replace inventory movements with audit trails.
 - The developer generates and applies the required EF Core migration manually; Codex does not edit migrations or the model snapshot.
 
 ### Exit Criteria
 
-- New applicable entities can adopt lifecycle and actor metadata consistently.
-- Existing Products and Warehouses retain their current GUID and UTC timestamp behavior while gaining actor attribution.
-- Significant changes create safe, queryable audit entries.
-- Unit, integration, and frontend tests pass.
+- Opted-in Product and Warehouse changes produce correct, queryable per-entity history.
+- Parent data and audit rows are atomic for successful and failed saves.
+- Creation snapshots use final database-generated keys.
+- Audit context, correlation, and optional reason are retained without recording secrets.
+- Unit, PostgreSQL integration, and frontend tests pass.
 
 ---
 

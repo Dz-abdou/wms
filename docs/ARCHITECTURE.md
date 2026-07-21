@@ -142,31 +142,30 @@ Feature API modules own endpoint paths and request serialization. Feature hooks 
 
 ## Auditable Entity and Audit-Event Convention
 
-Use a shared domain base type or interface for persistent business entities that need standard lifecycle metadata. Do not use EF Core table-per-hierarchy or create a physical base table solely for common columns.
+Audit is an opt-in, property-level history subsystem for business entities. It uses side tables rather than EF Core table inheritance or one generic audit table.
 
-The convention for applicable business entities is:
+### Opt-in
 
-- `Guid Id`
-- `DateTime CreatedAtUtc`
-- `DateTime UpdatedAtUtc`
-- `Guid? CreatedByUserId`
-- `Guid? UpdatedByUserId`
+- Only entities that implement `IAuditableEntity` or inherit `AuditableEntity` participate.
+- `[AuditEntity(SnapshotOnCreate = true|false)]` configures creation snapshots; the opted-in default is `true`.
+- `[AuditIgnore]` excludes a property, and `[AuditDisabled]` excludes an entity.
+- Per-entity sink routing is supported only through an explicit attribute or profile; the table sink remains the default.
 
-`CreatedByUserId` and `UpdatedByUserId` are nullable to support existing data, bootstrap/system operations, and future imports. Domain entities retain only GUID values; they must not depend on ASP.NET Core Identity. Infrastructure configures the optional relationship to `ApplicationUser`, and Application obtains the actor through a narrow current-user abstraction.
+### Persistence and querying
 
-Products and Warehouses already use `Id`, `CreatedAtUtc`, and `UpdatedAtUtc`; the audit foundation extends this convention without duplicating those existing fields.
+Each audited entity is mapped to an append-only `<Table>_AuditTrails` table in the same schema. Rows include an audit-row ID, parent entity ID, changed timestamp, actor ID, action, property path, old/new values, correlation ID, and optional reason. History is queried on demand through a helper; it is never eager-loaded with normal entities.
 
-Use a separate append-only `AuditEntry` entity for cross-feature history. It records at least:
+### Save pipeline and transaction rules
 
-- `Guid Id`
-- `DateTime OccurredAtUtc`
-- `Guid? ActorUserId`
-- `string Action`
-- `string EntityType`
-- `Guid EntityId`
-- optional safe change data
+The audit pipeline scans only Added, Modified, and Deleted EF Core entries. It writes only real non-ignored changes, one `__deleted__` marker for deletes, and creation snapshots after the parent save has generated final keys. Parent and audit rows commit or roll back together, including when the caller already owns the transaction. `SaveChanges`, `SaveChangesAsync`, and `acceptAllChangesOnSuccess: false` must preserve normal EF Core change tracking.
 
-Audit data must never include passwords, access tokens, refresh tokens, token hashes, or other secrets. Inventory movements remain business records and are not replaced by audit entries.
+### Context and sinks
+
+`IAuditContext` provides the actor ID, correlation ID, and optional reason. HTTP requests derive it from the authenticated user and request trace; workers, CLI tools, and tests provide an explicit safe context. A single DI extension registers profiles, diffing, event creation, routing, and the default table sink. Optional sinks such as structured logging or an outbox are opt-in and must not weaken the transactional table audit.
+
+### Safety and boundaries
+
+Values use stable, safe serialization for PostgreSQL. Passwords, access tokens, refresh tokens, token hashes, and sensitive protected data are excluded or redacted. Inventory movements remain business records and are not replaced by audit trails. The developer generates and applies required EF Core migrations manually; Codex never edits migrations or the model snapshot.
 
 ## Initial Data Model
 
