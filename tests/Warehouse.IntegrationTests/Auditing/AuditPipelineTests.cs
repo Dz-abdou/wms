@@ -30,6 +30,8 @@ public sealed class AuditPipelineTests : IAsyncLifetime
 
         var trail = await dbContext.AuditHistory<AuditProbe>(probe.Id).ToListAsync();
         var idSnapshot = Assert.Single(trail.Where(entry => entry.PropertyPath == nameof(PersistentEntity.Id)));
+        Assert.DoesNotContain(trail, entry => entry.PropertyPath == nameof(AuditProbe.Ignored));
+        Assert.DoesNotContain(trail, entry => entry.PropertyPath == nameof(AuditProbe.RefreshToken));
         Assert.Equal(AuditAction.Create, idSnapshot.Action);
         Assert.Contains(probe.Id.ToString(), idSnapshot.NewValue);
         Assert.All(trail, entry =>
