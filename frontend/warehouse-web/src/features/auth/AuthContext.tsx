@@ -1,5 +1,6 @@
 import {
   createContext,
+  useRef,
   useContext,
   useEffect,
   useState,
@@ -26,7 +27,10 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasRestoredSession = useRef(false);
   useEffect(() => {
+    if (hasRestoredSession.current) return;
+    hasRestoredSession.current = true;
     configureAuthentication({
       getAccessToken,
       refreshAccessToken: async () => {

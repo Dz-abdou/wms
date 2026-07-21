@@ -1,6 +1,7 @@
 import { apiUrl, requestJson } from "../../../shared/api/apiClient";
 export type Session = { id: string; email: string; roles: string[] };
 let accessToken: string | undefined;
+let refreshPromise: Promise<void> | undefined;
 export function getAccessToken() {
   return accessToken;
 }
@@ -16,12 +17,23 @@ export async function login(email: string, password: string) {
   });
   accessToken = result.accessToken;
 }
-export async function refreshAccessToken() {
-  const result = await requestJson<{ accessToken: string }>(
-    "/api/auth/refresh",
-    { method: "POST", retryOnUnauthorized: false },
-  );
-  accessToken = result.accessToken;
+export function refreshAccessToken(): Promise<void> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = requestJson<{ accessToken: string }>("/api/auth/refresh", {
+    method: "POST",
+    retryOnUnauthorized: false,
+  })
+    .then((result) => {
+      accessToken = result.accessToken;
+    })
+    .finally(() => {
+      refreshPromise = undefined;
+    });
+
+  return refreshPromise;
 }
 export function getSession() {
   return requestJson<Session>("/api/auth/me");
