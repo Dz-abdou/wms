@@ -140,6 +140,34 @@ Feature API modules own endpoint paths and request serialization. Feature hooks 
 - Frontend communicates only through the HTTP API.
 - New packages must be current, compatible, justified, and recorded in the implementation report.
 
+## Auditable Entity and Audit-Event Convention
+
+Use a shared domain base type or interface for persistent business entities that need standard lifecycle metadata. Do not use EF Core table-per-hierarchy or create a physical base table solely for common columns.
+
+The convention for applicable business entities is:
+
+- `Guid Id`
+- `DateTime CreatedAtUtc`
+- `DateTime UpdatedAtUtc`
+- `Guid? CreatedByUserId`
+- `Guid? UpdatedByUserId`
+
+`CreatedByUserId` and `UpdatedByUserId` are nullable to support existing data, bootstrap/system operations, and future imports. Domain entities retain only GUID values; they must not depend on ASP.NET Core Identity. Infrastructure configures the optional relationship to `ApplicationUser`, and Application obtains the actor through a narrow current-user abstraction.
+
+Products and Warehouses already use `Id`, `CreatedAtUtc`, and `UpdatedAtUtc`; the audit foundation extends this convention without duplicating those existing fields.
+
+Use a separate append-only `AuditEntry` entity for cross-feature history. It records at least:
+
+- `Guid Id`
+- `DateTime OccurredAtUtc`
+- `Guid? ActorUserId`
+- `string Action`
+- `string EntityType`
+- `Guid EntityId`
+- optional safe change data
+
+Audit data must never include passwords, access tokens, refresh tokens, token hashes, or other secrets. Inventory movements remain business records and are not replaced by audit entries.
+
 ## Initial Data Model
 
 Expected early entities:

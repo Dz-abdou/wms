@@ -161,6 +161,38 @@ Standardize list pagination before more business features add tables and filters
 
 ---
 
+## Phase 2.3 — Audit and Entity Metadata Foundation
+
+### Goal
+
+Establish a consistent, extensible ownership and lifecycle convention before Inventory introduces high-value operational records.
+
+### Deliverables
+
+- A shared domain base type or interface for auditable business entities; no EF Core inheritance table is introduced.
+- Standard metadata for applicable entities: `Id`, `CreatedAtUtc`, `UpdatedAtUtc`, `CreatedByUserId`, and `UpdatedByUserId`.
+- A narrow current-user abstraction in Application for assigning the authenticated actor without coupling Domain to ASP.NET Core Identity.
+- Infrastructure configuration for optional user relationships and UTC timestamps.
+- An append-only `AuditEntry` history record for significant cross-feature operations.
+- Safe audit payload rules that exclude credentials, access tokens, refresh tokens, token hashes, and other secrets.
+- Tests for actor attribution, UTC timestamps, and audit-event creation.
+
+### Guardrails
+
+- Do not create a database base table or use table-per-hierarchy merely to share columns.
+- Keep identity types out of Domain; entity actor fields contain GUIDs only.
+- Do not replace inventory movements with generic audit events.
+- The developer generates and applies the required EF Core migration manually; Codex does not edit migrations or the model snapshot.
+
+### Exit Criteria
+
+- New applicable entities can adopt lifecycle and actor metadata consistently.
+- Existing Products and Warehouses retain their current GUID and UTC timestamp behavior while gaining actor attribution.
+- Significant changes create safe, queryable audit entries.
+- Unit, integration, and frontend tests pass.
+
+---
+
 ## Phase 3 — Inventory Foundation
 
 ### Deliverables
@@ -271,15 +303,16 @@ Do not work on the next item before the previous item meets its definition of do
 3. Warehouses
 4. Authentication and RBAC
 5. Shared list pagination
-6. Stock adjustments
-7. Inventory history
-8. Suppliers
-9. Purchase orders
-10. Goods receipts
-11. Customers
-12. Sales orders
-13. Reservations
-14. Shipping
-15. Audit logs
-16. Dashboard
-17. Deployment and documentation
+6. Audit and entity metadata foundation
+7. Stock adjustments
+8. Inventory history
+9. Suppliers
+10. Purchase orders
+11. Goods receipts
+12. Customers
+13. Sales orders
+14. Reservations
+15. Shipping
+16. Audit logs
+17. Dashboard
+18. Deployment and documentation
