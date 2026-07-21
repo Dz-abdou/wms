@@ -1,8 +1,8 @@
-using Warehouse.Domain.Auditing;
+using Warehouse.Domain.Common;
 
 namespace Warehouse.Domain.Warehouses;
 
-public sealed class Warehouse : AuditableEntity
+public sealed class Warehouse : PersistentEntity
 {
     private Warehouse(
         Guid id,
@@ -12,17 +12,13 @@ public sealed class Warehouse : AuditableEntity
         bool isActive,
         DateTime createdAtUtc,
         DateTime updatedAtUtc)
+        : base(id, createdAtUtc, updatedAtUtc)
     {
-        Id = id;
         Code = code;
         Name = name;
         Description = description;
         IsActive = isActive;
-        CreatedAtUtc = createdAtUtc;
-        UpdatedAtUtc = updatedAtUtc;
     }
-
-    public Guid Id { get; private set; }
 
     public string Code { get; private set; } = null!;
 
@@ -31,10 +27,6 @@ public sealed class Warehouse : AuditableEntity
     public string? Description { get; private set; }
 
     public bool IsActive { get; private set; }
-
-    public DateTime CreatedAtUtc { get; private set; }
-
-    public DateTime UpdatedAtUtc { get; private set; }
 
     public static Warehouse Create(string? code, string? name, string? description, DateTime createdAtUtc)
     {

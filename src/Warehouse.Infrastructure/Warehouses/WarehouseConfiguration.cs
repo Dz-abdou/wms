@@ -25,6 +25,8 @@ public sealed class WarehouseConfiguration : IEntityTypeConfiguration<WarehouseE
         builder.Property(warehouse => warehouse.Code).HasMaxLength(WarehouseRules.MaxCodeLength).IsRequired();
         builder.Property(warehouse => warehouse.Name).HasMaxLength(WarehouseRules.MaxNameLength).IsRequired();
         builder.Property(warehouse => warehouse.Description).HasMaxLength(WarehouseRules.MaxDescriptionLength);
+        builder.Property(warehouse => warehouse.CreatedByUserId).HasColumnType("uuid");
+        builder.Property(warehouse => warehouse.UpdatedByUserId).HasColumnType("uuid");
         builder.Property(warehouse => warehouse.IsActive).HasDefaultValue(true).IsRequired();
         builder.Property(warehouse => warehouse.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(warehouse => warehouse.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
