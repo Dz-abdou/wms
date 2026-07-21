@@ -5,7 +5,9 @@
   "navigation": {
     "home": "Accueil",
     "products": "Produits",
-    "warehouses": "Entrepôts"
+    "warehouses": "Entrepôts",
+    "users": "Utilisateurs",
+    "roles": "Rôles"
   },
   "language": {
     "label": "Langue",
@@ -27,7 +29,16 @@
       "validation.max_length": "Cette valeur est trop longue.",
       "product.not_found": "Le produit est introuvable.",
       "warehouse.not_found": "L’entrepôt est introuvable.",
-      "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",      "product.sku_conflict": "Un produit avec cette référence existe déjà."
+      "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",
+      "product.sku_conflict": "Un produit avec cette référence existe déjà.",
+      "auth.invalid_credentials": "L’e-mail ou le mot de passe est incorrect.",
+      "auth.invalid_refresh_token": "Votre session a expiré. Veuillez vous reconnecter.",
+      "auth.unauthenticated": "Veuillez vous connecter pour continuer.",
+      "auth.forbidden": "Vous n’êtes pas autorisé à effectuer cette action.",
+      "admin.user_not_found": "Le compte utilisateur est introuvable.",
+      "admin.email_conflict": "Un compte utilise déjà cette adresse e-mail.",
+      "admin.user_invalid": "Les informations ne respectent pas les exigences du compte.",
+      "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page."
     }
   },
   "products": {
@@ -84,9 +95,107 @@
     "missingDescription": "—"
   },
   "warehouses": {
-    "title": "Entrepôts", "subtitle": "Gérez les emplacements utilisés par les futurs flux de stock.", "new": "Nouvel entrepôt", "createTitle": "Nouvel entrepôt", "editTitle": "Modifier l’entrepôt", "create": "Créer l’entrepôt", "save": "Enregistrer les modifications", "edit": "Modifier", "view": "Voir", "activate": "Activer", "deactivate": "Désactiver", "cancel": "Annuler", "confirmStatusTitle": "{{action}} l’entrepôt", "confirmStatusDescription": "Voulez-vous vraiment {{action}} cet entrepôt ?", "loadingList": "Chargement des entrepôts…", "loadingOne": "Chargement de l’entrepôt…", "empty": "Aucun entrepôt n’existe encore.", "missingDescription": "—",
-    "table": { "code": "Code", "name": "Nom", "description": "Description", "status": "Statut", "actions": "Actions", "created": "Créé le", "updated": "Dernière modification" },
-    "form": { "code": "Code", "name": "Nom", "description": "Description", "codeRequired": "Le code d’entrepôt est obligatoire.", "nameRequired": "Le nom de l’entrepôt est obligatoire.", "codeMax": "Le code d’entrepôt ne peut pas dépasser {{max}} caractères.", "nameMax": "Le nom de l’entrepôt ne peut pas dépasser {{max}} caractères.", "descriptionMax": "La description ne peut pas dépasser {{max}} caractères." },
-    "errors": { "load": "L’entrepôt n’a pas pu être chargé.", "loadList": "Les entrepôts n’ont pas pu être chargés.", "create": "L’entrepôt n’a pas pu être créé.", "update": "L’entrepôt n’a pas pu être mis à jour.", "status": "Le statut de l’entrepôt n’a pas pu être modifié." }
+    "title": "Entrepôts",
+    "subtitle": "Gérez les emplacements utilisés par les futurs flux de stock.",
+    "new": "Nouvel entrepôt",
+    "createTitle": "Nouvel entrepôt",
+    "editTitle": "Modifier l’entrepôt",
+    "create": "Créer l’entrepôt",
+    "save": "Enregistrer les modifications",
+    "edit": "Modifier",
+    "view": "Voir",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "cancel": "Annuler",
+    "confirmStatusTitle": "{{action}} l’entrepôt",
+    "confirmStatusDescription": "Voulez-vous vraiment {{action}} cet entrepôt ?",
+    "loadingList": "Chargement des entrepôts…",
+    "loadingOne": "Chargement de l’entrepôt…",
+    "empty": "Aucun entrepôt n’existe encore.",
+    "missingDescription": "—",
+    "table": {
+      "code": "Code",
+      "name": "Nom",
+      "description": "Description",
+      "status": "Statut",
+      "actions": "Actions",
+      "created": "Créé le",
+      "updated": "Dernière modification"
+    },
+    "form": {
+      "code": "Code",
+      "name": "Nom",
+      "description": "Description",
+      "codeRequired": "Le code d’entrepôt est obligatoire.",
+      "nameRequired": "Le nom de l’entrepôt est obligatoire.",
+      "codeMax": "Le code d’entrepôt ne peut pas dépasser {{max}} caractères.",
+      "nameMax": "Le nom de l’entrepôt ne peut pas dépasser {{max}} caractères.",
+      "descriptionMax": "La description ne peut pas dépasser {{max}} caractères."
+    },
+    "errors": {
+      "load": "L’entrepôt n’a pas pu être chargé.",
+      "loadList": "Les entrepôts n’ont pas pu être chargés.",
+      "create": "L’entrepôt n’a pas pu être créé.",
+      "update": "L’entrepôt n’a pas pu être mis à jour.",
+      "status": "Le statut de l’entrepôt n’a pas pu être modifié."
+    }
+  },
+  "administration": {
+    "users": {
+      "title": "Utilisateurs",
+      "subtitle": "Créez, modifiez et supprimez des comptes utilisateurs.",
+      "new": "Nouvel utilisateur",
+      "createTitle": "Créer un utilisateur",
+      "editTitle": "Modifier l’utilisateur",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "emailRequired": "L’e-mail est obligatoire.",
+      "passwordRequired": "Le mot de passe est obligatoire.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteConfirm": "Supprimer ce compte utilisateur ?",
+      "empty": "Aucun compte utilisateur n’existe encore.",
+      "table": {
+        "email": "E-mail",
+        "roles": "Rôles",
+        "actions": "Actions"
+      },
+      "errors": {
+        "load": "Les utilisateurs n’ont pas pu être chargés.",
+        "save": "L’utilisateur n’a pas pu être enregistré."
+      }
+    },
+    "roles": {
+      "title": "Rôles",
+      "subtitle": "Attribuez les rôles disponibles aux comptes utilisateurs.",
+      "empty": "Aucun compte utilisateur n’existe encore.",
+      "table": {
+        "email": "Utilisateur",
+        "assignments": "Rôles attribués"
+      },
+      "names": {
+        "admin": "Administrateur",
+        "manager": "Gestionnaire",
+        "operator": "Opérateur"
+      },
+      "errors": {
+        "load": "Les rôles n’ont pas pu être mis à jour."
+      }
+    }
+  },
+  "auth": {
+    "title": "Se connecter",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "emailRequired": "L’e-mail est obligatoire.",
+    "passwordRequired": "Le mot de passe est obligatoire.",
+    "submit": "Se connecter",
+    "loading": "Restauration de votre session…",
+    "accessDeniedTitle": "Accès refusé",
+    "accessDeniedDescription": "Vous n’êtes pas autorisé à consulter cette page.",
+    "backHome": "Retour à l’accueil",
+    "logout": "Se déconnecter"
   }
 }

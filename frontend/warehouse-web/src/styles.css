@@ -49,6 +49,22 @@ body {
   margin-bottom: 4px;
 }
 
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  place-items: center;
+}
+
+.login-card {
+  width: min(100%, 400px);
+}
+
+.login-card h2 {
+  margin-bottom: 24px;
+  text-align: center;
+}
 .product-search {
   max-width: 420px;
   margin-bottom: 24px;

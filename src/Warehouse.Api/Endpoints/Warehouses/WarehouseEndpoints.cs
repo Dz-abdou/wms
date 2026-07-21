@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Warehouse.Api.Auth;
 using Warehouse.Api.Endpoints;
 using Warehouse.Application.Warehouses;
 
@@ -13,11 +14,11 @@ public static class WarehouseEndpoints
             .WithTags("Warehouses")
             .AddEndpointFilter<WarehouseExceptionEndpointFilter>();
 
-        group.MapGet("", GetListAsync);
-        group.MapGet("/{id:guid}", GetByIdAsync).WithName(WarehouseApiRoutes.GetByIdRouteName);
-        group.MapPost("", CreateAsync);
-        group.MapPut("/{id:guid}", UpdateAsync);
-        group.MapPatch("/{id:guid}/status", SetStatusAsync);
+        group.MapGet("", GetListAsync).RequireAuthorization(AuthorizationPolicies.ReadCatalog).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadCatalog));
+        group.MapGet("/{id:guid}", GetByIdAsync).WithName(WarehouseApiRoutes.GetByIdRouteName).RequireAuthorization(AuthorizationPolicies.ReadCatalog).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadCatalog));
+        group.MapPost("", CreateAsync).RequireAuthorization(AuthorizationPolicies.ManageCatalog).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManageCatalog));
+        group.MapPut("/{id:guid}", UpdateAsync).RequireAuthorization(AuthorizationPolicies.ManageCatalog).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManageCatalog));
+        group.MapPatch("/{id:guid}/status", SetStatusAsync).RequireAuthorization(AuthorizationPolicies.ManageCatalog).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManageCatalog));
 
         return endpoints;
     }

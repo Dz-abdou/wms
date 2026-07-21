@@ -16,6 +16,9 @@ public sealed class HealthEndpointTests
             {
                 builder.UseEnvironment("Testing");
                 builder.UseSetting("ConnectionStrings:WarehouseDb", postgreSql.GetConnectionString());
+                builder.UseSetting("Jwt:Issuer", "warehouse-tests");
+                builder.UseSetting("Jwt:Audience", "warehouse-tests");
+                builder.UseSetting("Jwt:SigningKey", "test-signing-key-must-be-at-least-32-characters-long");
             });
 
         using var client = factory.CreateClient();
