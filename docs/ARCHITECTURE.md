@@ -71,17 +71,6 @@ Contains:
 
 Endpoints translate HTTP requests into application use cases. Exception-to-Problem-Details mapping belongs in dedicated handlers, not repeated endpoint `try`/`catch` blocks.
 
-
-## Authentication and Authorization Plan
-
-Phase 2.1 uses ASP.NET Core Identity for user/password and role persistence, and JWT bearer tokens for API authentication. It is a dedicated feature after Warehouses and before Inventory.
-
-- Use GUID Identity keys, PostgreSQL EF Core storage, and ASP.NET Core Identity password, lockout, and unique-email protections.
-- Use short-lived signed JWT access tokens with user ID and role claims.
-- Use hashed, rotating refresh tokens in the database and secure HttpOnly cookies for the browser refresh flow.
-- Put authentication configuration in API and Identity persistence in Infrastructure. Application use cases depend only on the current-user abstraction when required.
-- Define authorization policies by capability, then map initial `admin`, `manager`, and `operator` roles to those policies. Do not scatter role-name comparisons through endpoints.
-- Keep secrets out of source control; development bootstrap credentials and signing keys use user secrets or environment variables.
 ## Frontend Structure
 
 Suggested structure:

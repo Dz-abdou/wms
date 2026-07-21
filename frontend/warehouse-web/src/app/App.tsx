@@ -3,11 +3,6 @@ import enUs from 'antd/locale/en_US'
 import frFr from 'antd/locale/fr_FR'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { WarehouseCreatePage } from '../features/warehouses/pages/WarehouseCreatePage'
-import { WarehouseDetailPage } from '../features/warehouses/pages/WarehouseDetailPage'
-import { WarehouseEditPage } from '../features/warehouses/pages/WarehouseEditPage'
-import { WarehouseListPage } from '../features/warehouses/pages/WarehouseListPage'
-import { warehouseRoutes } from '../features/warehouses/warehouseConstants'
 import { ProductCreatePage } from '../features/products/pages/ProductCreatePage'
 import { ProductDetailPage } from '../features/products/pages/ProductDetailPage'
 import { ProductEditPage } from '../features/products/pages/ProductEditPage'
@@ -34,7 +29,7 @@ export function App() {
               <Route path={productRoutes.listPattern} element={<ProductListPage />} />
               <Route path={productRoutes.create} element={<ProductCreatePage />} />
               <Route path={productRoutes.detailPattern} element={<ProductDetailPage />} />
-              <Route path={productRoutes.editPattern} element={<ProductEditPage />} />`n              <Route path={warehouseRoutes.listPattern} element={<WarehouseListPage />} />`n              <Route path={warehouseRoutes.create} element={<WarehouseCreatePage />} />`n              <Route path={warehouseRoutes.detailPattern} element={<WarehouseDetailPage />} />`n              <Route path={warehouseRoutes.editPattern} element={<WarehouseEditPage />} />
+              <Route path={productRoutes.editPattern} element={<ProductEditPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

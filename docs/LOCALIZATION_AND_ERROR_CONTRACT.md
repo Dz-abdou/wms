@@ -80,8 +80,6 @@ The frontend renders `errorCodes.sku` through locale JSON. If it receives an unk
 | `validation.required` | A required field is blank or missing. |
 | `validation.max_length` | A field exceeds its maximum length. |
 | `product.not_found` | The requested Product does not exist. |
-| `warehouse.not_found` | The requested Warehouse does not exist. |
-| `warehouse.code_conflict` | Another Warehouse already uses the code. |
 | `product.sku_conflict` | Another Product already uses the SKU. |
 | `system.unexpected` | An unexpected server error occurred. |
 

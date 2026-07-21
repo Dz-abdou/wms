@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Products;
 

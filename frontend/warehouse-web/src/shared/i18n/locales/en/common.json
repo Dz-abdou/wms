@@ -4,8 +4,7 @@
   },
   "navigation": {
     "home": "Home",
-    "products": "Products",
-    "warehouses": "Warehouses"
+    "products": "Products"
   },
   "language": {
     "label": "Language",
@@ -26,8 +25,7 @@
       "validation.required": "This field is required.",
       "validation.max_length": "This value is too long.",
       "product.not_found": "The product was not found.",
-      "warehouse.not_found": "The warehouse was not found.",
-      "warehouse.code_conflict": "A warehouse with this code already exists.",      "product.sku_conflict": "A product with this SKU already exists."
+      "product.sku_conflict": "A product with this SKU already exists."
     }
   },
   "products": {
@@ -82,11 +80,5 @@
       "status": "The product status could not be changed."
     },
     "missingDescription": "—"
-  },
-  "warehouses": {
-    "title": "Warehouses", "subtitle": "Maintain the locations that future inventory workflows will use.", "new": "New warehouse", "createTitle": "New warehouse", "editTitle": "Edit warehouse", "create": "Create warehouse", "save": "Save changes", "edit": "Edit", "view": "View", "activate": "Activate", "deactivate": "Deactivate", "cancel": "Cancel", "confirmStatusTitle": "{{action}} warehouse", "confirmStatusDescription": "Are you sure you want to {{action}} this warehouse?", "loadingList": "Loading warehouses…", "loadingOne": "Loading warehouse…", "empty": "No warehouses exist yet.", "missingDescription": "—",
-    "table": { "code": "Code", "name": "Name", "description": "Description", "status": "Status", "actions": "Actions", "created": "Created", "updated": "Last updated" },
-    "form": { "code": "Code", "name": "Name", "description": "Description", "codeRequired": "Warehouse code is required.", "nameRequired": "Warehouse name is required.", "codeMax": "Warehouse code cannot exceed {{max}} characters.", "nameMax": "Warehouse name cannot exceed {{max}} characters.", "descriptionMax": "Description cannot exceed {{max}} characters." },
-    "errors": { "load": "The warehouse could not be loaded.", "loadList": "Warehouses could not be loaded.", "create": "The warehouse could not be created.", "update": "The warehouse could not be updated.", "status": "The warehouse status could not be changed." }
   }
 }

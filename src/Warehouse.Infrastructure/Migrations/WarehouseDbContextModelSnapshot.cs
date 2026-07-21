@@ -71,56 +71,6 @@ namespace Warehouse.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_Products_Sku_Uppercase", "\"Sku\" = upper(\"Sku\")");
                         });
                 });
-
-            modelBuilder.Entity("Warehouse.Domain.Warehouses.Warehouse", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Warehouses_Code");
-
-                    b.HasIndex("Name")
-                        .HasDatabaseName("IX_Warehouses_Name");
-
-                    b.ToTable("Warehouses", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_Warehouses_Code_NotBlank", "btrim(\"Code\") <> ''");
-
-                            t.HasCheckConstraint("CK_Warehouses_Code_Uppercase", "\"Code\" = upper(\"Code\")");
-
-                            t.HasCheckConstraint("CK_Warehouses_Name_NotBlank", "btrim(\"Name\") <> ''");
-                        });
-                });
 #pragma warning restore 612, 618
         }
     }

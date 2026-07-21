@@ -1,6 +1,5 @@
 using Serilog;
 using Warehouse.Api.Endpoints.Products;
-using Warehouse.Api.Endpoints.Warehouses;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -38,7 +37,6 @@ if (app.Environment.IsDevelopment())
 
 app.MapGet("/", () => Results.Ok(new { service = "Warehouse API", status = "ready" }));
 app.MapProductEndpoints();
-app.MapWarehouseEndpoints();
 app.MapHealthChecks("/health/live", new()
 {
     Predicate = registration => registration.Tags.Contains("live")
