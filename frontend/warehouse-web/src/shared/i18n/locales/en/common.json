@@ -1,0 +1,84 @@
+{
+  "app": {
+    "brand": "Warehouse Management System"
+  },
+  "navigation": {
+    "home": "Home",
+    "products": "Products"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "fr": "French"
+  },
+  "home": {
+    "title": "Foundation ready",
+    "description": "The application shell, API foundation, PostgreSQL connectivity, and test environments are ready for the first approved feature.",
+    "phase": "Phase 0"
+  },
+  "errors": {
+    "requestFailed": "This request could not be completed.",
+    "validationFailed": "Please correct the highlighted fields.",
+    "codes": {
+      "system.unexpected": "An unexpected error occurred. Please try again.",
+      "validation.failed": "Please correct the highlighted fields.",
+      "validation.required": "This field is required.",
+      "validation.max_length": "This value is too long.",
+      "product.not_found": "The product was not found.",
+      "product.sku_conflict": "A product with this SKU already exists."
+    }
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Maintain the catalogue used by future warehouse workflows.",
+    "new": "New product",
+    "createTitle": "New product",
+    "editTitle": "Edit product",
+    "create": "Create product",
+    "save": "Save changes",
+    "edit": "Edit",
+    "view": "View",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "cancel": "Cancel",
+    "confirmStatusTitle": "{{action}} product",
+    "confirmStatusDescription": "Are you sure you want to {{action}} this product?",
+    "searchPlaceholder": "Search SKU or name",
+    "loadingList": "Loading products…",
+    "loadingOne": "Loading product…",
+    "empty": "No products match this search.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "sku": "SKU",
+      "name": "Name",
+      "description": "Description",
+      "status": "Status",
+      "actions": "Actions",
+      "created": "Created",
+      "updated": "Last updated"
+    },
+    "form": {
+      "sku": "SKU",
+      "name": "Name",
+      "description": "Description",
+      "skuPlaceholder": "SKU-001",
+      "namePlaceholder": "Product name",
+      "skuRequired": "SKU is required.",
+      "nameRequired": "Name is required.",
+      "skuMax": "SKU cannot exceed {{max}} characters.",
+      "nameMax": "Name cannot exceed {{max}} characters.",
+      "descriptionMax": "Description cannot exceed {{max}} characters."
+    },
+    "errors": {
+      "load": "The product could not be loaded.",
+      "loadList": "Products could not be loaded.",
+      "create": "The product could not be created.",
+      "update": "The product could not be updated.",
+      "status": "The product status could not be changed."
+    },
+    "missingDescription": "—"
+  }
+}
