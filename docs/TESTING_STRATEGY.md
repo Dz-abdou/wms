@@ -45,6 +45,7 @@ Use Vitest and React Testing Library for:
 - Error states
 - Important conditional UI
 - Key user interactions
+- English and French translations for visible states and API error-code mapping
 
 Do not test Ant Design internals.
 

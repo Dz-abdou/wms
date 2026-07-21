@@ -27,6 +27,8 @@ Describe the user or business outcome.
 
 List expected entities, fields, relationships, constraints and indexes.
 
+Codex may implement model and configuration changes, but the developer must manually generate and apply EF Core migrations. Never ask Codex to edit generated migrations or snapshots.
+
 ## API Requirements
 
 | Method | Route | Purpose |
@@ -44,6 +46,7 @@ List expected entities, fields, relationships, constraints and indexes.
 - Loading states
 - Empty states
 - Error states
+- Feature hooks, centralized query keys, route paths, endpoint paths, and validation limits
 
 ## Acceptance Criteria
 
@@ -80,6 +83,8 @@ Then ...
 - [ ] Acceptance criteria pass
 - [ ] Backend validation exists
 - [ ] Database constraints exist where applicable
+- [ ] Developer generated and reviewed the migration manually
+- [ ] Developer applied the migration manually
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] Frontend tests pass where applicable

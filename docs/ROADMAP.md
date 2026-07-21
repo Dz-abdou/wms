@@ -54,6 +54,31 @@ Create a working backend, frontend, database and test environment.
 
 ---
 
+## Phase 1.1 — Localization and Error Contract
+
+### Goal
+
+Establish English/French localization and stable API error codes before another business feature adds more UI and error behavior.
+
+### Deliverables
+
+- English and French JSON locale resources.
+- A frontend i18n provider and language selection/persistence.
+- Translation keys for all existing Product UI states, forms, navigation, confirmation text, and validation messages.
+- A standard API Problem Details extension named `code` for machine-readable errors.
+- Field-level API validation error codes that the frontend maps to localized messages.
+- Product `404`, `409`, validation, and unexpected-error code mappings.
+- Tests for English/French rendering and error-code translation.
+
+### Exit Criteria
+
+- Switching language changes all visible Product and shared-layout text without a page reload.
+- The frontend never displays backend English/French error text as its primary user-facing message.
+- Product API errors expose stable codes and the UI displays the matching English/French translation.
+- Existing Product behavior and automated tests still pass.
+
+---
+
 ## Phase 2 — Warehouses
 
 ### Deliverables
