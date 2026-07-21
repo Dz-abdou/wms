@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Models;
+using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Warehouses;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
@@ -14,7 +15,7 @@ public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider
     {
         var warehouses = dbContext.Warehouses.AsNoTracking();
         var totalCount = await warehouses.CountAsync(cancellationToken);
-        var skip = (query.Page - WarehouseConstants.DefaultPage) * query.PageSize;
+        var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
 
         var items = await warehouses
             .OrderBy(warehouse => warehouse.Code)

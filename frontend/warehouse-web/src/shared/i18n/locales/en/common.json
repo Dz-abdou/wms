@@ -5,7 +5,9 @@
   "navigation": {
     "home": "Home",
     "products": "Products",
-    "warehouses": "Warehouses"
+    "warehouses": "Warehouses",
+    "users": "Users",
+    "roles": "Roles"
   },
   "language": {
     "label": "Language",
@@ -27,7 +29,16 @@
       "validation.max_length": "This value is too long.",
       "product.not_found": "The product was not found.",
       "warehouse.not_found": "The warehouse was not found.",
-      "warehouse.code_conflict": "A warehouse with this code already exists.",      "product.sku_conflict": "A product with this SKU already exists."
+      "warehouse.code_conflict": "A warehouse with this code already exists.",
+      "product.sku_conflict": "A product with this SKU already exists.",
+      "auth.invalid_credentials": "Email or password is incorrect.",
+      "auth.invalid_refresh_token": "Your session has expired. Please sign in again.",
+      "auth.unauthenticated": "Please sign in to continue.",
+      "auth.forbidden": "You do not have permission to perform this action.",
+      "admin.user_not_found": "The user account was not found.",
+      "admin.email_conflict": "An account already uses this email address.",
+      "admin.user_invalid": "The user details do not meet the account requirements.",
+      "admin.self_management_forbidden": "You cannot change your own account from this page."
     }
   },
   "products": {
@@ -84,9 +95,107 @@
     "missingDescription": "—"
   },
   "warehouses": {
-    "title": "Warehouses", "subtitle": "Maintain the locations that future inventory workflows will use.", "new": "New warehouse", "createTitle": "New warehouse", "editTitle": "Edit warehouse", "create": "Create warehouse", "save": "Save changes", "edit": "Edit", "view": "View", "activate": "Activate", "deactivate": "Deactivate", "cancel": "Cancel", "confirmStatusTitle": "{{action}} warehouse", "confirmStatusDescription": "Are you sure you want to {{action}} this warehouse?", "loadingList": "Loading warehouses…", "loadingOne": "Loading warehouse…", "empty": "No warehouses exist yet.", "missingDescription": "—",
-    "table": { "code": "Code", "name": "Name", "description": "Description", "status": "Status", "actions": "Actions", "created": "Created", "updated": "Last updated" },
-    "form": { "code": "Code", "name": "Name", "description": "Description", "codeRequired": "Warehouse code is required.", "nameRequired": "Warehouse name is required.", "codeMax": "Warehouse code cannot exceed {{max}} characters.", "nameMax": "Warehouse name cannot exceed {{max}} characters.", "descriptionMax": "Description cannot exceed {{max}} characters." },
-    "errors": { "load": "The warehouse could not be loaded.", "loadList": "Warehouses could not be loaded.", "create": "The warehouse could not be created.", "update": "The warehouse could not be updated.", "status": "The warehouse status could not be changed." }
+    "title": "Warehouses",
+    "subtitle": "Maintain the locations that future inventory workflows will use.",
+    "new": "New warehouse",
+    "createTitle": "New warehouse",
+    "editTitle": "Edit warehouse",
+    "create": "Create warehouse",
+    "save": "Save changes",
+    "edit": "Edit",
+    "view": "View",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "cancel": "Cancel",
+    "confirmStatusTitle": "{{action}} warehouse",
+    "confirmStatusDescription": "Are you sure you want to {{action}} this warehouse?",
+    "loadingList": "Loading warehouses…",
+    "loadingOne": "Loading warehouse…",
+    "empty": "No warehouses exist yet.",
+    "missingDescription": "—",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "status": "Status",
+      "actions": "Actions",
+      "created": "Created",
+      "updated": "Last updated"
+    },
+    "form": {
+      "code": "Code",
+      "name": "Name",
+      "description": "Description",
+      "codeRequired": "Warehouse code is required.",
+      "nameRequired": "Warehouse name is required.",
+      "codeMax": "Warehouse code cannot exceed {{max}} characters.",
+      "nameMax": "Warehouse name cannot exceed {{max}} characters.",
+      "descriptionMax": "Description cannot exceed {{max}} characters."
+    },
+    "errors": {
+      "load": "The warehouse could not be loaded.",
+      "loadList": "Warehouses could not be loaded.",
+      "create": "The warehouse could not be created.",
+      "update": "The warehouse could not be updated.",
+      "status": "The warehouse status could not be changed."
+    }
+  },
+  "administration": {
+    "users": {
+      "title": "Users",
+      "subtitle": "Create, update, and remove user accounts.",
+      "new": "New user",
+      "createTitle": "Create user",
+      "editTitle": "Edit user",
+      "email": "Email",
+      "password": "Password",
+      "emailRequired": "Email is required.",
+      "passwordRequired": "Password is required.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this user account?",
+      "empty": "No user accounts exist yet.",
+      "table": {
+        "email": "Email",
+        "roles": "Roles",
+        "actions": "Actions"
+      },
+      "errors": {
+        "load": "Users could not be loaded.",
+        "save": "The user could not be saved."
+      }
+    },
+    "roles": {
+      "title": "Roles",
+      "subtitle": "Assign the available roles to user accounts.",
+      "empty": "No user accounts exist yet.",
+      "table": {
+        "email": "User",
+        "assignments": "Assigned roles"
+      },
+      "names": {
+        "admin": "Administrator",
+        "manager": "Manager",
+        "operator": "Operator"
+      },
+      "errors": {
+        "load": "Roles could not be updated."
+      }
+    }
+  },
+  "auth": {
+    "title": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "emailRequired": "Email is required.",
+    "passwordRequired": "Password is required.",
+    "submit": "Sign in",
+    "loading": "Restoring your session…",
+    "accessDeniedTitle": "Access denied",
+    "accessDeniedDescription": "You do not have permission to view this page.",
+    "backHome": "Back to home",
+    "logout": "Sign out"
   }
 }

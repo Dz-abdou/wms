@@ -1,8 +1,10 @@
+using Warehouse.Application.Common.Pagination;
+
 namespace Warehouse.Application.Warehouses;
 
 public sealed record WarehouseListQuery(
-    int Page = WarehouseConstants.DefaultPage,
-    int PageSize = WarehouseConstants.DefaultPageSize);
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;
 
 public sealed record WarehouseInput(string? Code, string? Name, string? Description);
 

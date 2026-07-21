@@ -132,6 +132,35 @@ Protect the application before inventory workflows introduce sensitive operation
 
 ---
 
+## Phase 2.2 — Shared Pagination Foundation
+
+### Goal
+
+Standardize list pagination before more business features add tables and filters.
+
+### Deliverables
+
+- A shared backend page request, default values, maximum page size, and validation.
+- Continued use of the existing shared paged-result contract.
+- A shared frontend helper for Ant Design Table pagination state and request mapping.
+- Feature-local filters, sorting, query keys, endpoint paths, and table columns.
+- Refactoring of Products and Warehouses to use the shared mechanics.
+- Unit, integration, and frontend tests for pagination defaults, limits, and page changes.
+
+### Guardrails
+
+- Do not introduce a generic repository, generic CRUD service, or database abstraction.
+- Do not force unrelated lists to use pagination when their data set is genuinely fixed and small.
+- Keep feature-specific search/filter rules inside their feature.
+
+### Exit Criteria
+
+- Products and Warehouses keep their current paging behavior through the shared foundation.
+- A new paginated feature can adopt the standard with minimal feature-specific code.
+- Automated tests cover the shared boundaries and existing feature behavior.
+
+---
+
 ## Phase 3 — Inventory Foundation
 
 ### Deliverables
@@ -241,15 +270,16 @@ Do not work on the next item before the previous item meets its definition of do
 2. Products
 3. Warehouses
 4. Authentication and RBAC
-5. Stock adjustments
-6. Inventory history
-7. Suppliers
-8. Purchase orders
-9. Goods receipts
-10. Customers
-11. Sales orders
-12. Reservations
-13. Shipping
-14. Audit logs
-15. Dashboard
-16. Deployment and documentation
+5. Shared list pagination
+6. Stock adjustments
+7. Inventory history
+8. Suppliers
+9. Purchase orders
+10. Goods receipts
+11. Customers
+12. Sales orders
+13. Reservations
+14. Shipping
+15. Audit logs
+16. Dashboard
+17. Deployment and documentation

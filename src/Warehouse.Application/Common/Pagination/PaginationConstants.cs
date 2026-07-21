@@ -1,6 +1,6 @@
-namespace Warehouse.Application.Warehouses;
+namespace Warehouse.Application.Common.Pagination;
 
-public static class WarehouseConstants
+public static class PaginationConstants
 {
     public const int DefaultPage = 1;
     public const int DefaultPageSize = 20;

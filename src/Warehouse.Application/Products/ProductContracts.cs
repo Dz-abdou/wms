@@ -1,9 +1,11 @@
+using Warehouse.Application.Common.Pagination;
+
 namespace Warehouse.Application.Products;
 
 public sealed record ProductListQuery(
-    int Page = ProductConstants.DefaultPage,
-    int PageSize = ProductConstants.DefaultPageSize,
-    string? Search = null);
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize,
+    string? Search = null) : IPagedRequest;
 
 public sealed record ProductInput(string? Sku, string? Name, string? Description);
 
