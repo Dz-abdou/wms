@@ -96,6 +96,42 @@ Establish English/French localization and stable API error codes before another 
 
 ---
 
+
+## Phase 2.1 — Authentication and RBAC
+
+### Goal
+
+Protect the application before inventory workflows introduce sensitive operational actions.
+
+### Deliverables
+
+- ASP.NET Core Identity with PostgreSQL persistence and GUID user IDs.
+- JWT access-token authentication using `Microsoft.AspNetCore.Authentication.JwtBearer`.
+- Rotating refresh tokens stored hashed server-side; refresh tokens are delivered in secure, HttpOnly cookies.
+- Login, refresh, logout, and current-user endpoints.
+- Initial roles: `admin`, `manager`, and `operator`.
+- Role-based authorization policies applied to protected API endpoints.
+- A bootstrap development administrator configured through development secrets/environment variables, never source code.
+- Localized frontend login, session restoration, logout, protected routes, and access-denied handling.
+- Unit, integration, and frontend tests for authentication and authorization boundaries.
+
+### Security Rules
+
+- Passwords are hashed only by ASP.NET Core Identity; they are never logged or returned.
+- JWT signing keys, bootstrap credentials, and production connection strings come only from secrets/configuration.
+- Access tokens are short-lived; refresh-token rotation revokes the previous token on use.
+- The frontend does not infer permissions from display text: the backend remains the authorization authority.
+- Every non-public endpoint requires an explicit authorization decision.
+
+### Exit Criteria
+
+- An anonymous request to a protected endpoint returns `401`.
+- An authenticated user without the required role receives `403` with a stable API error code.
+- Login, refresh, logout, expiration, and refresh-token reuse behavior are covered by automated tests.
+- Products and Warehouses are protected by explicit policies before Inventory begins.
+
+---
+
 ## Phase 3 — Inventory Foundation
 
 ### Deliverables
@@ -190,8 +226,6 @@ Establish English/French localization and stable API error codes before another 
 
 ### Deliverables
 
-- Authentication
-- Roles and permissions
 - Audit logs
 - Dashboard
 - Low-stock view
@@ -206,16 +240,16 @@ Do not work on the next item before the previous item meets its definition of do
 1. Foundation
 2. Products
 3. Warehouses
-4. Stock adjustments
-5. Inventory history
-6. Suppliers
-7. Purchase orders
-8. Goods receipts
-9. Customers
-10. Sales orders
-11. Reservations
-12. Shipping
-13. Authentication
+4. Authentication and RBAC
+5. Stock adjustments
+6. Inventory history
+7. Suppliers
+8. Purchase orders
+9. Goods receipts
+10. Customers
+11. Sales orders
+12. Reservations
+13. Shipping
 14. Audit logs
 15. Dashboard
 16. Deployment and documentation
