@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Models;
+using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Products;
 
@@ -13,7 +14,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
     {
         var products = ApplySearch(dbContext.Products.AsNoTracking(), query.Search);
         var totalCount = await products.CountAsync(cancellationToken);
-        var skip = (query.Page - ProductConstants.DefaultPage) * query.PageSize;
+        var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
 
         var items = await products
             .OrderBy(product => product.Sku)

@@ -1,16 +1,12 @@
 using FluentValidation;
 using Warehouse.Application.Common.Errors;
+using Warehouse.Application.Common.Pagination;
 using Warehouse.Domain.Warehouses;
 
 namespace Warehouse.Application.Warehouses;
 
-public sealed class WarehouseListQueryValidator : AbstractValidator<WarehouseListQuery>
+public sealed class WarehouseListQueryValidator : PagedRequestValidator<WarehouseListQuery>
 {
-    public WarehouseListQueryValidator()
-    {
-        RuleFor(query => query.Page).InclusiveBetween(WarehouseConstants.DefaultPage, WarehouseConstants.MaxPageNumber);
-        RuleFor(query => query.PageSize).InclusiveBetween(1, WarehouseConstants.MaxPageSize);
-    }
 }
 
 public sealed class WarehouseInputValidator : AbstractValidator<WarehouseInput>
