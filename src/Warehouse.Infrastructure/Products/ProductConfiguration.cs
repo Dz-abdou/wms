@@ -28,6 +28,7 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(product => product.Id);
         builder.Property(product => product.Sku).HasMaxLength(ProductRules.MaxSkuLength).IsRequired();
         builder.Property(product => product.Name).HasMaxLength(ProductRules.MaxNameLength).IsRequired();
+        builder.Property(product => product.CategoryId).HasColumnType("uuid");
         builder.Property(product => product.Description).HasMaxLength(ProductRules.MaxDescriptionLength);
         builder.Property(product => product.IsActive).HasDefaultValue(true).IsRequired();
         builder.OwnsMany(product => product.UnitConversions, conversion =>
@@ -60,6 +61,11 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(product => product.UpdatedByUserId).HasColumnType("uuid");
         builder.Property(product => product.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(product => product.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
+        builder.HasIndex(product => product.CategoryId);
+        builder.HasOne<ProductCategory>()
+            .WithMany()
+            .HasForeignKey(product => product.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
         builder.HasIndex(product => product.Sku).IsUnique().HasDatabaseName(SkuUniqueIndex);
         builder.HasIndex(product => product.Name).HasDatabaseName("IX_Products_Name");
     }

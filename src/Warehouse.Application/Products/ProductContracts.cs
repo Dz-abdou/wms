@@ -24,7 +24,8 @@ public sealed record ProductInput(
     string? Description,
     string? BaseUnitOfMeasure = "EA",
     IReadOnlyCollection<ProductUnitConversionInput>? UnitConversions = null,
-    ProductMeasurementsInput? Measurements = null);
+    ProductMeasurementsInput? Measurements = null,
+    Guid? CategoryId = null);
 
 public sealed record SetProductStatusRequest(bool IsActive);
 
@@ -49,5 +50,6 @@ public sealed record ProductResponse(
     IReadOnlyCollection<ProductUnitConversionResponse> UnitConversions,
     ProductMeasurementsResponse? Measurements,
     bool IsActive,
+    Guid? CategoryId,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);

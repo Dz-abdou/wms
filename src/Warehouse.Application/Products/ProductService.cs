@@ -36,6 +36,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
 
     public async Task<ProductResponse> CreateAsync(ProductInput input, CancellationToken cancellationToken)
     {
+        await EnsureCategoryExistsAsync(input.CategoryId, cancellationToken);
         var product = Product.Create(
             input.Sku,
             input.Name,
@@ -44,7 +45,8 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
             ToDefinitions(input.UnitConversions),
             ToMeasurements(input.Measurements),
             UtcNow(),
-            currentUser.UserId);
+            currentUser.UserId,
+            input.CategoryId);
 
         await EnsureSkuIsAvailableAsync(product.Sku, null, cancellationToken);
         dbContext.Products.Add(product);
@@ -62,6 +64,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         var normalizedSku = Product.NormalizeSku(input.Sku);
 
         await EnsureSkuIsAvailableAsync(normalizedSku, id, cancellationToken);
+        await EnsureCategoryExistsAsync(input.CategoryId, cancellationToken);
         product.Update(
             normalizedSku,
             input.Name,
@@ -70,7 +73,8 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
             ToDefinitions(input.UnitConversions),
             ToMeasurements(input.Measurements),
             UtcNow(),
-            currentUser.UserId);
+            currentUser.UserId,
+            input.CategoryId);
         await SaveProductAsync(product.Sku, cancellationToken);
 
         return ToResponse(product);
@@ -123,6 +127,19 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         if (exists)
         {
             throw new ProductSkuConflictException(sku);
+        }
+    }
+
+    private async Task EnsureCategoryExistsAsync(Guid? categoryId, CancellationToken cancellationToken)
+    {
+        if (categoryId is null)
+        {
+            return;
+        }
+
+        if (!await dbContext.ProductCategories.AnyAsync(category => category.Id == categoryId, cancellationToken))
+        {
+            throw new ProductCategoryNotFoundException(categoryId.Value);
         }
     }
 
@@ -182,6 +199,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
                 measurements.VolumeCubicMetres)
             : null,
         product.IsActive,
+        product.CategoryId,
         product.CreatedAtUtc,
         product.UpdatedAtUtc);
 }

@@ -12,6 +12,7 @@ public sealed class Product : PersistentEntity
         string name,
         string? description,
         string baseUnitOfMeasure,
+        Guid? categoryId,
         bool isActive,
         DateTime createdAtUtc,
         DateTime updatedAtUtc,
@@ -23,6 +24,7 @@ public sealed class Product : PersistentEntity
         Name = name;
         Description = description;
         BaseUnitOfMeasure = baseUnitOfMeasure;
+        CategoryId = categoryId;
         IsActive = isActive;
     }
 
@@ -30,6 +32,7 @@ public sealed class Product : PersistentEntity
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
     public string BaseUnitOfMeasure { get; private set; } = null!;
+    public Guid? CategoryId { get; private set; }
     public IReadOnlyCollection<ProductUnitConversion> UnitConversions => unitConversions;
     public ProductMeasurements? Measurements { get; private set; }
     public bool IsActive { get; private set; }
@@ -45,7 +48,8 @@ public sealed class Product : PersistentEntity
         IEnumerable<ProductUnitConversionDefinition> unitConversionDefinitions,
         ProductMeasurements? measurements,
         DateTime createdAtUtc,
-        Guid? actorUserId = null)
+        Guid? actorUserId = null,
+        Guid? categoryId = null)
     {
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
         var product = new Product(
@@ -54,6 +58,7 @@ public sealed class Product : PersistentEntity
             NormalizeName(name),
             NormalizeDescription(description),
             ProductUnitOfMeasure.NormalizeBaseUnitOfMeasure(baseUnitOfMeasure),
+            categoryId,
             true,
             createdAtUtc,
             createdAtUtc,
@@ -72,7 +77,8 @@ public sealed class Product : PersistentEntity
             UnitConversions.Select(conversion => new ProductUnitConversionDefinition(conversion.UnitOfMeasure, conversion.QuantityInBaseUnit)),
             Measurements,
             updatedAtUtc,
-            actorUserId);
+            actorUserId,
+            CategoryId);
 
     public void Update(
         string? sku,
@@ -82,7 +88,8 @@ public sealed class Product : PersistentEntity
         IEnumerable<ProductUnitConversionDefinition> unitConversionDefinitions,
         ProductMeasurements? measurements,
         DateTime updatedAtUtc,
-        Guid? actorUserId = null)
+        Guid? actorUserId = null,
+        Guid? categoryId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
         var normalizedSku = NormalizeSku(sku);
@@ -92,7 +99,7 @@ public sealed class Product : PersistentEntity
         var normalizedConversions = NormalizeConversions(normalizedBaseUnit, unitConversionDefinitions);
 
         if (Sku == normalizedSku && Name == normalizedName && Description == normalizedDescription &&
-            BaseUnitOfMeasure == normalizedBaseUnit && HasSameConversions(normalizedConversions) &&
+            BaseUnitOfMeasure == normalizedBaseUnit && CategoryId == categoryId && HasSameConversions(normalizedConversions) &&
             (Measurements?.IsSameAs(measurements) ?? measurements is null))
         {
             return;
@@ -102,6 +109,7 @@ public sealed class Product : PersistentEntity
         Name = normalizedName;
         Description = normalizedDescription;
         BaseUnitOfMeasure = normalizedBaseUnit;
+        CategoryId = categoryId;
         ReplaceConversions(normalizedConversions);
         Measurements = measurements;
         UpdatedAtUtc = updatedAtUtc;

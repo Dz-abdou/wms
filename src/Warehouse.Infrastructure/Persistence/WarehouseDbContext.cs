@@ -15,6 +15,8 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 {
     public DbSet<Product> Products => Set<Product>();
 
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+
     public DbSet<WarehouseEntity> Warehouses => Set<WarehouseEntity>();
 
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
