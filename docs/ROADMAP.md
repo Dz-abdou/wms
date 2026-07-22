@@ -218,6 +218,30 @@ Add an opt-in, transaction-safe, property-level audit subsystem before Inventory
 
 ---
 
+## Phase 3.1 — Product Catalogue Enrichment
+
+### Goal
+
+Make product quantities unambiguous before purchase orders and goods receipts introduce operational stock.
+
+### Deliverables
+
+- Required base unit of measure (UoM), such as each, kilogram, litre, or metre.
+- Product-specific UoM conversions, such as one carton containing 24 each.
+- Optional net weight and gross weight with an explicit weight unit.
+- Optional length, width, and height with an explicit dimension unit.
+- Derived or stored volume with a documented calculation rule.
+- Validation that stock movements, purchase-order lines, and receipt lines use valid product UoMs and conversions.
+
+### Exit Criteria
+
+- Every quantity used by operational inventory has a defined UoM.
+- Product-specific conversion calculations are exact and covered by unit tests.
+- Physical measurements remain optional, but retain both value and unit when supplied.
+- API, persistence, and frontend tests pass.
+
+---
+
 ## Phase 4 — Suppliers and Purchase Orders
 
 ### Deliverables
