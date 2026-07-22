@@ -126,6 +126,33 @@ public sealed class ProductTests
     }
 
     [Fact]
+    public void Catalogue_details_enforce_fractional_quantity_rules()
+    {
+        var packagedProduct = Product.Create(
+            "SKU-001",
+            "Packaged product",
+            null,
+            "EA",
+            [new ProductUnitConversionDefinition("CTN", 24m)],
+            null,
+            CreatedAtUtc);
+        var weightedProduct = Product.Create(
+            "SKU-002",
+            "Weighted product",
+            null,
+            "KG",
+            [],
+            null,
+            CreatedAtUtc);
+
+        Assert.False(packagedProduct.TryConvertToBaseQuantity("CTN", 1.1m, out _));
+        Assert.True(packagedProduct.TryConvertToBaseQuantity("CTN", 2m, out var cartonQuantity));
+        Assert.Equal(48m, cartonQuantity);
+        Assert.True(weightedProduct.TryConvertToBaseQuantity("KG", 1.1m, out var weightQuantity));
+        Assert.Equal(1.1m, weightQuantity);
+    }
+
+    [Fact]
     public void Catalogue_details_reject_duplicate_or_invalid_measurements()
     {
         Assert.Throws<ArgumentException>(() => Product.Create(

@@ -17,4 +17,5 @@ public static class ApiErrorCodes
     public const string InventoryWarehouseNotFound = "inventory.warehouse_not_found";
     public const string InventoryInsufficientStock = "inventory.insufficient_stock";
     public const string InventoryConcurrencyConflict = "inventory.concurrency_conflict";
+    public const string InventoryInvalidUnitOfMeasure = "inventory.invalid_unit_of_measure";
 }

@@ -42,6 +42,7 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
             conversion.HasKey("ProductId", nameof(ProductUnitConversion.UnitOfMeasure));
             conversion.Property(unit => unit.UnitOfMeasure).HasMaxLength(ProductUnitOfMeasure.MaxCodeLength).IsRequired();
             conversion.Property(unit => unit.QuantityInBaseUnit).HasPrecision(18, 6).IsRequired();
+            conversion.Property(unit => unit.AllowsFractionalQuantity).HasDefaultValue(false).IsRequired();
         });
 
         builder.OwnsOne(product => product.Measurements, measurement =>

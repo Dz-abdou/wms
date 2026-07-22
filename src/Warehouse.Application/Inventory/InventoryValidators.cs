@@ -10,6 +10,7 @@ public sealed class InventoryAdjustmentInputValidator : AbstractValidator<Invent
         RuleFor(input => input.ProductId).NotEmpty();
         RuleFor(input => input.WarehouseId).NotEmpty();
         RuleFor(input => input.Quantity).GreaterThan(0m);
+        RuleFor(input => input.UnitOfMeasure).NotEmpty();
         RuleFor(input => input.Direction).IsInEnum();
     }
 }

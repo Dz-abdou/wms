@@ -29,6 +29,12 @@ public static class ProductUnitOfMeasure
 
     public static string NormalizeUnitOfMeasure(string? unitOfMeasure) => Normalize(unitOfMeasure);
 
+    public static bool AllowsFractionalQuantity(string unitOfMeasure) => unitOfMeasure switch
+    {
+        "KG" or "G" or "L" or "ML" or "M" or "CM" or "MM" => true,
+        _ => false
+    };
+
     private static string Normalize(string? unitOfMeasure)
     {
         var normalized = unitOfMeasure?.Trim().ToUpperInvariant();

@@ -4,6 +4,7 @@ using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Inventory;
+using Warehouse.Domain.Products;
 
 namespace Warehouse.Application.Inventory;
 
@@ -22,10 +23,10 @@ public sealed class InventoryService(
         {
             await dbContext.ExecuteInTransactionAsync(async token =>
             {
-                if (!await dbContext.Products.AnyAsync(product => product.Id == input.ProductId, token))
-                {
-                    throw new InventoryProductNotFoundException(input.ProductId);
-                }
+                var product = await dbContext.Products
+                    .Include(candidate => candidate.UnitConversions)
+                    .SingleOrDefaultAsync(candidate => candidate.Id == input.ProductId, token)
+                    ?? throw new InventoryProductNotFoundException(input.ProductId);
 
                 if (!await dbContext.Warehouses.AnyAsync(warehouse => warehouse.Id == input.WarehouseId, token))
                 {
@@ -42,7 +43,17 @@ public sealed class InventoryService(
                     dbContext.InventoryBalances.Add(balance);
                 }
 
+                if (!product.TryConvertToBaseQuantity(input.UnitOfMeasure, input.Quantity, out var quantityInBaseUnit))
+                {
+                    throw new InventoryInvalidUnitOfMeasureException(input.ProductId, input.UnitOfMeasure);
+                }
+
+                var unitOfMeasure = ProductUnitOfMeasure.NormalizeUnitOfMeasure(input.UnitOfMeasure);
+
                 var quantityDelta = input.Direction == InventoryAdjustmentDirection.Increase
+                    ? quantityInBaseUnit
+                    : -quantityInBaseUnit;
+                var quantityDeltaInUnit = input.Direction == InventoryAdjustmentDirection.Increase
                     ? input.Quantity
                     : -input.Quantity;
                 if (quantityDelta < 0m && balance.Quantity < -quantityDelta)
@@ -54,6 +65,8 @@ public sealed class InventoryService(
                 var movement = InventoryMovement.CreateManualAdjustment(
                     input.ProductId,
                     input.WarehouseId,
+                    unitOfMeasure,
+                    quantityDeltaInUnit,
                     quantityDelta,
                     balance.Quantity,
                     UtcNow(),
@@ -61,7 +74,7 @@ public sealed class InventoryService(
                 dbContext.InventoryMovements.Add(movement);
 
                 await dbContext.SaveChangesAsync(token);
-                response = ToResponse(balance);
+                response = ToResponse(balance, product.BaseUnitOfMeasure);
             }, cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception)
@@ -99,6 +112,8 @@ public sealed class InventoryService(
                 movement.ProductId,
                 movement.WarehouseId,
                 movement.Type.ToString(),
+                movement.UnitOfMeasure,
+                movement.QuantityDeltaInUnit,
                 movement.QuantityDelta,
                 movement.BalanceAfter,
                 movement.CreatedAtUtc))
@@ -109,9 +124,10 @@ public sealed class InventoryService(
 
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
 
-    private static InventoryBalanceResponse ToResponse(InventoryBalance balance) => new(
+    private static InventoryBalanceResponse ToResponse(InventoryBalance balance, string baseUnitOfMeasure) => new(
         balance.ProductId,
         balance.WarehouseId,
         balance.Quantity,
-        balance.UpdatedAtUtc);
+        balance.UpdatedAtUtc,
+        baseUnitOfMeasure);
 }

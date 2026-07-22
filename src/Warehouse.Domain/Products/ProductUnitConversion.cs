@@ -2,17 +2,20 @@ namespace Warehouse.Domain.Products;
 
 public sealed class ProductUnitConversion
 {
-    private ProductUnitConversion(string unitOfMeasure, decimal quantityInBaseUnit)
+    private ProductUnitConversion(string unitOfMeasure, decimal quantityInBaseUnit, bool allowsFractionalQuantity)
     {
         UnitOfMeasure = unitOfMeasure;
         QuantityInBaseUnit = quantityInBaseUnit;
+        AllowsFractionalQuantity = allowsFractionalQuantity;
     }
 
     public string UnitOfMeasure { get; private set; } = null!;
 
     public decimal QuantityInBaseUnit { get; private set; }
 
-    public static ProductUnitConversion Create(string? unitOfMeasure, decimal quantityInBaseUnit)
+    public bool AllowsFractionalQuantity { get; private set; }
+
+    public static ProductUnitConversion Create(string? unitOfMeasure, decimal quantityInBaseUnit, bool allowsFractionalQuantity = false)
     {
         if (quantityInBaseUnit <= 0m)
         {
@@ -21,8 +24,12 @@ public sealed class ProductUnitConversion
 
         return new ProductUnitConversion(
             ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure),
-            quantityInBaseUnit);
+            quantityInBaseUnit,
+            allowsFractionalQuantity);
     }
 }
 
-public sealed record ProductUnitConversionDefinition(string? UnitOfMeasure, decimal QuantityInBaseUnit);
+public sealed record ProductUnitConversionDefinition(
+    string? UnitOfMeasure,
+    decimal QuantityInBaseUnit,
+    bool AllowsFractionalQuantity = false);

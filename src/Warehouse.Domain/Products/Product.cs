@@ -74,7 +74,10 @@ public sealed class Product : PersistentEntity
             name,
             description,
             BaseUnitOfMeasure,
-            UnitConversions.Select(conversion => new ProductUnitConversionDefinition(conversion.UnitOfMeasure, conversion.QuantityInBaseUnit)),
+            UnitConversions.Select(conversion => new ProductUnitConversionDefinition(
+                conversion.UnitOfMeasure,
+                conversion.QuantityInBaseUnit,
+                conversion.AllowsFractionalQuantity)),
             Measurements,
             updatedAtUtc,
             actorUserId,
@@ -142,12 +145,22 @@ public sealed class Product : PersistentEntity
             var normalizedUnit = ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure);
             if (normalizedUnit == BaseUnitOfMeasure)
             {
+                if (!ProductUnitOfMeasure.AllowsFractionalQuantity(normalizedUnit) && !IsWholeQuantity(quantity))
+                {
+                    return false;
+                }
+
                 quantityInBaseUnit = quantity;
                 return true;
             }
 
             var conversion = UnitConversions.SingleOrDefault(candidate => candidate.UnitOfMeasure == normalizedUnit);
             if (conversion is null)
+            {
+                return false;
+            }
+
+            if (!conversion.AllowsFractionalQuantity && !IsWholeQuantity(quantity))
             {
                 return false;
             }
@@ -193,7 +206,10 @@ public sealed class Product : PersistentEntity
     {
         ArgumentNullException.ThrowIfNull(definitions);
         var conversions = definitions
-            .Select(definition => ProductUnitConversion.Create(definition.UnitOfMeasure, definition.QuantityInBaseUnit))
+            .Select(definition => ProductUnitConversion.Create(
+                definition.UnitOfMeasure,
+                definition.QuantityInBaseUnit,
+                definition.AllowsFractionalQuantity))
             .OrderBy(conversion => conversion.UnitOfMeasure)
             .ToList();
 
@@ -221,8 +237,11 @@ public sealed class Product : PersistentEntity
         UnitConversions.OrderBy(conversion => conversion.UnitOfMeasure)
             .Zip(conversions, (current, candidate) =>
                 current.UnitOfMeasure == candidate.UnitOfMeasure &&
-                current.QuantityInBaseUnit == candidate.QuantityInBaseUnit)
+                current.QuantityInBaseUnit == candidate.QuantityInBaseUnit &&
+                current.AllowsFractionalQuantity == candidate.AllowsFractionalQuantity)
             .All(isSame => isSame);
+
+    private static bool IsWholeQuantity(decimal quantity) => decimal.Truncate(quantity) == quantity;
 
     private static string NormalizeName(string? name)
     {
