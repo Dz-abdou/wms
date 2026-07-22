@@ -46,7 +46,11 @@ export function ProductEditPage() {
           initialValues={{
             sku: productQuery.data.sku,
             name: productQuery.data.name,
-            description: productQuery.data.description ?? undefined
+            description: productQuery.data.description ?? undefined,
+            baseUnitOfMeasure: productQuery.data.baseUnitOfMeasure,
+            categoryId: productQuery.data.categoryId ?? undefined,
+            unitConversions: productQuery.data.unitConversions,
+            measurements: productQuery.data.measurements ?? undefined
           }}
           isSubmitting={updateProduct.isPending}
           onSubmit={handleSubmit}
