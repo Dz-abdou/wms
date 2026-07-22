@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Select, Space } from 'antd'
+import { Button, Form, Input, InputNumber, Select, Space, Switch } from 'antd'
 import type { FormInstance } from 'antd'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../../shared/api/apiClient'
@@ -73,10 +73,16 @@ export function ProductForm({ initialValues, isSubmitting, onSubmit, submitLabel
                 <Form.Item {...field} name={[field.name, 'quantityInBaseUnit']} rules={[{ required: true, type: 'number', min: 0.000001, message: t('products.form.conversionQuantityRequired') }]}>
                   <InputNumber min={0.000001} precision={6} placeholder={t('products.form.conversionQuantity')} />
                 </Form.Item>
+                <Form.Item {...field} name={[field.name, 'allowsFractionalQuantity']} valuePropName="checked">
+                  <Space>
+                    <Switch aria-label={t('products.form.conversionAllowsFractionalQuantity')} />
+                    {t('products.form.conversionAllowsFractionalQuantity')}
+                  </Space>
+                </Form.Item>
                 <Button onClick={() => remove(field.name)}>{t('products.form.removeConversion')}</Button>
               </Space>
             ))}
-            <Button onClick={() => add()}>{t('products.form.addConversion')}</Button>
+            <Button onClick={() => add({ allowsFractionalQuantity: false })}>{t('products.form.addConversion')}</Button>
           </>
         )}
       </Form.List>

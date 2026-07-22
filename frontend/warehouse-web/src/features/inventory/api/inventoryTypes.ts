@@ -5,6 +5,7 @@ export type InventoryAdjustmentInput = {
   warehouseId: string
   quantity: number
   direction: InventoryAdjustmentDirection
+  unitOfMeasure: string
 }
 
 export type InventoryBalance = {
@@ -12,6 +13,7 @@ export type InventoryBalance = {
   warehouseId: string
   quantity: number
   updatedAtUtc: string
+  baseUnitOfMeasure: string
 }
 
 export type InventoryMovement = {
@@ -20,6 +22,8 @@ export type InventoryMovement = {
   warehouseId: string
   type: 'ManualIncrease' | 'ManualDecrease'
   quantityDelta: number
+  unitOfMeasure: string
+  quantityDeltaInUnit: number
   balanceAfter: number
   createdAtUtc: string
 }

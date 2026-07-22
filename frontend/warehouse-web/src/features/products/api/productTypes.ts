@@ -1,6 +1,7 @@
 export type ProductUnitConversion = {
   unitOfMeasure: string
   quantityInBaseUnit: number
+  allowsFractionalQuantity: boolean
 }
 
 export type ProductMeasurements = {

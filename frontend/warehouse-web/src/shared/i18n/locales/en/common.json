@@ -39,7 +39,8 @@
       "admin.user_not_found": "The user account was not found.",
       "admin.email_conflict": "An account already uses this email address.",
       "admin.user_invalid": "The user details do not meet the account requirements.",
-      "admin.self_management_forbidden": "You cannot change your own account from this page."
+      "admin.self_management_forbidden": "You cannot change your own account from this page.",
+      "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product."
     }
   },
   "products": {
@@ -93,6 +94,7 @@
       "conversionQuantity": "Base quantity",
       "conversionUnitRequired": "A conversion unit is required.",
       "conversionQuantityRequired": "A positive base quantity is required.",
+      "conversionAllowsFractionalQuantity": "Allow decimal quantities",
       "addConversion": "Add conversion",
       "removeConversion": "Remove",
       "netWeight": "Net weight",
@@ -242,9 +244,12 @@
       "warehouse": "Warehouse",
       "direction": "Direction",
       "quantity": "Quantity",
+      "unitOfMeasure": "Unit of measure",
       "productRequired": "Product is required.",
       "warehouseRequired": "Warehouse is required.",
-      "quantityRequired": "Quantity is required."
+      "unitOfMeasureRequired": "A unit of measure is required.",
+      "quantityRequired": "Quantity is required.",
+      "wholeQuantity": "This unit only accepts whole quantities."
     },
     "errors": {
       "loadSources": "Products or warehouses could not be loaded.",
