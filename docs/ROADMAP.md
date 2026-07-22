@@ -256,6 +256,31 @@ Add an opt-in, transaction-safe, property-level audit subsystem before Inventory
 
 ---
 
+## Phase 5.1 — Stock Allocation and Costing
+
+### Goal
+
+Add lot-aware stock allocation and inventory costing after goods receipts establish the layers from which stock can be issued.
+
+### Deliverables
+
+- Receipt lots or inventory cost layers with remaining quantity and unit cost.
+- FIFO allocation for normal stock issue flows.
+- FEFO allocation when an expiry date is tracked and the business enables it.
+- Weighted-average cost (WAC, also called moving weighted-average cost) for inventory valuation.
+- Explicit allocation and valuation-policy configuration; do not use LIFO unless a documented business or accounting requirement requires it.
+- Allocation and cost-layer history linked to receipts, reservations, and shipments.
+
+### Exit Criteria
+
+- An issue or shipment allocates the configured eligible stock layers deterministically.
+- FIFO and FEFO never allocate unavailable stock.
+- Weighted-average cost is recalculated correctly after receipts and remains traceable.
+- Automated tests cover allocation ordering, expiry handling, and costing calculations.
+
+---
+
+
 ## Phase 6 — Customers and Sales Orders
 
 ### Deliverables
