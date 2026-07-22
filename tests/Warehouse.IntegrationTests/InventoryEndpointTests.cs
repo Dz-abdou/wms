@@ -81,6 +81,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Single(history.Items);
         Assert.Equal(product.Id, history.Items[0].ProductId);
         Assert.Equal(warehouse.Id, history.Items[0].WarehouseId);
+        Assert.Equal("ManualIncrease", history.Items[0].Type);
     }
 
     private async Task<InventoryBalanceResponse> AdjustAsync(

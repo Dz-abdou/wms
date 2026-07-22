@@ -98,7 +98,7 @@ public sealed class InventoryService(
                 movement.Id,
                 movement.ProductId,
                 movement.WarehouseId,
-                movement.Type,
+                movement.Type.ToString(),
                 movement.QuantityDelta,
                 movement.BalanceAfter,
                 movement.CreatedAtUtc))

@@ -6,6 +6,7 @@
     "home": "Accueil",
     "products": "Produits",
     "warehouses": "Entrepôts",
+    "inventory": "Stock",
     "users": "Utilisateurs",
     "roles": "Rôles"
   },
@@ -197,5 +198,41 @@
     "accessDeniedDescription": "Vous n’êtes pas autorisé à consulter cette page.",
     "backHome": "Retour à l’accueil",
     "logout": "Se déconnecter"
+  },
+  "inventory": {
+    "title": "Stock",
+    "subtitle": "Effectuez un ajustement manuel et consultez l’historique des mouvements.",
+    "adjustTitle": "Ajustement manuel",
+    "historyTitle": "Historique des mouvements",
+    "adjust": "Appliquer l’ajustement",
+    "currentBalance": "Stock actuel",
+    "selectForHistory": "Sélectionnez un produit et un entrepôt pour consulter l’historique.",
+    "loadingSources": "Chargement des produits et entrepôts…",
+    "loadingHistory": "Chargement de l’historique des mouvements…",
+    "emptyHistory": "Aucun mouvement de stock n’existe pour cette sélection.",
+    "types": {
+      "increase": "Entrée",
+      "decrease": "Sortie"
+    },
+    "table": {
+      "type": "Type",
+      "delta": "Variation",
+      "balanceAfter": "Stock après mouvement",
+      "created": "Créé le"
+    },
+    "form": {
+      "product": "Produit",
+      "warehouse": "Entrepôt",
+      "direction": "Sens",
+      "quantity": "Quantité",
+      "productRequired": "Le produit est obligatoire.",
+      "warehouseRequired": "L’entrepôt est obligatoire.",
+      "quantityRequired": "La quantité est obligatoire."
+    },
+    "errors": {
+      "loadSources": "Les produits ou entrepôts n’ont pas pu être chargés.",
+      "adjust": "L’ajustement de stock n’a pas pu être appliqué.",
+      "loadHistory": "L’historique des mouvements n’a pas pu être chargé."
+    }
   }
 }

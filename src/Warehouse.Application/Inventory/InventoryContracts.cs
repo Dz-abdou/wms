@@ -1,8 +1,9 @@
+using System.Text.Json.Serialization;
 using Warehouse.Application.Common.Pagination;
-using Warehouse.Domain.Inventory;
 
 namespace Warehouse.Application.Inventory;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum InventoryAdjustmentDirection
 {
     Increase,
@@ -25,7 +26,7 @@ public sealed record InventoryMovementResponse(
     Guid Id,
     Guid ProductId,
     Guid WarehouseId,
-    InventoryMovementType Type,
+    string Type,
     decimal QuantityDelta,
     decimal BalanceAfter,
     DateTime CreatedAtUtc);
