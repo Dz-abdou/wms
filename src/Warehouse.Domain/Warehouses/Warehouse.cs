@@ -1,6 +1,8 @@
+using Warehouse.Domain.Common;
+
 namespace Warehouse.Domain.Warehouses;
 
-public sealed class Warehouse
+public sealed class Warehouse : PersistentEntity
 {
     private Warehouse(
         Guid id,
@@ -9,18 +11,16 @@ public sealed class Warehouse
         string? description,
         bool isActive,
         DateTime createdAtUtc,
-        DateTime updatedAtUtc)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
-        Id = id;
         Code = code;
         Name = name;
         Description = description;
         IsActive = isActive;
-        CreatedAtUtc = createdAtUtc;
-        UpdatedAtUtc = updatedAtUtc;
     }
-
-    public Guid Id { get; private set; }
 
     public string Code { get; private set; } = null!;
 
@@ -30,11 +30,7 @@ public sealed class Warehouse
 
     public bool IsActive { get; private set; }
 
-    public DateTime CreatedAtUtc { get; private set; }
-
-    public DateTime UpdatedAtUtc { get; private set; }
-
-    public static Warehouse Create(string? code, string? name, string? description, DateTime createdAtUtc)
+    public static Warehouse Create(string? code, string? name, string? description, DateTime createdAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
 
@@ -45,20 +41,31 @@ public sealed class Warehouse
             NormalizeDescription(description),
             true,
             createdAtUtc,
-            createdAtUtc);
+            createdAtUtc,
+            actorUserId,
+            actorUserId);
     }
 
-    public void Update(string? code, string? name, string? description, DateTime updatedAtUtc)
+    public void Update(string? code, string? name, string? description, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
-        Code = NormalizeCode(code);
-        Name = NormalizeName(name);
-        Description = NormalizeDescription(description);
+        var normalizedCode = NormalizeCode(code);
+        var normalizedName = NormalizeName(name);
+        var normalizedDescription = NormalizeDescription(description);
+        if (Code == normalizedCode && Name == normalizedName && Description == normalizedDescription)
+        {
+            return;
+        }
+
+        Code = normalizedCode;
+        Name = normalizedName;
+        Description = normalizedDescription;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
-    public void SetStatus(bool isActive, DateTime updatedAtUtc)
+    public void SetStatus(bool isActive, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
@@ -69,6 +76,7 @@ public sealed class Warehouse
 
         IsActive = isActive;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
     public static string NormalizeCode(string? code)

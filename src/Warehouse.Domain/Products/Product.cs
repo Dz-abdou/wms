@@ -1,6 +1,8 @@
+using Warehouse.Domain.Common;
+
 namespace Warehouse.Domain.Products;
 
-public sealed class Product
+public sealed class Product : PersistentEntity
 {
     private Product(
         Guid id,
@@ -9,18 +11,16 @@ public sealed class Product
         string? description,
         bool isActive,
         DateTime createdAtUtc,
-        DateTime updatedAtUtc)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
-        Id = id;
         Sku = sku;
         Name = name;
         Description = description;
         IsActive = isActive;
-        CreatedAtUtc = createdAtUtc;
-        UpdatedAtUtc = updatedAtUtc;
     }
-
-    public Guid Id { get; private set; }
 
     public string Sku { get; private set; } = null!;
 
@@ -30,11 +30,7 @@ public sealed class Product
 
     public bool IsActive { get; private set; }
 
-    public DateTime CreatedAtUtc { get; private set; }
-
-    public DateTime UpdatedAtUtc { get; private set; }
-
-    public static Product Create(string? sku, string? name, string? description, DateTime createdAtUtc)
+    public static Product Create(string? sku, string? name, string? description, DateTime createdAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
 
@@ -45,20 +41,31 @@ public sealed class Product
             NormalizeDescription(description),
             true,
             createdAtUtc,
-            createdAtUtc);
+            createdAtUtc,
+            actorUserId,
+            actorUserId);
     }
 
-    public void Update(string? sku, string? name, string? description, DateTime updatedAtUtc)
+    public void Update(string? sku, string? name, string? description, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
-        Sku = NormalizeSku(sku);
-        Name = NormalizeName(name);
-        Description = NormalizeDescription(description);
+        var normalizedSku = NormalizeSku(sku);
+        var normalizedName = NormalizeName(name);
+        var normalizedDescription = NormalizeDescription(description);
+        if (Sku == normalizedSku && Name == normalizedName && Description == normalizedDescription)
+        {
+            return;
+        }
+
+        Sku = normalizedSku;
+        Name = normalizedName;
+        Description = normalizedDescription;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
-    public void SetStatus(bool isActive, DateTime updatedAtUtc)
+    public void SetStatus(bool isActive, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
@@ -69,6 +76,7 @@ public sealed class Product
 
         IsActive = isActive;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
     public static string NormalizeSku(string? sku)

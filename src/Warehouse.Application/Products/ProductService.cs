@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Models;
+using Warehouse.Application.Common.Identity;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Products;
 
 namespace Warehouse.Application.Products;
 
-public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider timeProvider)
+public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider timeProvider, ICurrentUser currentUser)
 {
     public async Task<PagedResult<ProductResponse>> GetListAsync(
         ProductListQuery query,
@@ -35,7 +36,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
 
     public async Task<ProductResponse> CreateAsync(ProductInput input, CancellationToken cancellationToken)
     {
-        var product = Product.Create(input.Sku, input.Name, input.Description, UtcNow());
+        var product = Product.Create(input.Sku, input.Name, input.Description, UtcNow(), currentUser.UserId);
 
         await EnsureSkuIsAvailableAsync(product.Sku, null, cancellationToken);
         dbContext.Products.Add(product);
@@ -53,7 +54,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         var normalizedSku = Product.NormalizeSku(input.Sku);
 
         await EnsureSkuIsAvailableAsync(normalizedSku, id, cancellationToken);
-        product.Update(normalizedSku, input.Name, input.Description, UtcNow());
+        product.Update(normalizedSku, input.Name, input.Description, UtcNow(), currentUser.UserId);
         await SaveProductAsync(product.Sku, cancellationToken);
 
         return ToResponse(product);
@@ -70,7 +71,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
             return ToResponse(product);
         }
 
-        product.SetStatus(request.IsActive, UtcNow());
+        product.SetStatus(request.IsActive, UtcNow(), currentUser.UserId);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return ToResponse(product);

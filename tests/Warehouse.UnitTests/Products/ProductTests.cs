@@ -72,4 +72,30 @@ public sealed class ProductTests
         Assert.False(product.IsActive);
         Assert.Equal(changedAtUtc, product.UpdatedAtUtc);
     }
+    [Fact]
+    public void Persistent_metadata_tracks_create_update_and_no_op_status_actors()
+    {
+        var creatorId = Guid.NewGuid();
+        var product = Product.Create("SKU-001", "Product", null, CreatedAtUtc, creatorId);
+
+        Assert.Equal(creatorId, product.CreatedByUserId);
+        Assert.Equal(creatorId, product.UpdatedByUserId);
+
+        var modifierId = Guid.NewGuid();
+        var updatedAtUtc = CreatedAtUtc.AddMinutes(5);
+        product.Update("SKU-002", "Updated", null, updatedAtUtc, modifierId);
+
+        Assert.Equal(updatedAtUtc, product.UpdatedAtUtc);
+        Assert.Equal(modifierId, product.UpdatedByUserId);
+
+        var statusActorId = Guid.NewGuid();
+        var statusChangedAtUtc = updatedAtUtc.AddMinutes(5);
+        product.SetStatus(false, statusChangedAtUtc, statusActorId);
+        var noOpActorId = Guid.NewGuid();
+        product.SetStatus(false, statusChangedAtUtc.AddMinutes(5), noOpActorId);
+
+        Assert.Equal(statusChangedAtUtc, product.UpdatedAtUtc);
+        Assert.Equal(statusActorId, product.UpdatedByUserId);
+    }
+
 }

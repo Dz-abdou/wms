@@ -161,6 +161,42 @@ Standardize list pagination before more business features add tables and filters
 
 ---
 
+## Phase 2.3 — Advanced Audit Foundation
+
+### Goal
+
+Add an opt-in, transaction-safe, property-level audit subsystem before Inventory introduces high-value operational records.
+
+### Deliverables
+
+- A shared `PersistentEntity` for common persistence metadata, plus explicit `[AuditEntity]`, `[AuditIgnore]`, and `[AuditDisabled]` opt-in controls. Persistent-entity inheritance alone must not create audit trails.
+- Per-entity `<Table>_AuditTrails` mappings in the same PostgreSQL schema; no generic audit table or EF inheritance table.
+- Audit rows containing generated audit ID, parent ID, database transaction timestamp, actor ID, action, property path, safely serialized old/new values, correlation ID, and optional reason.
+- A two-phase save pipeline covering synchronous and asynchronous saves: update/delete diffs before parent persistence, creation snapshots after generated keys are final.
+- Transaction handling that commits or rolls back parent and audit rows together, respects caller-owned transactions, and preserves `acceptAllChangesOnSuccess: false` semantics.
+- `IAuditContext` implementations for HTTP, workers, CLI tools, and tests.
+- One DI registration extension, default transactional table writer, profile provider, diff engine, event factory, and safe serializer. Additional sinks are explicit extensions, not implicit routing.
+- On-demand audit-history query helpers; normal entity queries never eager-load audit trails.
+- PostgreSQL integration tests for creation snapshots, updates, deletes, ignored/disabled rules, metadata, rollback, and asynchronous saves.
+
+### Guardrails
+
+- Audit only opted-in entities and properties; redact or ignore passwords, tokens, hashes, and protected/sensitive data.
+- Validate GUID, composite-key, inheritance, owned-type, and shadow-property behavior before finalizing the mapping approach.
+- Do not copy reference-project namespaces or types; reuse WMS conventions and clean-architecture boundaries.
+- Do not replace inventory movements with audit trails.
+- The developer generates and applies the required EF Core migration manually; Codex does not edit migrations or the model snapshot.
+
+### Exit Criteria
+
+- An explicitly opted-in entity produces correct, queryable per-entity history; Product and Warehouse remain non-audited until a documented business requirement opts them in.
+- Parent data and audit rows are atomic for successful and failed saves.
+- Creation snapshots use final database-generated keys.
+- Audit context, correlation, and optional reason are retained without recording secrets.
+- Unit, PostgreSQL integration, and frontend tests pass.
+
+---
+
 ## Phase 3 — Inventory Foundation
 
 ### Deliverables
@@ -271,15 +307,16 @@ Do not work on the next item before the previous item meets its definition of do
 3. Warehouses
 4. Authentication and RBAC
 5. Shared list pagination
-6. Stock adjustments
-7. Inventory history
-8. Suppliers
-9. Purchase orders
-10. Goods receipts
-11. Customers
-12. Sales orders
-13. Reservations
-14. Shipping
-15. Audit logs
-16. Dashboard
-17. Deployment and documentation
+6. Audit and entity metadata foundation
+7. Stock adjustments
+8. Inventory history
+9. Suppliers
+10. Purchase orders
+11. Goods receipts
+12. Customers
+13. Sales orders
+14. Reservations
+15. Shipping
+16. Audit logs
+17. Dashboard
+18. Deployment and documentation

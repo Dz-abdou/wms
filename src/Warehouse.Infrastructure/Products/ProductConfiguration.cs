@@ -25,6 +25,8 @@ public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(product => product.Name).HasMaxLength(ProductRules.MaxNameLength).IsRequired();
         builder.Property(product => product.Description).HasMaxLength(ProductRules.MaxDescriptionLength);
         builder.Property(product => product.IsActive).HasDefaultValue(true).IsRequired();
+        builder.Property(product => product.CreatedByUserId).HasColumnType("uuid");
+        builder.Property(product => product.UpdatedByUserId).HasColumnType("uuid");
         builder.Property(product => product.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(product => product.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(product => product.Sku).IsUnique().HasDatabaseName(SkuUniqueIndex);
