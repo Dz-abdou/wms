@@ -29,8 +29,11 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
 
         using var scope = fixture.Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
-        var balance = await dbContext.InventoryBalances.SingleAsync();
-        var movements = await dbContext.InventoryMovements.OrderBy(movement => movement.CreatedAtUtc).ToListAsync();
+        var balance = await dbContext.InventoryBalances.SingleAsync(
+            candidate => candidate.ProductId == product.Id && candidate.WarehouseId == warehouse.Id);
+        var movements = await dbContext.InventoryMovements
+            .Where(candidate => candidate.ProductId == product.Id && candidate.WarehouseId == warehouse.Id)
+            .OrderBy(movement => movement.CreatedAtUtc).ToListAsync();
 
         Assert.Equal(3m, balance.Quantity);
         Assert.Equal(2, movements.Count);
