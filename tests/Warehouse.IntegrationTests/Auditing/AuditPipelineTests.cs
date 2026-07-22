@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using Warehouse.Application.Common.Auditing;
+using Warehouse.Application.Common.Identity;
 using Warehouse.Domain.Auditing;
 using Warehouse.Domain.Common;
 using Warehouse.Infrastructure.Auditing;
@@ -20,7 +21,7 @@ public sealed class AuditPipelineTests : IAsyncLifetime
     public async Task SaveChangesAsync_creates_a_snapshot_with_the_final_parent_id_and_context_metadata()
     {
         var actorId = Guid.NewGuid();
-        await using var scope = CreateScope(new AuditContext(actorId, "trace-123", "initial import"));
+        await using var scope = CreateScope(currentUser: new CurrentUser(actorId, true), auditContext: new AuditContext("trace-123", "initial import"));
         var dbContext = scope.ServiceProvider.GetRequiredService<AuditTestDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
         var probe = AuditProbe.Create("first", "ignored", "refresh-secret");
@@ -133,13 +134,52 @@ public sealed class AuditPipelineTests : IAsyncLifetime
         Assert.Equal(EntityState.Unchanged, dbContext.Entry(probe).State);
     }
 
-    private AsyncServiceScope CreateScope(IAuditContext? auditContext = null)
+    [Fact]
+    public async Task Audit_writer_failure_rolls_back_the_parent_and_any_written_audit_rows()
+    {
+        await using var scope = CreateScope(writer: new FailingAuditTrailWriter());
+        var dbContext = scope.ServiceProvider.GetRequiredService<AuditTestDbContext>();
+        await dbContext.Database.EnsureCreatedAsync();
+        var probe = AuditProbe.Create("writer failure", "ignored", "refresh-secret");
+
+        dbContext.Add(probe);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dbContext.SaveChangesAsync());
+        dbContext.ChangeTracker.Clear();
+
+        Assert.False(await dbContext.AuditProbes.AnyAsync(entry => entry.Id == probe.Id));
+        Assert.False(await dbContext.Set<AuditTrail<AuditProbe>>().AnyAsync(entry => entry.EntityId == probe.Id));
+    }
+
+    private AsyncServiceScope CreateScope(ICurrentUser? currentUser = null, IAuditContext? auditContext = null, IAuditTrailWriter? writer = null)
     {
         var services = new ServiceCollection();
-        services.AddScoped<IAuditContext>(_ => auditContext ?? new AuditContext(null, null));
+        services.AddScoped<ICurrentUser>(_ => currentUser ?? new CurrentUser());
+        services.AddScoped<IAuditContext>(_ => auditContext ?? new AuditContext(null));
         services.AddAuditing();
+        if (writer is not null)
+        {
+            services.AddScoped<IAuditTrailWriter>(_ => writer);
+        }
         services.AddDbContext<AuditTestDbContext>(options => options.UseNpgsql(postgreSql.GetConnectionString()));
         return services.BuildServiceProvider().CreateAsyncScope();
+    }
+
+    private sealed class FailingAuditTrailWriter : IAuditTrailWriter
+    {
+        private readonly AuditTrailWriter writer = new();
+
+        public void Write(DbContext dbContext, IReadOnlyList<AuditRecord> records)
+        {
+            writer.Write(dbContext, records.Take(1).ToArray());
+            throw new InvalidOperationException("Audit writer failure.");
+        }
+
+        public async Task WriteAsync(DbContext dbContext, IReadOnlyList<AuditRecord> records, CancellationToken cancellationToken)
+        {
+            await writer.WriteAsync(dbContext, records.Take(1).ToArray(), cancellationToken);
+            throw new InvalidOperationException("Audit writer failure.");
+        }
     }
 
     private sealed class AuditTestDbContext(DbContextOptions<AuditTestDbContext> options, AuditSavePipeline auditSavePipeline) : DbContext(options)
