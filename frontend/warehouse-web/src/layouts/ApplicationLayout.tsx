@@ -7,6 +7,7 @@ import {
 } from "../features/administration/administrationConstants";
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
 import { productRoutes } from "../features/products/productConstants";
+import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -20,6 +21,8 @@ export function ApplicationLayout() {
     ? "products"
     : location.pathname.startsWith(warehouseRoutes.list)
       ? "warehouses"
+      : location.pathname.startsWith(inventoryRoutes.dashboard)
+        ? "inventory"
       : location.pathname.startsWith(administrationRoutes.users)
         ? "users"
         : location.pathname.startsWith(administrationRoutes.roles)
@@ -49,6 +52,12 @@ export function ApplicationLayout() {
                 <Link to={warehouseRoutes.list}>
                   {t("navigation.warehouses")}
                 </Link>
+              ),
+            },
+            {
+              key: "inventory",
+              label: (
+                <Link to={inventoryRoutes.dashboard}>{t("navigation.inventory")}</Link>
               ),
             },
             ...(isAdministrator

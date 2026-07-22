@@ -14,6 +14,8 @@ import { WarehouseDetailPage } from "../features/warehouses/pages/WarehouseDetai
 import { WarehouseEditPage } from "../features/warehouses/pages/WarehouseEditPage";
 import { WarehouseListPage } from "../features/warehouses/pages/WarehouseListPage";
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
+import { InventoryPage } from "../features/inventory/pages/InventoryPage";
+import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
 import { ProtectedRoute } from "../features/auth/components/ProtectedRoute";
@@ -65,6 +67,10 @@ export function App() {
                   <Route
                     path={warehouseRoutes.listPattern}
                     element={<WarehouseListPage />}
+                  />
+                  <Route
+                    path={inventoryRoutes.dashboardPattern}
+                    element={<InventoryPage />}
                   />
                   <Route
                     path={warehouseRoutes.create}

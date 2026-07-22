@@ -6,6 +6,7 @@
     "home": "Home",
     "products": "Products",
     "warehouses": "Warehouses",
+    "inventory": "Inventory",
     "users": "Users",
     "roles": "Roles"
   },
@@ -197,5 +198,41 @@
     "accessDeniedDescription": "You do not have permission to view this page.",
     "backHome": "Back to home",
     "logout": "Sign out"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Apply a manual stock adjustment and review the resulting movement history.",
+    "adjustTitle": "Manual adjustment",
+    "historyTitle": "Movement history",
+    "adjust": "Apply adjustment",
+    "currentBalance": "Current balance",
+    "selectForHistory": "Select a product and warehouse to view history.",
+    "loadingSources": "Loading products and warehouses…",
+    "loadingHistory": "Loading movement history…",
+    "emptyHistory": "No inventory movements exist for this selection.",
+    "types": {
+      "increase": "Increase",
+      "decrease": "Decrease"
+    },
+    "table": {
+      "type": "Type",
+      "delta": "Change",
+      "balanceAfter": "Balance after",
+      "created": "Created"
+    },
+    "form": {
+      "product": "Product",
+      "warehouse": "Warehouse",
+      "direction": "Direction",
+      "quantity": "Quantity",
+      "productRequired": "Product is required.",
+      "warehouseRequired": "Warehouse is required.",
+      "quantityRequired": "Quantity is required."
+    },
+    "errors": {
+      "loadSources": "Products or warehouses could not be loaded.",
+      "adjust": "The inventory adjustment could not be applied.",
+      "loadHistory": "Movement history could not be loaded."
+    }
   }
 }
