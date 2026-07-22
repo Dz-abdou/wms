@@ -10,8 +10,10 @@ public sealed class InventoryBalance : PersistentEntity
         Guid warehouseId,
         decimal quantity,
         DateTime createdAtUtc,
-        Guid? actorUserId)
-        : base(id, createdAtUtc, createdAtUtc, actorUserId, actorUserId)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         ProductId = productId;
         WarehouseId = warehouseId;
@@ -36,7 +38,8 @@ public sealed class InventoryBalance : PersistentEntity
         EnsureValidIdentity(warehouseId, nameof(warehouseId));
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
 
-        return new InventoryBalance(Guid.NewGuid(), productId, warehouseId, 0m, createdAtUtc, actorUserId);
+        return new InventoryBalance(
+            Guid.NewGuid(), productId, warehouseId, 0m, createdAtUtc, createdAtUtc, actorUserId, actorUserId);
     }
 
     public void ApplyAdjustment(decimal quantityDelta, DateTime changedAtUtc, Guid? actorUserId = null)

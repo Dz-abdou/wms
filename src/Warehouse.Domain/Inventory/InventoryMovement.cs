@@ -12,8 +12,10 @@ public sealed class InventoryMovement : PersistentEntity
         decimal quantityDelta,
         decimal balanceAfter,
         DateTime createdAtUtc,
-        Guid? actorUserId)
-        : base(id, createdAtUtc, createdAtUtc, actorUserId, actorUserId)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         ProductId = productId;
         WarehouseId = warehouseId;
@@ -53,6 +55,8 @@ public sealed class InventoryMovement : PersistentEntity
             quantityDelta,
             balanceAfter,
             createdAtUtc,
+            createdAtUtc,
+            actorUserId,
             actorUserId);
     }
 }
