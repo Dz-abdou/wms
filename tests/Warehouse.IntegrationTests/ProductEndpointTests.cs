@@ -19,13 +19,33 @@ public sealed class ProductEndpointTests(ProductApiFixture fixture)
         {
             sku = " sku-001 ",
             name = "Sample product",
-            description = "Optional description"
+            description = "Optional description",
+            baseUnitOfMeasure = "EA",
+            unitConversions = new[]
+            {
+                new { unitOfMeasure = "CTN", quantityInBaseUnit = 24m }
+            },
+            measurements = new
+            {
+                netWeight = 1.2m,
+                grossWeight = 1.5m,
+                weightUnitOfMeasure = "KG",
+                length = 20m,
+                width = 10m,
+                height = 5m,
+                dimensionUnitOfMeasure = "CM"
+            }
         });
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var product = await createResponse.Content.ReadFromJsonAsync<ProductResponse>();
         Assert.NotNull(product);
         Assert.Equal("SKU-001", product.Sku);
+        Assert.Equal("EA", product.BaseUnitOfMeasure);
+        Assert.Equal("CTN", Assert.Single(product.UnitConversions).UnitOfMeasure);
+        Assert.Equal(24m, product.UnitConversions.Single().QuantityInBaseUnit);
+        Assert.NotNull(product.Measurements);
+        Assert.Equal(0.001m, product.Measurements.VolumeCubicMetres);
 
         var duplicateResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
         {

@@ -98,4 +98,56 @@ public sealed class ProductTests
         Assert.Equal(statusActorId, product.UpdatedByUserId);
     }
 
+    [Fact]
+    public void Catalogue_details_convert_packaging_and_derive_volume()
+    {
+        var measurements = ProductMeasurements.Create(
+            netWeight: 1.2m,
+            grossWeight: 1.5m,
+            weightUnitOfMeasure: "kg",
+            length: 20m,
+            width: 10m,
+            height: 5m,
+            dimensionUnitOfMeasure: "cm");
+        var product = Product.Create(
+            "SKU-001",
+            "Product",
+            null,
+            "ea",
+            [new ProductUnitConversionDefinition("CTN", 24m)],
+            measurements,
+            CreatedAtUtc);
+
+        Assert.Equal("EA", product.BaseUnitOfMeasure);
+        Assert.Equal("CTN", Assert.Single(product.UnitConversions).UnitOfMeasure);
+        Assert.True(product.TryConvertToBaseQuantity("ctn", 2m, out var quantityInBaseUnit));
+        Assert.Equal(48m, quantityInBaseUnit);
+        Assert.Equal(0.001m, product.Measurements!.VolumeCubicMetres);
+    }
+
+    [Fact]
+    public void Catalogue_details_reject_duplicate_or_invalid_measurements()
+    {
+        Assert.Throws<ArgumentException>(() => Product.Create(
+            "SKU-001",
+            "Product",
+            null,
+            "EA",
+            [
+                new ProductUnitConversionDefinition("CTN", 12m),
+                new ProductUnitConversionDefinition("ctn", 24m)
+            ],
+            null,
+            CreatedAtUtc));
+
+        Assert.Throws<ArgumentException>(() => ProductMeasurements.Create(
+            netWeight: 2m,
+            grossWeight: 1m,
+            weightUnitOfMeasure: "KG",
+            length: null,
+            width: null,
+            height: null,
+            dimensionUnitOfMeasure: null));
+    }
+
 }
