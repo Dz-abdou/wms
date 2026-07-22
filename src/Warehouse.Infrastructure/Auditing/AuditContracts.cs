@@ -1,3 +1,5 @@
+using Warehouse.Application.Common.Auditing;
+using Warehouse.Application.Common.Identity;
 using Warehouse.Domain.Common;
 
 namespace Warehouse.Infrastructure.Auditing;
@@ -43,3 +45,14 @@ public sealed record AuditRecord(
     Guid? ActorUserId,
     string? CorrelationId,
     string? Reason);
+
+public sealed record AuditEventContext(
+    Guid? ActorUserId,
+    string? CorrelationId,
+    string? Reason)
+{
+    public static AuditEventContext Create(ICurrentUser currentUser, IAuditContext auditContext) => new(
+        currentUser.UserId,
+        auditContext.CorrelationId,
+        auditContext.Reason);
+}

@@ -1,18 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Warehouse.Application.Common.Auditing;
+using Warehouse.Application.Common.Identity;
 
 namespace Warehouse.Infrastructure.Auditing;
 
 public sealed class AuditSavePipeline(
     IAuditDiffEngine diffEngine,
     IAuditTrailWriter writer,
-    IAuditContext auditContext)
+    IAuditContext auditContext,
+    ICurrentUser currentUser)
 {
     public int Save(DbContext dbContext, bool acceptAllChangesOnSuccess, Func<bool, int> saveChanges)
     {
         dbContext.ChangeTracker.DetectChanges();
-        var capture = diffEngine.Capture(dbContext.ChangeTracker);
+        var auditEventContext = AuditEventContext.Create(currentUser, auditContext);
+        var capture = diffEngine.Capture(dbContext.ChangeTracker, auditEventContext);
         if (!capture.HasAuditWork)
         {
             return saveChanges(acceptAllChangesOnSuccess);
@@ -22,7 +25,7 @@ public sealed class AuditSavePipeline(
         try
         {
             var result = saveChanges(false);
-            var records = diffEngine.CreateSnapshots(capture, auditContext);
+            var records = diffEngine.CreateSnapshots(capture, auditEventContext);
             writer.Write(dbContext, records);
             transactionScope.Commit();
 
@@ -47,7 +50,8 @@ public sealed class AuditSavePipeline(
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.DetectChanges();
-        var capture = diffEngine.Capture(dbContext.ChangeTracker);
+        var auditEventContext = AuditEventContext.Create(currentUser, auditContext);
+        var capture = diffEngine.Capture(dbContext.ChangeTracker, auditEventContext);
         if (!capture.HasAuditWork)
         {
             return await saveChanges(acceptAllChangesOnSuccess, cancellationToken);
@@ -57,7 +61,7 @@ public sealed class AuditSavePipeline(
         try
         {
             var result = await saveChanges(false, cancellationToken);
-            var records = diffEngine.CreateSnapshots(capture, auditContext);
+            var records = diffEngine.CreateSnapshots(capture, auditEventContext);
             await writer.WriteAsync(dbContext, records, cancellationToken);
             await transactionScope.CommitAsync(cancellationToken);
 

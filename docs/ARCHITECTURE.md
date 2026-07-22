@@ -162,7 +162,7 @@ The audit pipeline scans only attributed Added, Modified, and Deleted EF Core en
 
 ### Context and sinks
 
-`IAuditContext` provides the actor ID, correlation ID, and optional reason. HTTP requests derive it from the authenticated user and request trace; workers, CLI tools, and tests provide an explicit safe context. A single DI extension registers profiles, diffing, event creation, serialization, and the transactional PostgreSQL table writer. Additional sinks must be explicitly added and must not weaken the table audit.
+`ICurrentUser` provides the actor identity; `IAuditContext` provides the correlation ID and optional reason. HTTP requests derive those values from JWT claims and the request trace; workers, CLI tools, and tests provide explicit safe implementations. A single DI extension registers profiles, diffing, event creation, serialization, and the transactional PostgreSQL table writer. Additional sinks must be explicitly added and must not weaken the table audit.
 
 ### Safety and boundaries
 

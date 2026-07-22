@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Warehouse.Application.Common.Auditing;
 
 namespace Warehouse.Infrastructure.Auditing;
 
 public interface IAuditDiffEngine
 {
-    AuditCapture Capture(ChangeTracker changeTracker);
+    AuditCapture Capture(ChangeTracker changeTracker, AuditEventContext context);
 
-    IReadOnlyList<AuditRecord> CreateSnapshots(AuditCapture capture, IAuditContext context);
+    IReadOnlyList<AuditRecord> CreateSnapshots(AuditCapture capture, AuditEventContext context);
 }
 
 public sealed class AuditDiffEngine(IAuditProfileProvider profiles, IAuditEventFactory eventFactory) : IAuditDiffEngine
 {
-    public AuditCapture Capture(ChangeTracker changeTracker)
+    public AuditCapture Capture(ChangeTracker changeTracker, AuditEventContext context)
     {
         var records = new List<AuditRecord>();
         var createEntries = new List<AuditedEntry>();
@@ -42,7 +41,7 @@ public sealed class AuditDiffEngine(IAuditProfileProvider profiles, IAuditEventF
 
             if (entry.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
             {
-                records.Add(CreateRecord(profile, entry, AuditAction.Delete, "__deleted__", null, null, new AuditContext(null, null)));
+                records.Add(CreateRecord(profile, entry, AuditAction.Delete, "__deleted__", null, null, context));
                 continue;
             }
 
@@ -52,22 +51,17 @@ public sealed class AuditDiffEngine(IAuditProfileProvider profiles, IAuditEventF
                          && profile.Includes(property.Metadata)
                          && !Equals(property.OriginalValue, property.CurrentValue)))
             {
-                records.Add(CreateRecord(profile, entry, AuditAction.Update, property.Metadata.Name, property.OriginalValue, property.CurrentValue, new AuditContext(null, null)));
+                records.Add(CreateRecord(profile, entry, AuditAction.Update, property.Metadata.Name, property.OriginalValue, property.CurrentValue, context));
             }
         }
 
         return new AuditCapture(records, createEntries);
     }
 
-    public IReadOnlyList<AuditRecord> CreateSnapshots(AuditCapture capture, IAuditContext context)
+    public IReadOnlyList<AuditRecord> CreateSnapshots(AuditCapture capture, AuditEventContext context)
     {
         var records = new List<AuditRecord>(capture.Records.Count + capture.CreateEntries.Count);
-        records.AddRange(capture.Records.Select(record => record with
-        {
-            ActorUserId = context.ActorUserId,
-            CorrelationId = context.CorrelationId,
-            Reason = context.Reason
-        }));
+        records.AddRange(capture.Records);
 
         foreach (var auditableEntry in capture.CreateEntries)
         {
@@ -80,7 +74,7 @@ public sealed class AuditDiffEngine(IAuditProfileProvider profiles, IAuditEventF
         return records;
     }
 
-    private AuditRecord CreateRecord(AuditProfile profile, EntityEntry entry, AuditAction action, string propertyPath, object? oldValue, object? newValue, IAuditContext context) => eventFactory.Create(profile, entry, action, propertyPath, oldValue, newValue, context);
+    private AuditRecord CreateRecord(AuditProfile profile, EntityEntry entry, AuditAction action, string propertyPath, object? oldValue, object? newValue, AuditEventContext context) => eventFactory.Create(profile, entry, action, propertyPath, oldValue, newValue, context);
 }
 
 public sealed record AuditCapture(IReadOnlyList<AuditRecord> Records, IReadOnlyList<AuditedEntry> CreateEntries)

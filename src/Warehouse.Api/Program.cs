@@ -7,6 +7,7 @@ using Microsoft.OpenApi;
 using Serilog;
 using Warehouse.Api.Auth;
 using Warehouse.Api.Auditing;
+using Warehouse.Api.Identity;
 using Warehouse.Api.Endpoints.Administration;
 using Warehouse.Api.Endpoints.Auth;
 using Warehouse.Api.Endpoints.Products;
@@ -26,6 +27,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration.Read
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetRequiredSection(JwtOptions.SectionName));
 builder.Services.AddApplication();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<Warehouse.Application.Common.Identity.ICurrentUser, HttpCurrentUser>();
 builder.Services.AddScoped<Warehouse.Application.Common.Auditing.IAuditContext, HttpContextAuditContext>();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<JwtTokenService>();

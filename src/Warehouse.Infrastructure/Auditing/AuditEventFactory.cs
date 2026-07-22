@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Warehouse.Application.Common.Auditing;
 
 namespace Warehouse.Infrastructure.Auditing;
 
@@ -12,7 +11,7 @@ public interface IAuditEventFactory
         string propertyPath,
         object? oldValue,
         object? newValue,
-        IAuditContext context);
+        AuditEventContext context);
 }
 
 public sealed class AuditEventFactory(IAuditValueSerializer serializer) : IAuditEventFactory
@@ -24,7 +23,7 @@ public sealed class AuditEventFactory(IAuditValueSerializer serializer) : IAudit
         string propertyPath,
         object? oldValue,
         object? newValue,
-        IAuditContext context)
+        AuditEventContext context)
     {
         var entityId = (Guid)(entry.Property("Id").CurrentValue
             ?? throw new InvalidOperationException($"Audited entity '{entry.Metadata.DisplayName()}' does not have an ID."));
