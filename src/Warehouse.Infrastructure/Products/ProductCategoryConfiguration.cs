@@ -31,4 +31,3 @@ public sealed class ProductCategoryConfiguration : IEntityTypeConfiguration<Prod
             .OnDelete(DeleteBehavior.SetNull);
     }
 }
-

@@ -91,4 +91,3 @@ public static class ProductCategoryRules
     public const int MaxCodeLength = 64;
     public const int MaxNameLength = 200;
 }
-
