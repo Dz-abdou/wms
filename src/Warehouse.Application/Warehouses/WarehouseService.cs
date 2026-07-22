@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Models;
+using Warehouse.Application.Common.Identity;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Warehouses;
@@ -7,7 +8,7 @@ using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 
 namespace Warehouse.Application.Warehouses;
 
-public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider timeProvider)
+public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider timeProvider, ICurrentUser currentUser)
 {
     public async Task<PagedResult<WarehouseResponse>> GetListAsync(
         WarehouseListQuery query,
@@ -36,7 +37,7 @@ public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider
 
     public async Task<WarehouseResponse> CreateAsync(WarehouseInput input, CancellationToken cancellationToken)
     {
-        var warehouse = WarehouseEntity.Create(input.Code, input.Name, input.Description, UtcNow());
+        var warehouse = WarehouseEntity.Create(input.Code, input.Name, input.Description, UtcNow(), currentUser.UserId);
 
         await EnsureCodeIsAvailableAsync(warehouse.Code, null, cancellationToken);
         dbContext.Warehouses.Add(warehouse);
@@ -54,7 +55,7 @@ public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider
         var normalizedCode = WarehouseEntity.NormalizeCode(input.Code);
 
         await EnsureCodeIsAvailableAsync(normalizedCode, id, cancellationToken);
-        warehouse.Update(normalizedCode, input.Name, input.Description, UtcNow());
+        warehouse.Update(normalizedCode, input.Name, input.Description, UtcNow(), currentUser.UserId);
         await SaveWarehouseAsync(warehouse.Code, cancellationToken);
 
         return ToResponse(warehouse);
@@ -71,7 +72,7 @@ public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider
             return ToResponse(warehouse);
         }
 
-        warehouse.SetStatus(request.IsActive, UtcNow());
+        warehouse.SetStatus(request.IsActive, UtcNow(), currentUser.UserId);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return ToResponse(warehouse);

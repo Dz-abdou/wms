@@ -43,4 +43,30 @@ public sealed class WarehouseTests
         Assert.False(warehouse.IsActive);
         Assert.Equal(changedAtUtc, warehouse.UpdatedAtUtc);
     }
+    [Fact]
+    public void Persistent_metadata_tracks_create_update_and_no_op_status_actors()
+    {
+        var creatorId = Guid.NewGuid();
+        var warehouse = WarehouseEntity.Create("MAIN", "Warehouse", null, CreatedAtUtc, creatorId);
+
+        Assert.Equal(creatorId, warehouse.CreatedByUserId);
+        Assert.Equal(creatorId, warehouse.UpdatedByUserId);
+
+        var modifierId = Guid.NewGuid();
+        var updatedAtUtc = CreatedAtUtc.AddMinutes(5);
+        warehouse.Update("SECONDARY", "Updated", null, updatedAtUtc, modifierId);
+
+        Assert.Equal(updatedAtUtc, warehouse.UpdatedAtUtc);
+        Assert.Equal(modifierId, warehouse.UpdatedByUserId);
+
+        var statusActorId = Guid.NewGuid();
+        var statusChangedAtUtc = updatedAtUtc.AddMinutes(5);
+        warehouse.SetStatus(false, statusChangedAtUtc, statusActorId);
+        var noOpActorId = Guid.NewGuid();
+        warehouse.SetStatus(false, statusChangedAtUtc.AddMinutes(5), noOpActorId);
+
+        Assert.Equal(statusChangedAtUtc, warehouse.UpdatedAtUtc);
+        Assert.Equal(statusActorId, warehouse.UpdatedByUserId);
+    }
+
 }

@@ -11,8 +11,10 @@ public sealed class Warehouse : PersistentEntity
         string? description,
         bool isActive,
         DateTime createdAtUtc,
-        DateTime updatedAtUtc)
-        : base(id, createdAtUtc, updatedAtUtc)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         Code = code;
         Name = name;
@@ -28,7 +30,7 @@ public sealed class Warehouse : PersistentEntity
 
     public bool IsActive { get; private set; }
 
-    public static Warehouse Create(string? code, string? name, string? description, DateTime createdAtUtc)
+    public static Warehouse Create(string? code, string? name, string? description, DateTime createdAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(createdAtUtc, nameof(createdAtUtc));
 
@@ -39,20 +41,31 @@ public sealed class Warehouse : PersistentEntity
             NormalizeDescription(description),
             true,
             createdAtUtc,
-            createdAtUtc);
+            createdAtUtc,
+            actorUserId,
+            actorUserId);
     }
 
-    public void Update(string? code, string? name, string? description, DateTime updatedAtUtc)
+    public void Update(string? code, string? name, string? description, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
-        Code = NormalizeCode(code);
-        Name = NormalizeName(name);
-        Description = NormalizeDescription(description);
+        var normalizedCode = NormalizeCode(code);
+        var normalizedName = NormalizeName(name);
+        var normalizedDescription = NormalizeDescription(description);
+        if (Code == normalizedCode && Name == normalizedName && Description == normalizedDescription)
+        {
+            return;
+        }
+
+        Code = normalizedCode;
+        Name = normalizedName;
+        Description = normalizedDescription;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
-    public void SetStatus(bool isActive, DateTime updatedAtUtc)
+    public void SetStatus(bool isActive, DateTime updatedAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
 
@@ -63,6 +76,7 @@ public sealed class Warehouse : PersistentEntity
 
         IsActive = isActive;
         UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
     }
 
     public static string NormalizeCode(string? code)
