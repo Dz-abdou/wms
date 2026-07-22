@@ -13,6 +13,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ProductService>();
         services.AddScoped<WarehouseService>();
+        services.AddScoped<ProductCategoryService>();
         services.AddScoped<InventoryService>();
         services.AddValidatorsFromAssemblyContaining<ProductService>();
 

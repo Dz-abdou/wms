@@ -38,6 +38,15 @@ public sealed class ProductExceptionEndpointFilter : IEndpointFilter
                 detail: exception.Message,
                 extensions: new Dictionary<string, object?> { ["code"] = ApiErrorCodes.ProductCategoryNotFound });
         }
+        catch (ProductCategoryCodeConflictException exception)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Category code already exists.",
+                detail: exception.Message,
+                extensions: new Dictionary<string, object?> { ["code"] = ApiErrorCodes.ProductCategoryCodeConflict });
+        }
+
 
     }
 }
