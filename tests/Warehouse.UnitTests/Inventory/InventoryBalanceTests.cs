@@ -17,7 +17,7 @@ public sealed class InventoryBalanceTests
         balance.ApplyAdjustment(5m, changedAtUtc, actorId);
 
         Assert.Equal(5m, balance.Quantity);
-        Assert.Equal(1u, balance.Version);
+        Assert.Equal(1, balance.Version);
         Assert.Equal(changedAtUtc, balance.UpdatedAtUtc);
         Assert.Equal(actorId, balance.UpdatedByUserId);
     }
@@ -29,7 +29,7 @@ public sealed class InventoryBalanceTests
 
         Assert.Throws<InvalidOperationException>(() => balance.ApplyAdjustment(-1m, CreatedAtUtc.AddMinutes(1)));
         Assert.Equal(0m, balance.Quantity);
-        Assert.Equal(0u, balance.Version);
+        Assert.Equal(0, balance.Version);
     }
 
     [Fact]

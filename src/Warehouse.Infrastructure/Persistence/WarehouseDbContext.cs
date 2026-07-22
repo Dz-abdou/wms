@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Infrastructure.Auditing;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Products;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
@@ -15,6 +16,10 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
     public DbSet<Product> Products => Set<Product>();
 
     public DbSet<WarehouseEntity> Warehouses => Set<WarehouseEntity>();
+
+    public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
+
+    public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -35,4 +40,19 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
         acceptAllChangesOnSuccess,
         (acceptAllChanges, token) => base.SaveChangesAsync(acceptAllChanges, token),
         cancellationToken);
+
+    public async Task ExecuteInTransactionAsync(Func<CancellationToken, Task> operation, CancellationToken cancellationToken)
+    {
+        await using var transaction = await Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            await operation(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
 }

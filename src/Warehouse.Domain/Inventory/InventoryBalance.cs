@@ -24,7 +24,7 @@ public sealed class InventoryBalance : PersistentEntity
 
     public decimal Quantity { get; private set; }
 
-    public uint Version { get; private set; }
+    public int Version { get; private set; }
 
     public static InventoryBalance Create(
         Guid productId,
