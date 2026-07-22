@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Warehouse.Application.Inventory;
 using Warehouse.Application.Products;
 using Warehouse.Application.Warehouses;
 
@@ -12,6 +13,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<ProductService>();
         services.AddScoped<WarehouseService>();
+        services.AddScoped<InventoryService>();
         services.AddValidatorsFromAssemblyContaining<ProductService>();
 
         return services;
