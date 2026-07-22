@@ -72,4 +72,3 @@ public sealed class ProductCategoryService(
         category.CreatedAtUtc,
         category.UpdatedAtUtc);
 }
-

@@ -30,4 +30,3 @@ public sealed class ProductCategoryInputValidator : AbstractValidator<ProductCat
             .WithErrorCode(ApiErrorCodes.ValidationMaxLength);
     }
 }
-

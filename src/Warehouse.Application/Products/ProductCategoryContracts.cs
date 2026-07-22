@@ -15,4 +15,3 @@ public sealed record ProductCategoryResponse(
     Guid? ParentCategoryId,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);
-

@@ -47,4 +47,3 @@ public static class ProductCategoryEndpoints
             await categoryService.CreateAsync(input, cancellationToken));
     }
 }
-
