@@ -21,5 +21,5 @@ public sealed class CatalogAuthorizationMiddleware(RequestDelegate next)
         await next(context);
     }
 
-    private static string? GetPolicy(HttpRequest request) => request.Path.StartsWithSegments("/api/admin") ? AuthorizationPolicies.ManageAdministration : request.Path.StartsWithSegments("/api/inventory") ? request.Method == HttpMethods.Get ? AuthorizationPolicies.ReadInventory : AuthorizationPolicies.AdjustInventory : request.Path.StartsWithSegments("/api/products") || request.Path.StartsWithSegments("/api/warehouses") ? request.Method == HttpMethods.Get ? AuthorizationPolicies.ReadCatalog : AuthorizationPolicies.ManageCatalog : null;
+    private static string? GetPolicy(HttpRequest request) => request.Path.StartsWithSegments("/api/admin") ? AuthorizationPolicies.ManageAdministration : request.Path.StartsWithSegments("/api/inventory") ? request.Method == HttpMethods.Get ? AuthorizationPolicies.ReadInventory : AuthorizationPolicies.AdjustInventory : request.Path.StartsWithSegments("/api/products") || request.Path.StartsWithSegments("/api/product-categories") || request.Path.StartsWithSegments("/api/warehouses") ? request.Method == HttpMethods.Get ? AuthorizationPolicies.ReadCatalog : AuthorizationPolicies.ManageCatalog : null;
 }

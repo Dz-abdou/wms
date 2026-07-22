@@ -5,6 +5,10 @@ import { ApiError } from '../../../shared/api/apiClient'
 import { i18n } from '../../../shared/i18n/i18n'
 import { ProductForm } from './ProductForm'
 
+vi.mock('../api/useProductCategories', () => ({
+  useProductCategories: () => ({ data: { items: [] }, isLoading: false })
+}))
+
 describe('ProductForm', () => {
   it('blocks a blank SKU and name before submitting', async () => {
     const user = userEvent.setup()

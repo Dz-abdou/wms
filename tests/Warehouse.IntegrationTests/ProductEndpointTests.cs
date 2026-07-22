@@ -19,13 +19,33 @@ public sealed class ProductEndpointTests(ProductApiFixture fixture)
         {
             sku = " sku-001 ",
             name = "Sample product",
-            description = "Optional description"
+            description = "Optional description",
+            baseUnitOfMeasure = "EA",
+            unitConversions = new[]
+            {
+                new { unitOfMeasure = "CTN", quantityInBaseUnit = 24m }
+            },
+            measurements = new
+            {
+                netWeight = 1.2m,
+                grossWeight = 1.5m,
+                weightUnitOfMeasure = "KG",
+                length = 20m,
+                width = 10m,
+                height = 5m,
+                dimensionUnitOfMeasure = "CM"
+            }
         });
 
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
         var product = await createResponse.Content.ReadFromJsonAsync<ProductResponse>();
         Assert.NotNull(product);
         Assert.Equal("SKU-001", product.Sku);
+        Assert.Equal("EA", product.BaseUnitOfMeasure);
+        Assert.Equal("CTN", Assert.Single(product.UnitConversions).UnitOfMeasure);
+        Assert.Equal(24m, product.UnitConversions.Single().QuantityInBaseUnit);
+        Assert.NotNull(product.Measurements);
+        Assert.Equal(0.001m, product.Measurements.VolumeCubicMetres);
 
         var duplicateResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
         {
@@ -132,6 +152,42 @@ public sealed class ProductEndpointTests(ProductApiFixture fixture)
         dbContext.Products.Add(duplicate);
 
         await Assert.ThrowsAsync<DbUpdateException>(() => dbContext.SaveChangesAsync());
+    }
+
+    [Fact]
+    public async Task Categories_can_be_created_and_assigned_to_a_product()
+    {
+        var parentResponse = await fixture.Client.PostAsJsonAsync("/api/product-categories", new
+        {
+            code = "CONSUMABLES",
+            name = "Consumables"
+        });
+        parentResponse.EnsureSuccessStatusCode();
+        var parent = await parentResponse.Content.ReadFromJsonAsync<ProductCategoryResponse>();
+        Assert.NotNull(parent);
+
+        var childResponse = await fixture.Client.PostAsJsonAsync("/api/product-categories", new
+        {
+            code = "PACKAGING",
+            name = "Packaging",
+            parentCategoryId = parent.Id
+        });
+        childResponse.EnsureSuccessStatusCode();
+        var child = await childResponse.Content.ReadFromJsonAsync<ProductCategoryResponse>();
+        Assert.NotNull(child);
+        Assert.Equal(parent.Id, child.ParentCategoryId);
+
+        var productResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = ("CAT-" + Guid.NewGuid().ToString("N"))[..14],
+            name = "Categorized product",
+            categoryId = child.Id
+        });
+        productResponse.EnsureSuccessStatusCode();
+        var product = await productResponse.Content.ReadFromJsonAsync<ProductResponse>();
+
+        Assert.NotNull(product);
+        Assert.Equal(child.Id, product.CategoryId);
     }
 
     private async Task<ProductResponse> CreateProductAsync(string sku, string name)

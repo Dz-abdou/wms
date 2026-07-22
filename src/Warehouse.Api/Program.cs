@@ -43,6 +43,7 @@ if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScop
 app.MapGet("/", () => Results.Ok(new { service = "Warehouse API", status = "ready" }));
 app.MapAuthEndpoints();
 app.MapAdministrationEndpoints();
+app.MapProductCategoryEndpoints();
 app.MapProductEndpoints();
 app.MapWarehouseEndpoints();
 app.MapInventoryEndpoints();

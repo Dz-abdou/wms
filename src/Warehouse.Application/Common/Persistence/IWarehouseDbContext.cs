@@ -9,6 +9,8 @@ public interface IWarehouseDbContext
 {
     DbSet<Product> Products { get; }
 
+    DbSet<ProductCategory> ProductCategories { get; }
+
     DbSet<WarehouseEntity> Warehouses { get; }
 
     DbSet<InventoryBalance> InventoryBalances { get; }

@@ -13,7 +13,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         ProductListQuery query,
         CancellationToken cancellationToken)
     {
-        var products = ApplySearch(dbContext.Products.AsNoTracking(), query.Search);
+        var products = ApplySearch(dbContext.Products.Include(product => product.UnitConversions).AsNoTracking(), query.Search);
         var totalCount = await products.CountAsync(cancellationToken);
         var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
 
@@ -36,7 +36,17 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
 
     public async Task<ProductResponse> CreateAsync(ProductInput input, CancellationToken cancellationToken)
     {
-        var product = Product.Create(input.Sku, input.Name, input.Description, UtcNow(), currentUser.UserId);
+        await EnsureCategoryExistsAsync(input.CategoryId, cancellationToken);
+        var product = Product.Create(
+            input.Sku,
+            input.Name,
+            input.Description,
+            input.BaseUnitOfMeasure,
+            ToDefinitions(input.UnitConversions),
+            ToMeasurements(input.Measurements),
+            UtcNow(),
+            currentUser.UserId,
+            input.CategoryId);
 
         await EnsureSkuIsAvailableAsync(product.Sku, null, cancellationToken);
         dbContext.Products.Add(product);
@@ -54,7 +64,17 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         var normalizedSku = Product.NormalizeSku(input.Sku);
 
         await EnsureSkuIsAvailableAsync(normalizedSku, id, cancellationToken);
-        product.Update(normalizedSku, input.Name, input.Description, UtcNow(), currentUser.UserId);
+        await EnsureCategoryExistsAsync(input.CategoryId, cancellationToken);
+        product.Update(
+            normalizedSku,
+            input.Name,
+            input.Description,
+            input.BaseUnitOfMeasure,
+            ToDefinitions(input.UnitConversions),
+            ToMeasurements(input.Measurements),
+            UtcNow(),
+            currentUser.UserId,
+            input.CategoryId);
         await SaveProductAsync(product.Sku, cancellationToken);
 
         return ToResponse(product);
@@ -92,7 +112,7 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
 
     private async Task<Product> FindProductAsync(Guid id, bool asNoTracking, CancellationToken cancellationToken)
     {
-        var products = asNoTracking ? dbContext.Products.AsNoTracking() : dbContext.Products.AsQueryable();
+        var products = asNoTracking ? dbContext.Products.Include(product => product.UnitConversions).AsNoTracking() : dbContext.Products.Include(product => product.UnitConversions).AsQueryable();
 
         return await products.SingleOrDefaultAsync(product => product.Id == id, cancellationToken)
             ?? throw new ProductNotFoundException(id);
@@ -110,6 +130,19 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         }
     }
 
+    private async Task EnsureCategoryExistsAsync(Guid? categoryId, CancellationToken cancellationToken)
+    {
+        if (categoryId is null)
+        {
+            return;
+        }
+
+        if (!await dbContext.ProductCategories.AnyAsync(category => category.Id == categoryId, cancellationToken))
+        {
+            throw new ProductCategoryNotFoundException(categoryId.Value);
+        }
+    }
+
     private async Task SaveProductAsync(string sku, CancellationToken cancellationToken)
     {
         try
@@ -124,12 +157,49 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
 
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
 
+    private static IReadOnlyCollection<ProductUnitConversionDefinition> ToDefinitions(
+        IReadOnlyCollection<ProductUnitConversionInput>? conversions) =>
+        (conversions ?? [])
+            .Select(conversion => new ProductUnitConversionDefinition(
+                conversion.UnitOfMeasure,
+                conversion.QuantityInBaseUnit))
+            .ToArray();
+
+    private static ProductMeasurements? ToMeasurements(ProductMeasurementsInput? measurements) =>
+        ProductMeasurements.Create(
+            measurements?.NetWeight,
+            measurements?.GrossWeight,
+            measurements?.WeightUnitOfMeasure,
+            measurements?.Length,
+            measurements?.Width,
+            measurements?.Height,
+            measurements?.DimensionUnitOfMeasure);
+
     private static ProductResponse ToResponse(Product product) => new(
         product.Id,
         product.Sku,
         product.Name,
         product.Description,
+        product.BaseUnitOfMeasure,
+        product.UnitConversions
+            .OrderBy(conversion => conversion.UnitOfMeasure)
+            .Select(conversion => new ProductUnitConversionResponse(
+                conversion.UnitOfMeasure,
+                conversion.QuantityInBaseUnit))
+            .ToArray(),
+        product.Measurements is { } measurements
+            ? new ProductMeasurementsResponse(
+                measurements.NetWeight,
+                measurements.GrossWeight,
+                measurements.WeightUnitOfMeasure,
+                measurements.Length,
+                measurements.Width,
+                measurements.Height,
+                measurements.DimensionUnitOfMeasure,
+                measurements.VolumeCubicMetres)
+            : null,
         product.IsActive,
+        product.CategoryId,
         product.CreatedAtUtc,
         product.UpdatedAtUtc);
 }
