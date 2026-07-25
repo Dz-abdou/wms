@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Errors;
+using Warehouse.Application.Common.Models;
 using Warehouse.Application.Products;
 using Warehouse.Application.Purchasing;
 using Warehouse.Application.Suppliers;
@@ -22,7 +23,7 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
 
         Assert.Equal("DZD", catalogueItem.CurrencyCode);
-        var list = await fixture.Client.GetFromJsonAsync<SupplierProductListResult>($"/api/supplier-products?supplierId={supplier.Id}&page=1&pageSize=20");
+        var list = await fixture.Client.GetFromJsonAsync<PagedResult<SupplierProductResponse>>($"/api/supplier-products?supplierId={supplier.Id}&page=1&pageSize=20");
         Assert.NotNull(list);
         Assert.Contains(list.Items, item => item.Id == catalogueItem.Id);
         var duplicate = await fixture.Client.PostAsJsonAsync("/api/supplier-products", new
