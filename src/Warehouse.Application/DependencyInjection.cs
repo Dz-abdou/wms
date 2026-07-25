@@ -4,6 +4,7 @@ using Warehouse.Application.Inventory;
 using Warehouse.Application.Products;
 using Warehouse.Application.Warehouses;
 using Warehouse.Application.Suppliers;
+using Warehouse.Application.Purchasing;
 
 namespace Warehouse.Application;
 
@@ -16,6 +17,8 @@ public static class DependencyInjection
         services.AddScoped<WarehouseService>();
         services.AddScoped<ProductCategoryService>();
         services.AddScoped<SupplierService>();
+        services.AddScoped<SupplierProductService>();
+        services.AddScoped<PurchaseOrderService>();
         services.AddScoped<InventoryService>();
         services.AddValidatorsFromAssemblyContaining<ProductService>();
 
