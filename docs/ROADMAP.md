@@ -356,11 +356,20 @@ Add lot-aware stock allocation and inventory costing after goods receipts establ
 
 ### Deliverables
 
-- Customer management
-- Draft sales order
-- Sales order lines
-- Submit sales order
-- Order status tracking
+- Customer management with active/blocked state, contacts, and multiple shipping/billing addresses.
+- Human-readable, unique sales-order numbers and customer/address snapshots.
+- Draft sales order, line entry, submit/cancel workflow, actor/timestamp history, and optimistic concurrency.
+- Product/UoM/conversion/quantity snapshots on submitted sales-order lines.
+- Requested ship date, customer reference, delivery instructions, and optional commercial currency/pricing fields.
+- Explicit states: Draft, Submitted, Allocated, PartiallyShipped, Shipped/Closed, and Cancelled.
+- Searchable sales-order list and detail pages with customer, status, date, and fulfilment-progress filters.
+
+### Exit Criteria
+
+- A blocked customer cannot receive a new submitted sales order.
+- A submitted order retains its selected shipping address, product/UoM conversion, and quantities when master data later changes.
+- Concurrent draft changes return a stable conflict rather than overwriting another user's work.
+- Automated domain, API/persistence, and frontend workflow tests pass.
 
 ---
 
@@ -368,18 +377,56 @@ Add lot-aware stock allocation and inventory costing after goods receipts establ
 
 ### Deliverables
 
-- Reserve available stock
-- Reject insufficient stock
-- Release reservation when required
-- Confirm shipment
-- Reduce inventory
-- Create shipment movements
+- Atomically reserve available stock by sales-order line and warehouse.
+- Reject insufficient stock; allow controlled partial allocation only when the business policy permits it.
+- Release reservation on cancellation, controlled order change, expiry, or authorised shortage handling.
+- Pick-task workspace and exception/short-pick reasons.
+- Shipment header/lines, carrier/service/tracking fields, customer-address snapshot, and print/export-ready detail.
+- Confirm shipment, reduce inventory, release allocations, and create linked shipment movements in one transaction.
+- Status history and read-only document timeline for reservation, picking, shipment, cancellation, and override events.
 
 ### Exit Criteria
 
 - Reserved stock cannot be double allocated.
 - Shipment updates all related records atomically.
+- A cancelled or failed shipment cannot reduce inventory.
+- Shipment and inventory movement records identify the source sales-order line and document number.
 - Automated tests pass.
+
+---
+
+## Phase 7.1 — Operational Support
+
+### Deliverables
+
+- Company profile, default currency/time zone, and transactional document-number policies.
+- Role-aware UI actions, user profile/session settings, and backend authorization policies for operational roles.
+- Read-only operational history views; inventory movements remain the stock ledger.
+- Dashboard queues for overdue inbound, pending receipts, low stock, allocation/picking backlog, and exceptions.
+- Permission-aware CSV/export and print views for stable operational documents and lists.
+
+### Exit Criteria
+
+- Document numbers are unique under concurrent creation.
+- Operational changes are explainable by source document, reason, actor, and timestamp.
+- Dashboard figures link to the filtered underlying records.
+
+---
+
+## Phase 7.2 — Traceability and Returns (Conditional)
+
+### Deliverables
+
+- Per-product lot, expiry, serial, and quality-hold settings.
+- Lot/serial capture at goods receipt and preservation through stock movement, allocation, and shipment.
+- Supplier returns and customer return/RMA workflows with reason, disposition, and stock movements.
+- FEFO allocation, recall/traceability reports, and bin locations only after the relevant input data is reliable.
+
+### Exit Criteria
+
+- Traceability can follow an enabled lot/serial from receipt through shipment or return.
+- A return disposition always produces an auditable inventory outcome.
+- Automated tests cover enabled traceability rules without burdening ordinary non-traceable products.
 
 ---
 
@@ -413,6 +460,7 @@ Do not work on the next item before the previous item meets its definition of do
 13. Sales orders
 14. Reservations
 15. Shipping
-16. Audit logs
-17. Dashboard
-18. Deployment and documentation
+16. Operational support and document control
+17. Conditional traceability and returns
+18. Dashboard and reporting
+19. Deployment and documentation
