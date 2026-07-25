@@ -19,6 +19,14 @@ import { SupplierDetailPage } from "../features/suppliers/pages/SupplierDetailPa
 import { SupplierEditPage } from "../features/suppliers/pages/SupplierEditPage";
 import { SupplierListPage } from "../features/suppliers/pages/SupplierListPage";
 import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { SupplierCatalogueCreatePage } from "../features/purchasing/pages/SupplierCatalogueCreatePage";
+import { SupplierCatalogueEditPage } from "../features/purchasing/pages/SupplierCatalogueEditPage";
+import { SupplierCatalogueListPage } from "../features/purchasing/pages/SupplierCatalogueListPage";
+import { PurchaseOrderCreatePage } from "../features/purchasing/pages/PurchaseOrderCreatePage";
+import { PurchaseOrderDetailPage } from "../features/purchasing/pages/PurchaseOrderDetailPage";
+import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrderEditPage";
+import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
+import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { InventoryPage } from "../features/inventory/pages/InventoryPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
@@ -107,6 +115,13 @@ export function App() {
                       path={supplierRoutes.editPattern}
                       element={<SupplierEditPage />}
                     />
+                    <Route path={purchasingRoutes.cataloguePattern} element={<SupplierCatalogueListPage />} />
+                    <Route path={purchasingRoutes.catalogueCreatePattern} element={<SupplierCatalogueCreatePage />} />
+                    <Route path={purchasingRoutes.catalogueEditPattern} element={<SupplierCatalogueEditPage />} />
+                    <Route path={purchasingRoutes.ordersPattern} element={<PurchaseOrderListPage />} />
+                    <Route path={purchasingRoutes.orderCreate} element={<PurchaseOrderCreatePage />} />
+                    <Route path={purchasingRoutes.orderDetailPattern} element={<PurchaseOrderDetailPage />} />
+                    <Route path={purchasingRoutes.orderEditPattern} element={<PurchaseOrderEditPage />} />
                     <Route
                       element={<ProtectedRoute roles={[administratorRole]} />}
                     >

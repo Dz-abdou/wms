@@ -9,6 +9,7 @@ import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
 import { productRoutes } from "../features/products/productConstants";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -24,13 +25,17 @@ export function ApplicationLayout() {
       ? "warehouses"
       : location.pathname.startsWith(supplierRoutes.list)
         ? "suppliers"
-        : location.pathname.startsWith(inventoryRoutes.dashboard)
-          ? "inventory"
-          : location.pathname.startsWith(administrationRoutes.users)
-            ? "users"
-            : location.pathname.startsWith(administrationRoutes.roles)
-              ? "roles"
-              : "home";
+        : location.pathname.startsWith(purchasingRoutes.catalogue)
+          ? "catalogue"
+          : location.pathname.startsWith(purchasingRoutes.orders)
+            ? "purchase-orders"
+            : location.pathname.startsWith(inventoryRoutes.dashboard)
+              ? "inventory"
+              : location.pathname.startsWith(administrationRoutes.users)
+                ? "users"
+                : location.pathname.startsWith(administrationRoutes.roles)
+                  ? "roles"
+                  : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -64,6 +69,14 @@ export function ApplicationLayout() {
                   {t("navigation.suppliers")}
                 </Link>
               ),
+            },
+            {
+              key: "catalogue",
+              label: <Link to={purchasingRoutes.catalogue}>{t("navigation.supplierCatalogue")}</Link>,
+            },
+            {
+              key: "purchase-orders",
+              label: <Link to={purchasingRoutes.orders}>{t("navigation.purchaseOrders")}</Link>,
             },
             {
               key: "inventory",
