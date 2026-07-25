@@ -1,0 +1,54 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Warehouse.Domain.Products;
+using Warehouse.Domain.Purchasing;
+using Warehouse.Domain.Suppliers;
+
+namespace Warehouse.Infrastructure.Purchasing;
+
+public sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<PurchaseOrder>
+{
+    public void Configure(EntityTypeBuilder<PurchaseOrder> builder)
+    {
+        builder.ToTable("PurchaseOrders", tableBuilder =>
+        {
+            tableBuilder.HasCheckConstraint("CK_PurchaseOrders_Status_Valid", "\"Status\" IN (0, 1)");
+        });
+
+        builder.HasKey(purchaseOrder => purchaseOrder.Id);
+        builder.Property(purchaseOrder => purchaseOrder.SupplierId).HasColumnType("uuid").IsRequired();
+        builder.Property(purchaseOrder => purchaseOrder.Status).HasConversion<int>().IsRequired();
+        builder.Property(purchaseOrder => purchaseOrder.CreatedByUserId).HasColumnType("uuid");
+        builder.Property(purchaseOrder => purchaseOrder.UpdatedByUserId).HasColumnType("uuid");
+        builder.Property(purchaseOrder => purchaseOrder.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
+        builder.Property(purchaseOrder => purchaseOrder.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
+        builder.HasIndex(purchaseOrder => new { purchaseOrder.SupplierId, purchaseOrder.Status });
+        builder.HasOne<Supplier>().WithMany().HasForeignKey(purchaseOrder => purchaseOrder.SupplierId).OnDelete(DeleteBehavior.Restrict);
+
+        builder.OwnsMany(purchaseOrder => purchaseOrder.Lines, line =>
+        {
+            line.ToTable("PurchaseOrderLines", tableBuilder =>
+            {
+                tableBuilder.HasCheckConstraint("CK_PurchaseOrderLines_Quantity_Positive", "\"Quantity\" > 0");
+                tableBuilder.HasCheckConstraint("CK_PurchaseOrderLines_UnitPrice_NonNegative", "\"UnitPrice\" >= 0");
+                tableBuilder.HasCheckConstraint("CK_PurchaseOrderLines_CurrencyCode_Uppercase", "\"CurrencyCode\" = upper(\"CurrencyCode\")");
+            });
+            line.WithOwner().HasForeignKey("PurchaseOrderId");
+            line.HasKey(purchaseOrderLine => purchaseOrderLine.Id);
+            line.Property(purchaseOrderLine => purchaseOrderLine.SupplierProductId).HasColumnType("uuid").IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.ProductId).HasColumnType("uuid").IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.ProductSku).HasMaxLength(PurchaseOrderRules.MaxProductSkuLength).IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.ProductName).HasMaxLength(PurchaseOrderRules.MaxProductNameLength).IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.SupplierSku).HasMaxLength(PurchaseOrderRules.MaxSupplierSkuLength);
+            line.Property(purchaseOrderLine => purchaseOrderLine.PurchaseUnitOfMeasure).HasMaxLength(SupplierProductRules.UnitOfMeasureLength).IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.Quantity).HasPrecision(18, 6).IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.UnitPrice).HasPrecision(18, 4).IsRequired();
+            line.Property(purchaseOrderLine => purchaseOrderLine.CurrencyCode).HasMaxLength(SupplierProductRules.CurrencyCodeLength).IsRequired();
+            line.HasIndex(purchaseOrderLine => new { purchaseOrderLine.SupplierProductId, purchaseOrderLine.PurchaseUnitOfMeasure });
+            line.HasOne<Product>().WithMany().HasForeignKey(purchaseOrderLine => purchaseOrderLine.ProductId).OnDelete(DeleteBehavior.Restrict);
+            line.HasOne<SupplierProduct>().WithMany().HasForeignKey(purchaseOrderLine => purchaseOrderLine.SupplierProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        builder.Navigation(purchaseOrder => purchaseOrder.Lines).HasField("lines").UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}

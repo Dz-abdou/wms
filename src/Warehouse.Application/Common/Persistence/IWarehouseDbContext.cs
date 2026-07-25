@@ -3,6 +3,7 @@ using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Products;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Domain.Suppliers;
+using Warehouse.Domain.Purchasing;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -16,6 +17,10 @@ public interface IWarehouseDbContext
 
     DbSet<InventoryBalance> InventoryBalances { get; }
     DbSet<Supplier> Suppliers { get; }
+
+    DbSet<SupplierProduct> SupplierProducts { get; }
+
+    DbSet<PurchaseOrder> PurchaseOrders { get; }
 
 
     DbSet<InventoryMovement> InventoryMovements { get; }
