@@ -9,12 +9,15 @@ public sealed class PurchaseOrder : PersistentEntity
     private PurchaseOrder(
         Guid id,
         Guid supplierId,
+        PurchaseOrderStatus status,
         DateTime createdAtUtc,
-        Guid? actorUserId)
-        : base(id, createdAtUtc, createdAtUtc, actorUserId, actorUserId)
+        DateTime updatedAtUtc,
+        Guid? createdByUserId,
+        Guid? updatedByUserId)
+        : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         SupplierId = RequireId(supplierId, nameof(supplierId));
-        Status = PurchaseOrderStatus.Draft;
+        Status = status;
     }
 
     public Guid SupplierId { get; private set; }
@@ -24,7 +27,14 @@ public sealed class PurchaseOrder : PersistentEntity
     public static PurchaseOrder Create(Guid supplierId, DateTime createdAtUtc, Guid? actorUserId = null)
     {
         EnsureUtc(createdAtUtc);
-        return new PurchaseOrder(Guid.NewGuid(), supplierId, createdAtUtc, actorUserId);
+        return new PurchaseOrder(
+            Guid.NewGuid(),
+            supplierId,
+            PurchaseOrderStatus.Draft,
+            createdAtUtc,
+            createdAtUtc,
+            actorUserId,
+            actorUserId);
     }
 
     public void ReplaceLines(IEnumerable<PurchaseOrderLine> replacementLines, DateTime updatedAtUtc, Guid? actorUserId = null)
