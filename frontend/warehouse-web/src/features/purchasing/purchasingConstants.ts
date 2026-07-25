@@ -1,4 +1,5 @@
 export const purchasingApiPaths = {
+  currencies: "/api/purchasing/currencies",
   supplierProducts: "/api/supplier-products",
   supplierProductById: (id: string) => `/api/supplier-products/${id}`,
   supplierProductStatus: (id: string) => `/api/supplier-products/${id}/status`,

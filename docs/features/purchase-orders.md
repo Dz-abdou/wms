@@ -14,6 +14,8 @@ Allow purchasing managers to maintain supplier-specific product catalogue terms,
 
 - Manage active supplier catalogue entries for a supplier, product, and valid purchase UoM.
 - Store the current effective unit price, ISO currency, supplier SKU, and minimum order quantity for each catalogue entry.
+- Use the backend-owned allowed-currency catalogue; DZD is the initial default and EUR/USD are enabled initially. The supplier catalogue stores the selected ISO code, not arbitrary free text.
+- Restrict each purchase-unit choice to the selected product's base UoM or a configured product conversion.
 - Create, view, list, edit, and submit purchase orders.
 - Snapshot catalogue product, UoM, price, currency, and supplier SKU data onto each purchase-order line.
 - Enforce `Draft` and `Submitted` statuses; submitted orders are immutable.
@@ -32,7 +34,7 @@ Phase 4.1 owns the human-readable PO number, destination warehouse, header curre
 
 1. A catalogue entry is unique per supplier, product, and purchase UoM. A product may have entries from many suppliers and one supplier may offer multiple purchase UoMs for one product.
 2. Its purchase UoM must be the product base unit or one of its defined conversions. Minimum order quantity is positive and respects the UoM's fractional-quantity rule.
-3. Prices are non-negative decimal values with a required three-letter uppercase currency code. They are current effective values and are copied to draft lines.
+3. Prices are non-negative decimal values in one of the backend-owned allowed ISO currency codes. They are current effective values and are copied to draft lines.
 4. An order supplier and every selected catalogue entry must be active. The referenced product must also be active.
 5. A draft can be created and edited. It can be submitted only with at least one distinct catalogue line, each at or above its minimum order quantity.
 6. Submitted orders cannot have their supplier or lines changed. Future goods receipts may change their status only through an explicit transition.
@@ -62,6 +64,7 @@ Phase 4.1 owns the human-readable PO number, destination warehouse, header curre
 3. Invalid catalogue entries, inactive records, duplicate lines, and quantities below MOQ are rejected with stable error codes.
 4. A non-empty draft submits successfully; subsequent edits receive a stable immutable-order error.
 5. Operators can read catalogues and purchase orders; managers can manage and submit them.
+6. The catalogue form offers only product-defined purchase units and centrally configured allowed currencies; the API independently enforces both rules.
 
 ## Tests
 

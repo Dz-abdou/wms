@@ -29,6 +29,10 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Supplier catalogue item already exists.", exception.Message, ApiErrorCodes.SupplierProductConflict);
         }
+        catch (SupplierProductCurrencyNotSupportedException exception)
+        {
+            return Problem(StatusCodes.Status422UnprocessableEntity, "Supplier catalogue currency is not supported.", exception.Message, ApiErrorCodes.SupplierProductCurrencyNotSupported);
+        }
         catch (PurchaseOrderNotFoundException exception)
         {
             return Problem(StatusCodes.Status404NotFound, "Purchase order not found.", exception.Message, ApiErrorCodes.PurchaseOrderNotFound);

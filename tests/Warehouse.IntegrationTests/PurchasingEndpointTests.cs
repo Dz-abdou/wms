@@ -16,6 +16,30 @@ namespace Warehouse.IntegrationTests;
 public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
 {
     [Fact]
+    public async Task Supplier_catalogue_uses_the_centralized_currency_catalogue()
+    {
+        var currencies = await fixture.Client.GetFromJsonAsync<IReadOnlyCollection<CurrencyOption>>("/api/purchasing/currencies");
+
+        Assert.NotNull(currencies);
+        Assert.Contains(currencies, currency => currency.Code == "DZD" && currency.IsDefault);
+
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var response = await fixture.Client.PostAsJsonAsync("/api/supplier-products", new
+        {
+            supplierId = supplier.Id,
+            productId = product.Id,
+            purchaseUnitOfMeasure = "EA",
+            minimumOrderQuantity = 1m,
+            unitPrice = 20m,
+            currencyCode = "ZZZ"
+        });
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await AssertCodeAsync(response, ApiErrorCodes.SupplierProductCurrencyNotSupported);
+    }
+
+    [Fact]
     public async Task Supplier_catalogue_enforces_unique_supplier_product_unit()
     {
         var supplier = await CreateSupplierAsync();

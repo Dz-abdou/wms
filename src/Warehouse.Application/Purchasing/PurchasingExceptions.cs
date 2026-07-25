@@ -6,6 +6,9 @@ public sealed class SupplierProductNotFoundException(Guid supplierProductId)
 public sealed class SupplierProductConflictException(Guid supplierId, Guid productId, string unitOfMeasure, Exception? innerException = null)
     : Exception($"Supplier '{supplierId}' already has a catalogue item for product '{productId}' in unit '{unitOfMeasure}'.", innerException);
 
+public sealed class SupplierProductCurrencyNotSupportedException(string currencyCode)
+    : Exception($"Currency '{currencyCode}' is not enabled for purchasing.");
+
 public sealed class PurchaseOrderNotFoundException(Guid purchaseOrderId)
     : Exception($"Purchase order '{purchaseOrderId}' was not found.");
 

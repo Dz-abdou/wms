@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Application.Purchasing;
 using Warehouse.Infrastructure.Auditing;
 using Warehouse.Infrastructure.Identity;
 using Warehouse.Infrastructure.Persistence;
+using Warehouse.Infrastructure.Purchasing;
 
 namespace Warehouse.Infrastructure;
 
@@ -32,6 +34,8 @@ public static class DependencyInjection
         .AddEntityFrameworkStores<WarehouseDbContext>()
         .AddSignInManager();
         services.Configure<DevelopmentAdminOptions>(configuration.GetSection(DevelopmentAdminOptions.SectionName));
+        services.Configure<PurchasingCurrencyOptions>(configuration.GetSection(PurchasingCurrencyOptions.SectionName));
+        services.AddSingleton<ICurrencyCatalogue, ConfigurationCurrencyCatalogue>();
         services.AddScoped<IdentityBootstrapper>();
         services.AddScoped<IWarehouseDbContext>(provider => provider.GetRequiredService<WarehouseDbContext>());
 

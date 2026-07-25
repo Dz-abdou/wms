@@ -15,6 +15,7 @@ public static class ApiErrorCodes
     public const string SupplierCodeConflict = "supplier.code_conflict";
     public const string SupplierProductNotFound = "supplier_product.not_found";
     public const string SupplierProductConflict = "supplier_product.conflict";
+    public const string SupplierProductCurrencyNotSupported = "supplier_product.currency_not_supported";
     public const string ProductCategoryNotFound = "product.category_not_found";
     public const string ProductCategoryCodeConflict = "product_category.code_conflict";
     public const string InventoryProductNotFound = "inventory.product_not_found";

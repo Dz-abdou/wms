@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPurchaseOrder,
   createSupplierProduct,
+  getPurchasingCurrencies,
   getPurchaseOrder,
   getPurchaseOrders,
   getSupplierProduct,
@@ -15,11 +16,16 @@ import type { PurchaseOrder, PurchaseOrderInput, SupplierProduct, UpdateSupplier
 
 export const purchasingKeys = {
   all: ["purchasing"] as const,
+  currencies: () => [...purchasingKeys.all, "currencies"] as const,
   catalogue: (page: number, pageSize: number, supplierId?: string) => [...purchasingKeys.all, "catalogue", page, pageSize, supplierId ?? ""] as const,
   catalogueDetail: (id: string) => [...purchasingKeys.all, "catalogue", id] as const,
   orders: (page: number, pageSize: number) => [...purchasingKeys.all, "orders", page, pageSize] as const,
   orderDetail: (id: string) => [...purchasingKeys.all, "order", id] as const,
 };
+
+export function usePurchasingCurrencies() {
+  return useQuery({ queryKey: purchasingKeys.currencies(), queryFn: ({ signal }) => getPurchasingCurrencies(signal), staleTime: Infinity });
+}
 
 export function useSupplierProducts(page: number, pageSize: number, supplierId?: string) {
   return useQuery({ queryKey: purchasingKeys.catalogue(page, pageSize, supplierId), queryFn: ({ signal }) => getSupplierProducts(page, pageSize, supplierId, signal) });

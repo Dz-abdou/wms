@@ -16,6 +16,11 @@ export type SupplierProduct = {
   updatedAtUtc: string;
 };
 
+export type CurrencyOption = {
+  code: string;
+  isDefault: boolean;
+};
+
 export type SupplierProductInput = {
   supplierId: string;
   productId: string;

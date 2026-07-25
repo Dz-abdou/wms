@@ -1,6 +1,7 @@
 import { requestJson } from "../../../shared/api/apiClient";
 import { purchasingApiPaths } from "../purchasingConstants";
 import type {
+  CurrencyOption,
   PurchaseOrder,
   PurchaseOrderInput,
   PurchaseOrderListResult,
@@ -9,6 +10,10 @@ import type {
   SupplierProductListResult,
   UpdateSupplierProductInput,
 } from "./purchasingTypes";
+
+export function getPurchasingCurrencies(signal?: AbortSignal) {
+  return requestJson<CurrencyOption[]>(purchasingApiPaths.currencies, { signal });
+}
 
 export function getSupplierProducts(page: number, pageSize: number, supplierId?: string, signal?: AbortSignal) {
   const parameters = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
