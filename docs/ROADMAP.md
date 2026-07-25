@@ -6,6 +6,18 @@ This is the authoritative sequence of implementation phases. Read it with [the O
 
 Do not treat the operational plan as permission to implement multiple phases at once. Follow the development workflow: inspect the existing code, create or refresh the next feature specification, agree scope, then complete one branch/PR before moving on.
 
+## Transactional Screen Standard
+
+Every future business document or multi-line warehouse operation must be designed as a complete workflow from the beginning; do not first ship stacked repeated form fields and plan a table conversion later.
+
+- A document create/edit screen uses a small header form for shared data, followed by an editable Ant Design Table for its lines. `Form.List` remains the form-state owner; table cells contain the relevant Ant Design input controls.
+- A document detail screen uses the same conceptual layout: read-only header/summary, read-only line table, totals where commercial values apply, and a status/history timeline when the document changes state.
+- The editable table must show the user-input fields plus the operational context needed to make a safe decision: product/reference, UoM, available or outstanding quantity when relevant, price/currency/line amount when relevant, and an explicit remove action. Derived values are read-only.
+- Repeated packaging/UoM conversion records use a small editable table as soon as there can be more than one conversion.
+- A multi-line inventory-changing operation must have one backend command that validates and persists every line in one database transaction. Never implement a batch UI by issuing one adjustment request per row. The command must create the required inventory movement for every committed line and fail without partial stock changes.
+- For a batch stock adjustment, the header owns reason, optional reference/note, actor and timestamp; the lines own product, warehouse/location where applicable, direction, UoM, and quantity. The API must reject or explicitly consolidate duplicate product/warehouse lines and validate the final projected balance.
+- New feature specifications must name the table columns, derived values, header fields, empty/loading/error states, responsive horizontal-scroll behavior, validation rules, and frontend/API tests before implementation starts.
+
 ## Current Planning State
 
 The supplier-management and core purchase-order slices are intentionally combined on `features/Suppliers-+-Purchase-Orders` by explicit developer decision. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders; the developer owns the generated purchasing migration files.
@@ -292,6 +304,7 @@ Make submitted purchase orders reliable inbound documents before goods receipts 
 - Immutable submitted-line snapshots for product/supplier identifiers, UoM conversion factor, quantities, price, currency, and line amount.
 - Explicit status transition/history records for Draft, Submitted, PartiallyReceived, Received/Closed, and Cancelled.
 - Purchase-order list and detail views with operational filtering, totals, and status timeline.
+- Draft PO screen with a header form and editable line table showing catalogue item, product, supplier SKU, purchase UoM, MOQ, quantity, unit price, currency, line amount, and remove action.
 
 ### Exit Criteria
 
@@ -314,6 +327,7 @@ Make submitted purchase orders reliable inbound documents before goods receipts 
 - Capture supplier delivery-note reference, receiver, and receipt timestamp.
 - Record accepted and damaged/rejected quantity separately.
 - Link every receipt inventory movement to its receipt and purchase-order line.
+- Goods-receipt header form and editable receipt-line table; submit all lines through one atomic receipt command.
 
 ### Exit Criteria
 
@@ -330,6 +344,7 @@ Make submitted purchase orders reliable inbound documents before goods receipts 
 - Searchable inventory overview by product and warehouse.
 - Mandatory adjustment reason and optional reference/note.
 - Movement source-document references and human-readable document numbers.
+- Adjustment-document header and editable multi-line adjustment table; persist all valid lines and their inventory movements atomically.
 - Cycle-count and inter-warehouse transfer workflows.
 - Warehouse-specific reorder point, safety stock, and reorder quantity when planning is introduced.
 
@@ -374,6 +389,7 @@ Add lot-aware stock allocation and inventory costing after goods receipts establ
 - Human-readable, unique sales-order numbers and customer/address snapshots.
 - Draft sales order, line entry, submit/cancel workflow, actor/timestamp history, and optimistic concurrency.
 - Product/UoM/conversion/quantity snapshots on submitted sales-order lines.
+- Sales-order header form and editable order-line table with product, UoM, quantity, availability context, commercial values where enabled, and line total.
 - Requested ship date, customer reference, delivery instructions, and optional commercial currency/pricing fields.
 - Explicit states: Draft, Submitted, Allocated, PartiallyShipped, Shipped/Closed, and Cancelled.
 - Searchable sales-order list and detail pages with customer, status, date, and fulfilment-progress filters.

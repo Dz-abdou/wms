@@ -19,6 +19,23 @@ Before an agent implements a phase, it must compare the relevant priority below 
 3. Supplier catalogue data is current purchasing guidance; purchase-order lines snapshot the terms actually ordered.
 4. Inventory movements are an append-only operational ledger. Each movement carries a source document and reason.
 5. Product master data stays pragmatic. Lot, expiry, serial, and bin controls are opt-in business capabilities rather than defaults.
+6. A business document is entered as a header plus a line table, not as a stack of repeated cards or form rows. The header owns shared fields; each line exposes only the inputs and operational context needed for that line.
+7. A multi-line inventory action is all-or-nothing. Its API validates all lines and writes all balances/movements in one database transaction; the frontend must never emulate a batch operation with sequential single-line requests.
+
+## Transactional Form and Table Standard
+
+Apply this standard whenever a phase introduces purchase orders, receipts, orders, adjustments, counts, transfers, picks, shipments, or a repeatable product configuration such as UoM conversions.
+
+| Screen state | Required structure |
+|---|---|
+| Create/edit document | Header form, then editable Ant Design Table for lines. Use `Form.List` for dynamic line state and Ant Design form controls inside cells. |
+| Read-only detail | Header/summary, read-only line table, totals when applicable, and status/audit timeline for stateful documents. |
+| Multi-line stock operation | Header includes reason and optional reference/note; lines include product, warehouse/location when applicable, direction, UoM, and quantity. One API command commits or rejects the full set. |
+| UoM/package configuration | An editable table with UoM, base quantity, fractional-quantity rule, and remove action. |
+
+The line-table specification must identify its editable columns, read-only derived columns, remove/add behavior, validation, server errors, and how each selected line is constrained by master data. Typical context includes product/SKU, supplier SKU, UoM, MOQ, available/outstanding quantity, currency, unit price, and line amount.
+
+Use horizontal scrolling for genuinely wide operational tables rather than hiding essential fields. High-volume selectors must use server-side search rather than a fixed first-page list. For stock operations, reject or explicitly consolidate duplicate product/warehouse lines and validate the projected final quantity before committing. Frontend tests must cover adding/removing a line, line validation, derived values, and failed atomic submissions; backend tests must prove no partial persistence on failure.
 
 ## Priority 1 — Purchase Order Hardening
 
@@ -120,6 +137,8 @@ The catalogue is current guidance. A PO must snapshot the price, UoM, and conver
 - PO-line UoM and snapped conversion factor
 - Optional lot, expiry, and serial data only for products configured to require them
 
+The receipt create/edit workflow uses a receipt header form and an editable line table. It shows the PO line context, previously received, outstanding, receiving-now, accepted, and damaged/rejected quantities. One receipt command validates and commits all lines and their inventory effects atomically.
+
 ### Rules
 
 - A receipt cannot exceed the remaining outstanding quantity unless an explicit authorized over-receipt policy is added later.
@@ -139,6 +158,8 @@ Add these fields to every movement as relevant:
 - Optional note
 
 Manual adjustments should require a reason and optional reference. The service must reject inactive products and inactive warehouses, not only hide them in the UI.
+
+Manual adjustment must evolve into an adjustment document: shared reason/reference/note in its header and an editable line table for product, warehouse/location, direction, UoM, quantity, current balance, and resulting balance. Submitting it is all-or-nothing and creates one inventory movement per committed line; sequential frontend calls are prohibited.
 
 ### Screens
 
@@ -201,6 +222,8 @@ Draft → Submitted → Allocated → PartiallyShipped → Shipped/Closed
 ```
 
 The records should retain a status history, actor, timestamp, and optional cancellation or exception reason. Do not allow edits to quantities, products, or address snapshots after the order has reached Allocated without an explicit controlled change/release workflow.
+
+Sales-order create/edit uses a header form and editable line table. Each line shows product/reference, UoM, ordered quantity, availability context, pricing/currency and line total when commercial pricing is enabled, and an explicit remove action.
 
 ### Reservation, Picking, and Shipment
 
@@ -281,7 +304,7 @@ Every list page needs loading, empty, error, and success states; server-side pag
 
 ### Purchase Order Form and Detail
 
-The line editor should show product, supplier SKU, UoM, MOQ, quantity, unit price, currency, line total, and remove action. The detail screen should add a summary panel, totals, status timeline, received/outstanding quantities, and eventually a direct “Receive goods” action. Draft and submitted versions should be visually distinct so a user does not assume a submitted document remains freely editable.
+The create/edit view uses a header form followed by an editable line table. The table shows catalogue item, product, supplier SKU, UoM, MOQ, quantity, unit price, currency, line total, and remove action. The detail screen uses a summary panel and read-only line table, then adds totals, status timeline, received/outstanding quantities, and eventually a direct “Receive goods” action. Draft and submitted versions should be visually distinct so a user does not assume a submitted document remains freely editable.
 
 ## Core Relationship Map
 
