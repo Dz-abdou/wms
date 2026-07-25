@@ -6,6 +6,7 @@
     "home": "Home",
     "products": "Products",
     "warehouses": "Warehouses",
+    "suppliers": "Suppliers",
     "inventory": "Inventory",
     "users": "Users",
     "roles": "Roles"
@@ -32,6 +33,8 @@
       "warehouse.not_found": "The warehouse was not found.",
       "warehouse.code_conflict": "A warehouse with this code already exists.",
       "product.sku_conflict": "A product with this SKU already exists.",
+      "supplier.not_found": "The supplier was not found.",
+      "supplier.code_conflict": "A supplier with this code already exists.",
       "auth.invalid_credentials": "Email or password is incorrect.",
       "auth.invalid_refresh_token": "Your session has expired. Please sign in again.",
       "auth.unauthenticated": "Please sign in to continue.",
@@ -158,6 +161,58 @@
       "create": "The warehouse could not be created.",
       "update": "The warehouse could not be updated.",
       "status": "The warehouse status could not be changed."
+    }
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Maintain the businesses that supply future purchase orders.",
+    "new": "New supplier",
+    "createTitle": "New supplier",
+    "editTitle": "Edit supplier",
+    "create": "Create supplier",
+    "save": "Save changes",
+    "edit": "Edit",
+    "view": "View",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "cancel": "Cancel",
+    "confirmStatusTitle": "{{action}} supplier",
+    "confirmStatusDescription": "Are you sure you want to {{action}} this supplier?",
+    "loadingList": "Loading suppliers…",
+    "loadingOne": "Loading supplier…",
+    "empty": "No suppliers exist yet.",
+    "missingValue": "—",
+    "table": {
+      "code": "Code",
+      "name": "Name",
+      "email": "Email",
+      "phoneNumber": "Phone number",
+      "address": "Address",
+      "status": "Status",
+      "actions": "Actions",
+      "created": "Created",
+      "updated": "Last updated"
+    },
+    "form": {
+      "code": "Code",
+      "name": "Name",
+      "email": "Email",
+      "phoneNumber": "Phone number",
+      "address": "Address",
+      "codeRequired": "Supplier code is required.",
+      "nameRequired": "Supplier name is required.",
+      "codeMax": "Supplier code cannot exceed {{max}} characters.",
+      "nameMax": "Supplier name cannot exceed {{max}} characters.",
+      "emailMax": "Supplier email cannot exceed {{max}} characters.",
+      "phoneNumberMax": "Supplier phone number cannot exceed {{max}} characters.",
+      "addressMax": "Supplier address cannot exceed {{max}} characters."
+    },
+    "errors": {
+      "load": "The supplier could not be loaded.",
+      "loadList": "Suppliers could not be loaded.",
+      "create": "The supplier could not be created.",
+      "update": "The supplier could not be updated.",
+      "status": "The supplier status could not be changed."
     }
   },
   "administration": {

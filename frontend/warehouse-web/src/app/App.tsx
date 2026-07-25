@@ -14,6 +14,11 @@ import { WarehouseDetailPage } from "../features/warehouses/pages/WarehouseDetai
 import { WarehouseEditPage } from "../features/warehouses/pages/WarehouseEditPage";
 import { WarehouseListPage } from "../features/warehouses/pages/WarehouseListPage";
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
+import { SupplierCreatePage } from "../features/suppliers/pages/SupplierCreatePage";
+import { SupplierDetailPage } from "../features/suppliers/pages/SupplierDetailPage";
+import { SupplierEditPage } from "../features/suppliers/pages/SupplierEditPage";
+import { SupplierListPage } from "../features/suppliers/pages/SupplierListPage";
+import { supplierRoutes } from "../features/suppliers/supplierConstants";
 import { InventoryPage } from "../features/inventory/pages/InventoryPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
@@ -85,6 +90,22 @@ export function App() {
                     <Route
                       path={warehouseRoutes.editPattern}
                       element={<WarehouseEditPage />}
+                    />
+                    <Route
+                      path={supplierRoutes.listPattern}
+                      element={<SupplierListPage />}
+                    />
+                    <Route
+                      path={supplierRoutes.create}
+                      element={<SupplierCreatePage />}
+                    />
+                    <Route
+                      path={supplierRoutes.detailPattern}
+                      element={<SupplierDetailPage />}
+                    />
+                    <Route
+                      path={supplierRoutes.editPattern}
+                      element={<SupplierEditPage />}
                     />
                     <Route
                       element={<ProtectedRoute roles={[administratorRole]} />}

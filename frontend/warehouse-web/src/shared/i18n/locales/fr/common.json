@@ -6,6 +6,7 @@
     "home": "Accueil",
     "products": "Produits",
     "warehouses": "Entrepôts",
+    "suppliers": "Fournisseurs",
     "inventory": "Stock",
     "users": "Utilisateurs",
     "roles": "Rôles"
@@ -32,6 +33,8 @@
       "warehouse.not_found": "L’entrepôt est introuvable.",
       "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",
       "product.sku_conflict": "Un produit avec cette référence existe déjà.",
+      "supplier.not_found": "Le fournisseur est introuvable.",
+      "supplier.code_conflict": "Un fournisseur avec ce code existe déjà.",
       "auth.invalid_credentials": "L’e-mail ou le mot de passe est incorrect.",
       "auth.invalid_refresh_token": "Votre session a expiré. Veuillez vous reconnecter.",
       "auth.unauthenticated": "Veuillez vous connecter pour continuer.",
@@ -158,6 +161,58 @@
       "create": "L’entrepôt n’a pas pu être créé.",
       "update": "L’entrepôt n’a pas pu être mis à jour.",
       "status": "Le statut de l’entrepôt n’a pas pu être modifié."
+    }
+  },
+  "suppliers": {
+    "title": "Fournisseurs",
+    "subtitle": "Gérez les entreprises qui approvisionneront les futures commandes d’achat.",
+    "new": "Nouveau fournisseur",
+    "createTitle": "Nouveau fournisseur",
+    "editTitle": "Modifier le fournisseur",
+    "create": "Créer le fournisseur",
+    "save": "Enregistrer les modifications",
+    "edit": "Modifier",
+    "view": "Voir",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "cancel": "Annuler",
+    "confirmStatusTitle": "{{action}} le fournisseur",
+    "confirmStatusDescription": "Voulez-vous vraiment {{action}} ce fournisseur ?",
+    "loadingList": "Chargement des fournisseurs…",
+    "loadingOne": "Chargement du fournisseur…",
+    "empty": "Aucun fournisseur n’existe encore.",
+    "missingValue": "—",
+    "table": {
+      "code": "Code",
+      "name": "Nom",
+      "email": "E-mail",
+      "phoneNumber": "Téléphone",
+      "address": "Adresse",
+      "status": "Statut",
+      "actions": "Actions",
+      "created": "Créé le",
+      "updated": "Dernière modification"
+    },
+    "form": {
+      "code": "Code",
+      "name": "Nom",
+      "email": "E-mail",
+      "phoneNumber": "Téléphone",
+      "address": "Adresse",
+      "codeRequired": "Le code fournisseur est obligatoire.",
+      "nameRequired": "Le nom du fournisseur est obligatoire.",
+      "codeMax": "Le code fournisseur ne peut pas dépasser {{max}} caractères.",
+      "nameMax": "Le nom du fournisseur ne peut pas dépasser {{max}} caractères.",
+      "emailMax": "L’e-mail du fournisseur ne peut pas dépasser {{max}} caractères.",
+      "phoneNumberMax": "Le téléphone du fournisseur ne peut pas dépasser {{max}} caractères.",
+      "addressMax": "L’adresse du fournisseur ne peut pas dépasser {{max}} caractères."
+    },
+    "errors": {
+      "load": "Le fournisseur n’a pas pu être chargé.",
+      "loadList": "Les fournisseurs n’ont pas pu être chargés.",
+      "create": "Le fournisseur n’a pas pu être créé.",
+      "update": "Le fournisseur n’a pas pu être mis à jour.",
+      "status": "Le statut du fournisseur n’a pas pu être modifié."
     }
   },
   "administration": {

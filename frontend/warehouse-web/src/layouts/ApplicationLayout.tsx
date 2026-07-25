@@ -8,6 +8,7 @@ import {
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
 import { productRoutes } from "../features/products/productConstants";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
+import { supplierRoutes } from "../features/suppliers/supplierConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -21,13 +22,15 @@ export function ApplicationLayout() {
     ? "products"
     : location.pathname.startsWith(warehouseRoutes.list)
       ? "warehouses"
-      : location.pathname.startsWith(inventoryRoutes.dashboard)
-        ? "inventory"
-      : location.pathname.startsWith(administrationRoutes.users)
-        ? "users"
-        : location.pathname.startsWith(administrationRoutes.roles)
-          ? "roles"
-          : "home";
+      : location.pathname.startsWith(supplierRoutes.list)
+        ? "suppliers"
+        : location.pathname.startsWith(inventoryRoutes.dashboard)
+          ? "inventory"
+          : location.pathname.startsWith(administrationRoutes.users)
+            ? "users"
+            : location.pathname.startsWith(administrationRoutes.roles)
+              ? "roles"
+              : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -51,6 +54,14 @@ export function ApplicationLayout() {
               label: (
                 <Link to={warehouseRoutes.list}>
                   {t("navigation.warehouses")}
+                </Link>
+              ),
+            },
+            {
+              key: "suppliers",
+              label: (
+                <Link to={supplierRoutes.list}>
+                  {t("navigation.suppliers")}
                 </Link>
               ),
             },
