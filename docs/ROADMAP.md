@@ -67,6 +67,7 @@ Establish English/French localization and stable API error codes before another 
 - Translation keys for all existing Product UI states, forms, navigation, confirmation text, and validation messages.
 - A standard API Problem Details extension named `code` for machine-readable errors.
 - Field-level API validation error codes that the frontend maps to localized messages.
+- Shared frontend error-feedback convention: keep lightweight client validation for UX, map server field errors inline, and show a translated notification only for non-field mutation failures.
 - Product `404`, `409`, validation, and unexpected-error code mappings.
 - Tests for English/French rendering and error-code translation.
 
