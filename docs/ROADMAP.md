@@ -264,6 +264,29 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 
 ---
 
+## Phase 4.1 — Purchase Order Operational Hardening
+
+### Goal
+
+Make submitted purchase orders reliable inbound documents before goods receipts depend on them.
+
+### Deliverables
+
+- Human-readable, unique purchase-order number.
+- Required destination warehouse, header currency, order date, buyer, and concurrency token.
+- Optional expected delivery date, supplier reference, and notes.
+- Immutable submitted-line snapshots for product/supplier identifiers, UoM conversion factor, quantities, price, currency, and line amount.
+- Explicit status transition/history records for Draft, Submitted, PartiallyReceived, Received/Closed, and Cancelled.
+- Purchase-order list and detail views with operational filtering, totals, and status timeline.
+
+### Exit Criteria
+
+- Concurrent draft edits return a stable conflict rather than silently overwriting data.
+- Submitted PO data remains correct after product conversion, supplier catalogue, or price changes.
+- Each PO has one destination warehouse and one currency.
+
+---
+
 ## Phase 5 — Goods Receipts
 
 ### Deliverables
@@ -274,12 +297,33 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 - Update inventory
 - Create inventory movements
 - Complete purchase order when fully received
+- Capture supplier delivery-note reference, receiver, and receipt timestamp.
+- Record accepted and damaged/rejected quantity separately.
+- Link every receipt inventory movement to its receipt and purchase-order line.
 
 ### Exit Criteria
 
 - Partial and complete receipt workflows pass.
 - Receipt and inventory changes are atomic.
 - Automated tests pass.
+
+---
+
+## Phase 5.2 — Inventory Control Operations
+
+### Deliverables
+
+- Searchable inventory overview by product and warehouse.
+- Mandatory adjustment reason and optional reference/note.
+- Movement source-document references and human-readable document numbers.
+- Cycle-count and inter-warehouse transfer workflows.
+- Warehouse-specific reorder point, safety stock, and reorder quantity when planning is introduced.
+
+### Exit Criteria
+
+- Stock adjustments are explainable from reason and source records.
+- Transfers create linked out/in movements without changing total company stock.
+- Inactive products and warehouses cannot be adjusted through the API.
 
 ---
 
