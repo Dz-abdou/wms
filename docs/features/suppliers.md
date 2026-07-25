@@ -2,7 +2,9 @@
 
 ## Status
 
-In progress — Phase 4 Supplier management slice
+Core implementation exists on the combined `features/Suppliers-+-Purchase-Orders` branch. It remains subject to the documented migration, verification, review, and merge steps before it is considered complete.
+
+This specification describes the supplier-management boundary. Supplier catalogue and purchase-order behavior is defined by [the Purchase Order specification](purchase-orders.md); the next operational hardening work is defined by [Roadmap Phase 4.1](../ROADMAP.md#phase-41--purchase-order-operational-hardening) and [Priority 1 of the Operational WMS Plan](../OPERATIONAL_WMS_PLAN.md#priority-1--purchase-order-hardening).
 
 ## Goal
 
@@ -21,7 +23,9 @@ Allow authorized operators to maintain a trustworthy supplier catalogue before p
 
 ## Planned Follow-up: Supplier Product Catalogue
 
-Implement this with the Purchase Order slice, not as a single `SupplierId` on `Product`. A product can be supplied by many suppliers and a supplier can supply many products, so purchasing will introduce a dedicated relationship with the supplier-specific SKU, preferred-supplier marker, lead time, minimum order quantity, allowed purchase unit, and price/currency history or effective price. Purchase-order lines will use that catalogue to validate and prefill supplier-specific purchasing data.
+The dedicated supplier-product relationship is implemented with the core Purchase Order slice, not as a single `SupplierId` on `Product`. A product can be supplied by many suppliers and a supplier can supply many products. The catalogue holds supplier-specific SKU, allowed purchase unit, current price/currency, and minimum order quantity; purchase-order lines use it to validate and prefill purchasing data.
+
+Preferred supplier, lead time, and effective price history are planned catalogue enhancements. They must be added in a focused follow-up slice; they are not silently implied by this supplier-management specification.
 
 ## Business Rules
 
@@ -74,4 +78,4 @@ Implement this with the Purchase Order slice, not as a single `SupplierId` on `P
 - [ ] Unit, integration, and frontend tests pass.
 - [ ] Backend and frontend production builds pass.
 - [ ] Manual checklist passes.
-- [ ] Supplier slice is reviewed, merged, and only then Purchase Orders begin.
+- [ ] The combined Supplier and core Purchase Order branch is reviewed and merged. The next slice is Phase 4.1 Purchase Order Operational Hardening, not a separate historic Purchase Order branch.

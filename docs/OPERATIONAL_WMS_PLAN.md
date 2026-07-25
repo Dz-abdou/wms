@@ -4,6 +4,14 @@
 
 This plan evolves the current product, warehouse, supplier, inventory, and purchasing foundation into an operational WMS for a small or medium business. It prioritizes inbound receiving and stock correctness before advanced accounting, forecasting, or automation.
 
+## How This Plan Is Used
+
+This is the business-design companion to [the implementation roadmap](ROADMAP.md). The roadmap controls sequence; this document defines the operational details that the corresponding roadmap phase and feature specification must cover. It is not a request to build every item in one change.
+
+Before an agent implements a phase, it must compare the relevant priority below with the current code and create or refresh the matching `docs/features/` specification. That specification records the approved vertical-slice boundary, exclusions, API contract, acceptance criteria, and tests. If this plan and a current feature specification differ, the conflict must be made explicit and resolved before code changes.
+
+**Current next business priority:** after the combined Supplier and core Purchase Order branch is fully verified and merged, implement Priority 1 / Roadmap Phase 4.1, Purchase Order Operational Hardening. Do not start Priority 3 Goods Receipts until its acceptance criteria are met.
+
 ## Guiding Decisions
 
 1. A submitted purchase order is an operational record: its commercial and quantity terms must remain historically correct even when catalogue data changes later.

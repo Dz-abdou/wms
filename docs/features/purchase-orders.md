@@ -2,7 +2,9 @@
 
 ## Status
 
-In progress — Phase 4, implemented on the Supplier branch at the developer's request
+Core implementation exists on the combined `features/Suppliers-+-Purchase-Orders` branch by explicit developer decision. It remains subject to migration, verification, review, and merge before it is considered complete.
+
+This document is deliberately limited to the core Phase 4 purchase-order slice. Once it is complete, the next work is [Phase 4.1 — Purchase Order Operational Hardening](../ROADMAP.md#phase-41--purchase-order-operational-hardening), guided by [Priority 1 of the Operational WMS Plan](../OPERATIONAL_WMS_PLAN.md#priority-1--purchase-order-hardening). Do not expand this core slice with those follow-up requirements without an approved implementation plan.
 
 ## Goal
 
@@ -21,6 +23,10 @@ Allow purchasing managers to maintain supplier-specific product catalogue terms,
 - Supplier price history, price breaks, tax, discounts, payment terms, approval workflow, cancellation, attachments, and delivery dates.
 - Receiving warehouse selection, goods receipts, inventory changes, and purchase-order completion.
 - Deleting supplier catalogue entries or purchase orders.
+
+### Explicit Phase 4.1 Follow-up
+
+Phase 4.1 owns the human-readable PO number, destination warehouse, header currency, order and expected-delivery dates, buyer, notes, concurrency token, submitted timestamp, line number, immutable base-unit conversion/quantity snapshots, status history, cancellation, totals, and the richer operational list/detail UI. Goods receipts remain Phase 5 and must not be implemented as part of this specification.
 
 ## Business Rules
 
@@ -70,3 +76,7 @@ Allow purchasing managers to maintain supplier-specific product catalogue terms,
 - [ ] Create, edit, submit, and view a draft purchase order.
 - [ ] Verify submitted orders cannot be edited through the API or UI.
 - [ ] Verify English/French text and error feedback.
+
+## Handoff
+
+After this core slice is fully verified and merged, create or refresh a dedicated Phase 4.1 feature specification before coding. It must use the Phase 4.1 roadmap exit criteria and the Operational WMS Plan Priority 1 acceptance criteria; it must also define exact migration, API, UI, concurrency, domain, integration, and frontend test work.

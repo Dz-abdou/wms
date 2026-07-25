@@ -1,5 +1,19 @@
 # Implementation Roadmap
 
+## How to Use This Roadmap
+
+This is the authoritative sequence of implementation phases. Read it with [the Operational WMS Enhancement Plan](OPERATIONAL_WMS_PLAN.md), which supplies the business rules, fields, relationships, screens, and operational rationale that each roadmap phase must satisfy. The feature specification in `docs/features/` then narrows one approved vertical slice into implementation-ready acceptance criteria.
+
+Do not treat the operational plan as permission to implement multiple phases at once. Follow the development workflow: inspect the existing code, create or refresh the next feature specification, agree scope, then complete one branch/PR before moving on.
+
+## Current Planning State
+
+The supplier-management and core purchase-order slices are intentionally combined on `features/Suppliers-+-Purchase-Orders` by explicit developer decision. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders; the developer owns the generated purchasing migration files.
+
+Once that branch is reviewed, the migration is manually applied, and the slice is fully verified and merged, the next approved work is **Phase 4.1 — Purchase Order Operational Hardening**. Its purpose is to close the operational gaps before any goods-receipt work begins. In particular, Phase 5 must not start until the Phase 4.1 exit criteria pass.
+
+The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
+
 ## Phase 0 — Foundation
 
 ### Goal
