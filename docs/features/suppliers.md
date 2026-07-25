@@ -16,8 +16,12 @@ Allow authorized operators to maintain a trustworthy supplier catalogue before p
 
 ## Out of Scope
 
-- Purchase orders, supplier price lists, supplier-specific product catalogues, payment terms, tax details, and supplier deletion.
+- Purchase orders, supplier price lists, payment terms, tax details, and supplier deletion.
 - Supplier search or filtering.
+
+## Planned Follow-up: Supplier Product Catalogue
+
+Implement this with the Purchase Order slice, not as a single `SupplierId` on `Product`. A product can be supplied by many suppliers and a supplier can supply many products, so purchasing will introduce a dedicated relationship with the supplier-specific SKU, preferred-supplier marker, lead time, minimum order quantity, allowed purchase unit, and price/currency history or effective price. Purchase-order lines will use that catalogue to validate and prefill supplier-specific purchasing data.
 
 ## Business Rules
 

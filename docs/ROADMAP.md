@@ -248,6 +248,7 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 ### Deliverables
 
 - Supplier management
+- Supplier product catalogue: a many-to-many supplier/product relationship with supplier-specific SKU, preferred-supplier selection, lead time, minimum order quantity, valid purchase unit, and price/currency history or effective price.
 - Draft purchase order
 - Purchase order lines
 - Submit purchase order
@@ -259,6 +260,7 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 - Valid purchase order can be created and submitted.
 - Invalid quantities are rejected.
 - Submitted orders cannot be freely changed.
+- A purchase-order line can be validated against the selected supplier's catalogue; a product is not limited to one supplier.
 
 ---
 
