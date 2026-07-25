@@ -12,6 +12,7 @@ import {
   setSupplierProductStatus,
   setCurrencyStatus,
   setDefaultCurrency,
+  updateCurrency,
   submitPurchaseOrder,
   updatePurchaseOrder,
   updateSupplierProduct,
@@ -33,6 +34,7 @@ export function usePurchasingCurrencies() {
 
 export function useCurrencies() { return useQuery({ queryKey: purchasingKeys.currencies(), queryFn: ({ signal }) => getCurrencies(signal) }); }
 export function useCreateCurrency() { const queryClient = useQueryClient(); return useMutation({ mutationFn: createCurrency, onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
+export function useUpdateCurrency() { const queryClient = useQueryClient(); return useMutation({ mutationFn: ({ id, input }: { id: string; input: Omit<import("./purchasingTypes").CurrencyInput, "code"> }) => updateCurrency(id, input), onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
 export function useSetCurrencyStatus() { const queryClient = useQueryClient(); return useMutation({ mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => setCurrencyStatus(id, isActive), onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
 export function useSetDefaultCurrency() { const queryClient = useQueryClient(); return useMutation({ mutationFn: setDefaultCurrency, onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
 

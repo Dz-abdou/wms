@@ -18,6 +18,7 @@ export function getPurchasingCurrencies(signal?: AbortSignal) {
 
 export function getCurrencies(signal?: AbortSignal) { return requestJson<{ items: Currency[] }>(`${purchasingApiPaths.currencies}?page=1&pageSize=100`, { signal }); }
 export function createCurrency(input: CurrencyInput) { return requestJson<Currency>(purchasingApiPaths.currencies, jsonRequest("POST", input)); }
+export function updateCurrency(id: string, input: Omit<CurrencyInput, "code">) { return requestJson<Currency>(`${purchasingApiPaths.currencies}/${id}`, jsonRequest("PUT", input)); }
 export function setCurrencyStatus(id: string, isActive: boolean) { return requestJson<Currency>(`${purchasingApiPaths.currencies}/${id}/status`, jsonRequest("PATCH", { isActive })); }
 export function setDefaultCurrency(id: string) { return requestJson<Currency>(`${purchasingApiPaths.currencies}/${id}/default`, jsonRequest("PATCH", {})); }
 
