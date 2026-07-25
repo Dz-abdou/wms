@@ -414,6 +414,8 @@
     "adjustTitle": "Ajustement manuel",
     "historyTitle": "Historique des mouvements",
     "adjust": "Appliquer l’ajustement",
+    "addLine": "Ajouter une ligne",
+    "removeLine": "Retirer",
     "currentBalance": "Stock actuel",
     "selectForHistory": "Sélectionnez un produit et un entrepôt pour consulter l’historique.",
     "loadingSources": "Chargement des produits et entrepôts…",
@@ -422,6 +424,13 @@
     "types": {
       "increase": "Entrée",
       "decrease": "Sortie"
+    },
+    "reasons": {
+      "StockCorrection": "Correction de stock",
+      "Damage": "Dommage",
+      "WriteOff": "Mise au rebut",
+      "FoundStock": "Stock trouvé",
+      "InitialBalance": "Stock initial"
     },
     "table": {
       "type": "Type",
@@ -433,6 +442,9 @@
       "product": "Produit",
       "warehouse": "Entrepôt",
       "direction": "Sens",
+      "reason": "Motif",
+      "reference": "Référence",
+      "note": "Note",
       "quantity": "Quantité",
       "unitOfMeasure": "Unité de mesure",
       "productRequired": "Le produit est obligatoire.",

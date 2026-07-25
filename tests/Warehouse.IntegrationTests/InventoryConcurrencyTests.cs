@@ -17,11 +17,8 @@ public sealed class InventoryConcurrencyTests(ProductApiFixture fixture)
         var warehouseId = await CreateWarehouseAsync();
         await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId,
-            warehouseId,
-            quantity = 1m,
-            direction = InventoryAdjustmentDirection.Increase,
-            unitOfMeasure = "EA"
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId, warehouseId, quantity = 1m, direction = InventoryAdjustmentDirection.Increase, unitOfMeasure = "EA" } }
         });
 
         using var firstScope = fixture.Factory.Services.CreateScope();

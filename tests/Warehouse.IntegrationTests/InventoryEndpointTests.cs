@@ -52,11 +52,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
 
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId = product.Id,
-            warehouseId = warehouse.Id,
-            quantity = 1m,
-            direction = InventoryAdjustmentDirection.Decrease,
-            unitOfMeasure = "EA"
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1m, direction = InventoryAdjustmentDirection.Decrease, unitOfMeasure = "EA" } }
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -105,11 +102,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
 
         var invalidResponse = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId = product.Id,
-            warehouseId = warehouse.Id,
-            quantity = 1.1m,
-            direction = InventoryAdjustmentDirection.Increase,
-            unitOfMeasure = "CTN"
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1.1m, direction = InventoryAdjustmentDirection.Increase, unitOfMeasure = "CTN" } }
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
@@ -139,15 +133,12 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
     {
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId,
-            warehouseId,
-            quantity,
-            direction,
-            unitOfMeasure
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId, warehouseId, quantity, direction, unitOfMeasure } }
         });
         response.EnsureSuccessStatusCode();
 
-        return (await response.Content.ReadFromJsonAsync<InventoryBalanceResponse>())!;
+        return (await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>())!.Lines.Single();
     }
 
     private async Task<ProductResponse> CreateProductAsync()

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { InventoryPage } from './InventoryPage'
+import { i18n } from '../../../shared/i18n/i18n'
 
 const { useProductsMock, useWarehousesMock, useMovementHistoryMock, useAdjustInventoryMock } = vi.hoisted(() => ({
   useProductsMock: vi.fn(),
@@ -18,7 +19,8 @@ vi.mock('../api/useInventory', () => ({
 }))
 
 describe('InventoryPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en')
     useProductsMock.mockReturnValue({ data: { items: [], page: 1, pageSize: 100, totalCount: 0 }, error: null, isLoading: false })
     useWarehousesMock.mockReturnValue({ data: { items: [], page: 1, pageSize: 100, totalCount: 0 }, error: null, isLoading: false })
     useMovementHistoryMock.mockReturnValue({ data: undefined, error: null, isLoading: false })
@@ -67,6 +69,7 @@ describe('InventoryPage', () => {
     })
 
     render(<InventoryPage />)
+    await user.click(screen.getByRole('button', { name: 'Add line' }))
     await user.click(screen.getByLabelText('Product'))
     await user.click(await screen.findByText('CTN-001 — Cartons'))
 

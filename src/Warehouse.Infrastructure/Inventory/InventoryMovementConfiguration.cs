@@ -15,6 +15,7 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
             tableBuilder.HasCheckConstraint("CK_InventoryMovements_QuantityDeltaInUnit_NonZero", "\"QuantityDeltaInUnit\" <> 0");
         });
         builder.HasKey(movement => movement.Id);
+        builder.Property(movement => movement.InventoryAdjustmentId).HasColumnType("uuid");
         builder.Property(movement => movement.ProductId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.WarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.UnitOfMeasure).HasMaxLength(ProductUnitOfMeasure.MaxCodeLength).IsRequired();
@@ -27,5 +28,10 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         builder.Property(movement => movement.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(movement => movement.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(movement => new { movement.ProductId, movement.WarehouseId, movement.CreatedAtUtc });
+        builder.HasIndex(movement => movement.InventoryAdjustmentId);
+        builder.HasOne<InventoryAdjustment>()
+            .WithMany()
+            .HasForeignKey(movement => movement.InventoryAdjustmentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

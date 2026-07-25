@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Warehouse.Application.Common.Pagination;
+using Warehouse.Domain.Inventory;
 
 namespace Warehouse.Application.Inventory;
 
@@ -10,12 +11,18 @@ public enum InventoryAdjustmentDirection
     Decrease
 }
 
-public sealed record InventoryAdjustmentInput(
+public sealed record InventoryAdjustmentLineInput(
     Guid ProductId,
     Guid WarehouseId,
     decimal Quantity,
     InventoryAdjustmentDirection Direction,
     string? UnitOfMeasure);
+
+public sealed record InventoryAdjustmentInput(
+    InventoryAdjustmentReason Reason,
+    string? Reference,
+    string? Note,
+    IReadOnlyList<InventoryAdjustmentLineInput> Lines);
 
 public sealed record InventoryBalanceResponse(
     Guid ProductId,
@@ -23,6 +30,14 @@ public sealed record InventoryBalanceResponse(
     decimal Quantity,
     DateTime UpdatedAtUtc,
     string BaseUnitOfMeasure);
+
+public sealed record InventoryAdjustmentResponse(
+    Guid Id,
+    InventoryAdjustmentReason Reason,
+    string? Reference,
+    string? Note,
+    DateTime CreatedAtUtc,
+    IReadOnlyList<InventoryBalanceResponse> Lines);
 
 public sealed record InventoryMovementResponse(
     Guid Id,

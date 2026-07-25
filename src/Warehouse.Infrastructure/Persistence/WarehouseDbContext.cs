@@ -32,6 +32,8 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
 
+    public DbSet<InventoryAdjustment> InventoryAdjustments => Set<InventoryAdjustment>();
+
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

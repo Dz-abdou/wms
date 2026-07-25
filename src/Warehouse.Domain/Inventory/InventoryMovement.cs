@@ -7,6 +7,7 @@ public sealed class InventoryMovement : PersistentEntity
 {
     private InventoryMovement(
         Guid id,
+        Guid? inventoryAdjustmentId,
         Guid productId,
         Guid warehouseId,
         InventoryMovementType type,
@@ -20,6 +21,7 @@ public sealed class InventoryMovement : PersistentEntity
         Guid? updatedByUserId)
         : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
+        InventoryAdjustmentId = inventoryAdjustmentId;
         ProductId = productId;
         WarehouseId = warehouseId;
         Type = type;
@@ -30,6 +32,8 @@ public sealed class InventoryMovement : PersistentEntity
     }
 
     public Guid ProductId { get; private set; }
+
+    public Guid? InventoryAdjustmentId { get; private set; }
 
     public Guid WarehouseId { get; private set; }
 
@@ -51,7 +55,8 @@ public sealed class InventoryMovement : PersistentEntity
         decimal quantityDelta,
         decimal balanceAfter,
         DateTime createdAtUtc,
-        Guid? actorUserId = null)
+        Guid? actorUserId = null,
+        Guid? inventoryAdjustmentId = null)
     {
         if (quantityDeltaInUnit == 0m || quantityDelta == 0m)
         {
@@ -67,6 +72,7 @@ public sealed class InventoryMovement : PersistentEntity
 
         return new InventoryMovement(
             Guid.NewGuid(),
+            inventoryAdjustmentId,
             productId,
             warehouseId,
             quantityDelta > 0m ? InventoryMovementType.ManualIncrease : InventoryMovementType.ManualDecrease,

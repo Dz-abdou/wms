@@ -414,6 +414,8 @@
     "adjustTitle": "Manual adjustment",
     "historyTitle": "Movement history",
     "adjust": "Apply adjustment",
+    "addLine": "Add line",
+    "removeLine": "Remove",
     "currentBalance": "Current balance",
     "selectForHistory": "Select a product and warehouse to view history.",
     "loadingSources": "Loading products and warehouses…",
@@ -422,6 +424,13 @@
     "types": {
       "increase": "Increase",
       "decrease": "Decrease"
+    },
+    "reasons": {
+      "StockCorrection": "Stock correction",
+      "Damage": "Damage",
+      "WriteOff": "Write-off",
+      "FoundStock": "Found stock",
+      "InitialBalance": "Initial balance"
     },
     "table": {
       "type": "Type",
@@ -433,6 +442,9 @@
       "product": "Product",
       "warehouse": "Warehouse",
       "direction": "Direction",
+      "reason": "Reason",
+      "reference": "Reference",
+      "note": "Note",
       "quantity": "Quantity",
       "unitOfMeasure": "Unit of measure",
       "productRequired": "Product is required.",
