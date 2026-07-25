@@ -22,6 +22,9 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
 
         Assert.Equal("DZD", catalogueItem.CurrencyCode);
+        var list = await fixture.Client.GetFromJsonAsync<SupplierProductListResult>($"/api/supplier-products?supplierId={supplier.Id}&page=1&pageSize=20");
+        Assert.NotNull(list);
+        Assert.Contains(list.Items, item => item.Id == catalogueItem.Id);
         var duplicate = await fixture.Client.PostAsJsonAsync("/api/supplier-products", new
         {
             supplierId = supplier.Id,

@@ -17,21 +17,36 @@ public sealed class SupplierProductService(
 {
     public async Task<PagedResult<SupplierProductResponse>> GetListAsync(SupplierProductListQuery query, CancellationToken cancellationToken)
     {
-        var catalogue = BuildResponseQuery(query.SupplierId, query.ProductId);
+        var catalogue = BuildCatalogueQuery(query.SupplierId, query.ProductId);
 
         var totalCount = await catalogue.CountAsync(cancellationToken);
-        var items = await catalogue
-            .OrderBy(item => item.SupplierCode)
-            .ThenBy(item => item.ProductSku)
-            .ThenBy(item => item.PurchaseUnitOfMeasure)
+        var page = from catalogueItem in catalogue
+                   join supplier in dbContext.Suppliers.AsNoTracking() on catalogueItem.SupplierId equals supplier.Id
+                   join product in dbContext.Products.AsNoTracking() on catalogueItem.ProductId equals product.Id
+                   orderby supplier.Code, product.Sku, catalogueItem.PurchaseUnitOfMeasure
+                   select new { catalogueItem, supplier, product };
+        var items = await page
             .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
             .Take(query.PageSize)
+            .Select(item => new SupplierProductResponse(
+                item.catalogueItem.Id, item.catalogueItem.SupplierId, item.supplier.Code, item.supplier.Name,
+                item.catalogueItem.ProductId, item.product.Sku, item.product.Name, item.catalogueItem.SupplierSku,
+                item.catalogueItem.PurchaseUnitOfMeasure, item.catalogueItem.MinimumOrderQuantity, item.catalogueItem.UnitPrice,
+                item.catalogueItem.CurrencyCode, item.catalogueItem.IsActive, item.catalogueItem.CreatedAtUtc, item.catalogueItem.UpdatedAtUtc))
             .ToListAsync(cancellationToken);
         return new PagedResult<SupplierProductResponse>(items, query.Page, query.PageSize, totalCount);
     }
 
     public async Task<SupplierProductResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
-        await BuildResponseQuery(id: id).SingleOrDefaultAsync(cancellationToken)
+        await (from catalogueItem in BuildCatalogueQuery(id: id)
+               join supplier in dbContext.Suppliers.AsNoTracking() on catalogueItem.SupplierId equals supplier.Id
+               join product in dbContext.Products.AsNoTracking() on catalogueItem.ProductId equals product.Id
+               select new SupplierProductResponse(
+                   catalogueItem.Id, catalogueItem.SupplierId, supplier.Code, supplier.Name,
+                   catalogueItem.ProductId, product.Sku, product.Name, catalogueItem.SupplierSku,
+                   catalogueItem.PurchaseUnitOfMeasure, catalogueItem.MinimumOrderQuantity, catalogueItem.UnitPrice,
+                   catalogueItem.CurrencyCode, catalogueItem.IsActive, catalogueItem.CreatedAtUtc, catalogueItem.UpdatedAtUtc))
+        .SingleOrDefaultAsync(cancellationToken)
         ?? throw new SupplierProductNotFoundException(id);
 
     public async Task<SupplierProductResponse> CreateAsync(SupplierProductInput input, CancellationToken cancellationToken)
@@ -77,7 +92,7 @@ public sealed class SupplierProductService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    private IQueryable<SupplierProductResponse> BuildResponseQuery(Guid? supplierId = null, Guid? productId = null, Guid? id = null)
+    private IQueryable<SupplierProduct> BuildCatalogueQuery(Guid? supplierId = null, Guid? productId = null, Guid? id = null)
     {
         var catalogue = dbContext.SupplierProducts.AsNoTracking();
         if (supplierId is { } supplierFilter)
@@ -95,25 +110,7 @@ public sealed class SupplierProductService(
             catalogue = catalogue.Where(item => item.Id == itemId);
         }
 
-        return from catalogueItem in catalogue
-        join supplier in dbContext.Suppliers.AsNoTracking() on catalogueItem.SupplierId equals supplier.Id
-        join product in dbContext.Products.AsNoTracking() on catalogueItem.ProductId equals product.Id
-        select new SupplierProductResponse(
-            catalogueItem.Id,
-            catalogueItem.SupplierId,
-            supplier.Code,
-            supplier.Name,
-            catalogueItem.ProductId,
-            product.Sku,
-            product.Name,
-            catalogueItem.SupplierSku,
-            catalogueItem.PurchaseUnitOfMeasure,
-            catalogueItem.MinimumOrderQuantity,
-            catalogueItem.UnitPrice,
-            catalogueItem.CurrencyCode,
-            catalogueItem.IsActive,
-            catalogueItem.CreatedAtUtc,
-            catalogueItem.UpdatedAtUtc);
+        return catalogue;
     }
 
     private async Task<Warehouse.Domain.Suppliers.Supplier> FindSupplierAsync(Guid id, CancellationToken cancellationToken) =>
