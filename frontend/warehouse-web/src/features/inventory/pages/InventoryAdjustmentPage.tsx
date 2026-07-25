@@ -2,61 +2,50 @@ import {
   Alert,
   Button,
   Card,
-  Empty,
   Form,
   Input,
   InputNumber,
   Radio,
   Select,
   Spin,
-  Table,
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import {
   EditableFormListTable,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
-import { formatDateTime } from "../../../shared/formatting/dateTime";
-import { toAppLanguage } from "../../../shared/i18n/constants";
 import { useProducts } from "../../products/api/useProducts";
 import type { Product } from "../../products/api/productTypes";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
-import { useAdjustInventory, useMovementHistory } from "../api/useInventory";
+import { useAdjustInventory } from "../api/useInventory";
 import type {
   InventoryAdjustmentInput,
   InventoryAdjustmentLineInput,
-  InventoryMovement,
 } from "../api/inventoryTypes";
 import {
   fractionalBaseUnitCodes,
   inventoryPageSize,
+  inventoryRoutes,
 } from "../inventoryConstants";
 
 type AdjustmentRow = object;
-type Selection = Pick<
-  InventoryAdjustmentLineInput,
-  "productId" | "warehouseId"
->;
 
-export function InventoryPage() {
-  const { i18n, t } = useTranslation();
+export function InventoryAdjustmentPage() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [form] = Form.useForm<InventoryAdjustmentInput>();
   const products = useProducts({ page: 1, pageSize: inventoryPageSize });
   const warehouses = useWarehouses(1, inventoryPageSize);
   const feedback = useApiFeedback();
   const adjustment = useAdjustInventory();
   const lines = Form.useWatch("lines", form) ?? [];
-  const [selection, setSelection] = useState<Selection>();
-  const movements = useMovementHistory(
-    selection?.productId,
-    selection?.warehouseId,
-  );
   const productOptions = products.data?.items
     .filter((product) => product.isActive)
     .map((product) => ({
@@ -69,6 +58,7 @@ export function InventoryPage() {
       value: warehouse.id,
       label: `${warehouse.code} — ${warehouse.name}`,
     }));
+
   const lineColumns = (
     remove: (fieldName: number) => void,
   ): ColumnsType<AdjustmentRow & EditableFormListTableRow> => [
@@ -191,42 +181,24 @@ export function InventoryPage() {
       ),
     },
   ];
-  const movementColumns: ColumnsType<InventoryMovement> = [
-    {
-      title: t("inventory.table.type"),
-      dataIndex: "type",
-      render: (type) =>
-        t(
-          type === "ManualIncrease"
-            ? "inventory.types.increase"
-            : "inventory.types.decrease",
-        ),
-    },
-    {
-      title: t("inventory.table.delta"),
-      dataIndex: "quantityDeltaInUnit",
-      render: (value, movement) => `${value} ${movement.unitOfMeasure}`,
-    },
-    { title: t("inventory.table.balanceAfter"), dataIndex: "balanceAfter" },
-    {
-      title: t("inventory.table.created"),
-      dataIndex: "createdAtUtc",
-      render: (value) =>
-        formatDateTime(value, toAppLanguage(i18n.resolvedLanguage)),
-    },
-  ];
+
   async function submit(input: InventoryAdjustmentInput) {
     try {
       const result = await adjustment.mutateAsync(input);
       const firstLine = result.lines[0];
-      if (firstLine) setSelection(firstLine);
-      form.resetFields(["lines"]);
+      if (firstLine) {
+        navigate(
+          `${inventoryRoutes.movementHistory}?productId=${firstLine.productId}&warehouseId=${firstLine.warehouseId}`,
+        );
+      }
     } catch (error) {
-      if (!applyServerFieldErrors(form, error, t, "errors.validationFailed"))
+      if (!applyServerFieldErrors(form, error, t, "errors.validationFailed")) {
         feedback.notifyError(error, "inventory.errors.adjust");
+      }
     }
   }
-  if (products.isLoading || warehouses.isLoading)
+
+  if (products.isLoading || warehouses.isLoading) {
     return (
       <Spin
         className="page-spinner"
@@ -234,7 +206,9 @@ export function InventoryPage() {
         tip={t("inventory.loadingSources")}
       />
     );
-  if (products.error || warehouses.error)
+  }
+
+  if (products.error || warehouses.error) {
     return (
       <Alert
         message={getErrorMessage(
@@ -246,13 +220,21 @@ export function InventoryPage() {
         type="error"
       />
     );
+  }
+
   return (
     <section>
       <div className="page-heading">
-        <Typography.Title level={2}>{t("inventory.title")}</Typography.Title>
-        <Typography.Paragraph>{t("inventory.subtitle")}</Typography.Paragraph>
+        <div>
+          <Typography.Title level={2}>
+            {t("inventory.adjustTitle")}
+          </Typography.Title>
+          <Typography.Paragraph>
+            {t("inventory.adjustSubtitle")}
+          </Typography.Paragraph>
+        </div>
       </div>
-      <Card title={t("inventory.adjustTitle")}>
+      <Card>
         <Form
           form={form}
           initialValues={{ reason: "StockCorrection", lines: [] }}
@@ -260,17 +242,19 @@ export function InventoryPage() {
           onFinish={submit}
           onValuesChange={(changedValues) => {
             const changedLines = changedValues.lines as
-              Array<Partial<InventoryAdjustmentLineInput>> | undefined;
+              | Array<Partial<InventoryAdjustmentLineInput>>
+              | undefined;
             changedLines?.forEach((line, index) => {
               if (!line?.productId) return;
               const product = products.data?.items.find(
                 (candidate) => candidate.id === line.productId,
               );
-              if (product)
+              if (product) {
                 form.setFieldValue(
                   ["lines", index, "unitOfMeasure"],
                   product.baseUnitOfMeasure,
                 );
+              }
             });
           }}
         >
@@ -306,38 +290,13 @@ export function InventoryPage() {
             name="lines"
             scroll={{ x: 1200 }}
           />
-          <Button
-            htmlType="submit"
-            loading={adjustment.isPending}
-            type="primary"
-          >
-            {t("inventory.adjust")}
-          </Button>
+          <FormPageActions
+            cancelLabel={t("inventory.cancel")}
+            isSubmitting={adjustment.isPending}
+            onCancel={() => navigate(inventoryRoutes.movementHistory)}
+            submitLabel={t("inventory.adjust")}
+          />
         </Form>
-      </Card>
-      <Card title={t("inventory.historyTitle")}>
-        {!selection ? (
-          <Empty description={t("inventory.selectForHistory")} />
-        ) : movements.isLoading ? (
-          <Spin tip={t("inventory.loadingHistory")} />
-        ) : movements.error ? (
-          <Alert
-            message={getErrorMessage(
-              t,
-              movements.error,
-              "inventory.errors.loadHistory",
-            )}
-            showIcon
-            type="error"
-          />
-        ) : (
-          <Table
-            columns={movementColumns}
-            dataSource={movements.data?.items}
-            pagination={false}
-            rowKey="id"
-          />
-        )}
       </Card>
     </section>
   );
@@ -345,6 +304,7 @@ export function InventoryPage() {
 
 function unitOptions(product: Product | undefined) {
   if (!product) return [];
+
   return [
     { value: product.baseUnitOfMeasure },
     ...product.unitConversions.map((conversion) => ({

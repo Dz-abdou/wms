@@ -98,6 +98,10 @@ body {
   font-weight: 500;
 }
 
+.inventory-history-card {
+  margin-top: 24px;
+}
+
 @media (max-width: 640px) {
   .application-header {
     gap: 12px;

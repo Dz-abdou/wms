@@ -33,8 +33,11 @@ export function ApplicationLayout() {
             ? "currencies"
           : location.pathname.startsWith(purchasingRoutes.orders)
             ? "purchase-orders"
-            : location.pathname.startsWith(inventoryRoutes.dashboard)
-              ? "inventory"
+            : location.pathname.startsWith(inventoryRoutes.adjustments)
+              ? "inventory-adjustments"
+              : location.pathname.startsWith(inventoryRoutes.movementHistory) ||
+                  location.pathname.startsWith(inventoryRoutes.root)
+                ? "inventory-movements"
               : location.pathname.startsWith(administrationRoutes.users)
                 ? "users"
                 : location.pathname.startsWith(administrationRoutes.roles)
@@ -65,9 +68,25 @@ export function ApplicationLayout() {
             ] },
             {
               key: "inventory",
-              label: (
-                <Link to={inventoryRoutes.dashboard}>{t("navigation.inventory")}</Link>
-              ),
+              label: t("navigation.inventory"),
+              children: [
+                {
+                  key: "inventory-movements",
+                  label: (
+                    <Link to={inventoryRoutes.movementHistory}>
+                      {t("navigation.movementHistory")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "inventory-adjustments",
+                  label: (
+                    <Link to={inventoryRoutes.adjustments}>
+                      {t("navigation.adjustments")}
+                    </Link>
+                  ),
+                },
+              ],
             },
             ...(isAdministrator
               ? [

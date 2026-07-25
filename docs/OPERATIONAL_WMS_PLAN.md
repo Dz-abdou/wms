@@ -168,6 +168,8 @@ Manual adjustment must evolve into an adjustment document: shared reason/referen
 ### Screens
 
 - Inventory overview: product, warehouse, on-hand quantity, last movement, and later available/reserved quantity
+- Movement history: a dedicated read-only investigation screen with product/warehouse filters, movement type, quantity delta, balance after, timestamp, and later source document/reference filters. Do not combine it with a stock-changing form.
+- Manual adjustments: a dedicated adjustment-document screen with its own header and editable line table. On success, take the user to the relevant filtered movement history (or later the adjustment detail), rather than embedding the history in the form.
 - Server-side search by SKU/name and warehouse
 - Filters for low stock, warehouse, category, and active status
 - Cycle-count workflow rather than only positive/negative manual adjustments
@@ -278,7 +280,7 @@ Group the current growing header menu:
 Master data: Products, Warehouses, Suppliers, Supplier catalogue
 Inbound: Purchase orders, Goods receipts
 Outbound: Customers, Sales orders, Picking, Shipments
-Inventory: Inventory overview, Adjustments, Transfers, Counts
+Inventory: Inventory overview, Movement history, Adjustments, Transfers, Counts
 Administration: Users, Roles
 ```
 

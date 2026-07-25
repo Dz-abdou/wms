@@ -1,7 +1,7 @@
 import { ConfigProvider } from "antd";
 import enUs from "antd/locale/en_US";
 import frFr from "antd/locale/fr_FR";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RolesPage } from "../features/administration/pages/RolesPage";
 import { UsersPage } from "../features/administration/pages/UsersPage";
@@ -27,7 +27,8 @@ import { PurchaseOrderDetailPage } from "../features/purchasing/pages/PurchaseOr
 import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrderEditPage";
 import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
-import { InventoryPage } from "../features/inventory/pages/InventoryPage";
+import { InventoryAdjustmentPage } from "../features/inventory/pages/InventoryAdjustmentPage";
+import { InventoryMovementHistoryPage } from "../features/inventory/pages/InventoryMovementHistoryPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
@@ -87,8 +88,16 @@ export function App() {
                       element={<WarehouseListPage />}
                     />
                     <Route
-                      path={inventoryRoutes.dashboardPattern}
-                      element={<InventoryPage />}
+                      path={inventoryRoutes.rootPattern}
+                      element={<Navigate replace to={inventoryRoutes.movementHistory} />}
+                    />
+                    <Route
+                      path={inventoryRoutes.movementHistoryPattern}
+                      element={<InventoryMovementHistoryPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentsPattern}
+                      element={<InventoryAdjustmentPage />}
                     />
                     <Route
                       path={warehouseRoutes.create}
