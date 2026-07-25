@@ -3,6 +3,8 @@ import type { TFunction } from "i18next";
 import { ApiError } from "../api/apiClient";
 import { getFieldErrorMessages } from "./problemDetails";
 
+type FieldName = string | number | Array<string | number>;
+
 export function hasServerFieldErrors(error: unknown): error is ApiError {
   return (
     error instanceof ApiError &&
@@ -17,7 +19,7 @@ export function applyServerFieldErrors(
   error: unknown,
   t: TFunction,
   fallbackKey: string,
-  resolveFieldName: (property: string) => string | undefined = toCamelCase,
+  resolveFieldName: (property: string) => FieldName | undefined = toFieldName,
 ): boolean {
   if (!hasServerFieldErrors(error)) {
     return false;
@@ -39,7 +41,7 @@ export function applyServerFieldErrors(
         : undefined;
     })
     .filter(
-      (field): field is { name: string; errors: string[] } =>
+      (field): field is { name: FieldName; errors: string[] } =>
         field !== undefined,
     );
 
@@ -51,11 +53,24 @@ export function applyServerFieldErrors(
   return true;
 }
 
-function toCamelCase(property: string): string | undefined {
+function toFieldName(property: string): FieldName | undefined {
   if (!property) {
     return undefined;
   }
 
+  const nestedProperty = /^(?<list>[^[]+)\[(?<index>\d+)]\.(?<field>.+)$/.exec(property)?.groups;
+  if (nestedProperty) {
+    return [
+      toCamelCase(nestedProperty.list),
+      Number(nestedProperty.index),
+      toCamelCase(nestedProperty.field),
+    ];
+  }
+
+  return toCamelCase(property);
+}
+
+function toCamelCase(property: string): string {
   return property.charAt(0).toLowerCase() + property.slice(1);
 }
 

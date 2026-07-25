@@ -80,5 +80,32 @@ describe("PurchaseOrderForm", () => {
     expect(
       screen.getByRole("combobox", { name: "Supplier catalogue item" }),
     ).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("combobox", { name: "Supplier catalogue item" }),
+    );
+    await user.click(await screen.findByText("SKU-1 — Product"));
+  });
+
+  it("shows the MOQ error beside an existing invalid quantity", async () => {
+    const user = userEvent.setup();
+    render(
+      <PurchaseOrderForm
+        errorMessageKey="purchasing.orders.errors.create"
+        initialValues={{
+          supplierId: "supplier-1",
+          lines: [{ supplierProductId: "catalogue-1", quantity: 1 }],
+        }}
+        isSubmitting={false}
+        onSubmit={async () => undefined}
+        submitLabel="Create draft"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Create draft" }));
+
+    expect(
+      await screen.findByText("Quantity must be at least 2."),
+    ).toBeInTheDocument();
   });
 });

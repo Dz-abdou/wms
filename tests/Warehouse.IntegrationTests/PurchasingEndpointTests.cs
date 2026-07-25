@@ -114,7 +114,13 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         });
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await AssertCodeAsync(response, ApiErrorCodes.PurchaseOrderCatalogueInvalid);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.PurchaseOrderMinimumOrderQuantity, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.PurchaseOrderMinimumOrderQuantity,
+            Assert.Single(problem.ErrorCodes["Lines[0].Quantity"]));
+        Assert.NotEmpty(problem.Errors["Lines[0].Quantity"]);
     }
 
     [Fact]
@@ -168,4 +174,8 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     private sealed record Problem(string? Code);
+    private sealed record ValidationProblem(
+        string? Code,
+        Dictionary<string, string[]> Errors,
+        Dictionary<string, string[]> ErrorCodes);
 }

@@ -3,6 +3,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
   EditableFormListTable,
+  type EditableFormListTableActions,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
@@ -56,7 +57,7 @@ export function PurchaseOrderForm({
     label: `${item.productSku} — ${item.productName}`,
   }));
   const columns = (
-    remove: (fieldName: number) => void,
+    { add, remove }: EditableFormListTableActions,
   ): ColumnsType<PurchaseOrderLineRow & EditableFormListTableRow> => [
     {
       title: t("purchasing.orders.catalogueItem"),
@@ -119,12 +120,27 @@ export function PurchaseOrderForm({
               required: true,
               message: t("purchasing.orders.quantityRequired"),
             },
+            {
+              validator: (_, value) =>
+                row.supplierProduct &&
+                typeof value === "number" &&
+                value < row.supplierProduct.minimumOrderQuantity
+                  ? Promise.reject(
+                      new Error(
+                        t("purchasing.orders.quantityMinimum", {
+                          minimumOrderQuantity:
+                            row.supplierProduct.minimumOrderQuantity,
+                        }),
+                      ),
+                    )
+                  : Promise.resolve(),
+            },
           ]}
           style={{ marginBottom: 0 }}
         >
           <InputNumber
             aria-label={t("purchasing.orders.quantity")}
-            min={0.000001}
+            min={row.supplierProduct?.minimumOrderQuantity ?? 0.000001}
             precision={6}
           />
         </Form.Item>
@@ -151,12 +167,22 @@ export function PurchaseOrderForm({
       },
     },
     {
-      title: t("purchasing.orders.actions"),
-      key: "actions",
+      title: t("purchasing.orders.addLine"),
+      key: "add",
+      width: 80,
       render: (_, row) => (
-        <Button danger onClick={() => remove(row.fieldName)} type="text">
-          {t("purchasing.orders.removeLine")}
-        </Button>
+        <>
+          <Button
+            aria-label={t("purchasing.orders.addLine")}
+            onClick={add}
+            type="text"
+          >
+            +
+          </Button>
+          <Button danger onClick={() => remove(row.fieldName)} type="text">
+            {t("purchasing.orders.removeLine")}
+          </Button>
+        </>
       ),
     },
   ];

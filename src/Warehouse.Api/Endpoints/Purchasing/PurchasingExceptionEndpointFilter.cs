@@ -41,6 +41,13 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Purchase order cannot be changed.", exception.Message, ApiErrorCodes.PurchaseOrderImmutable);
         }
+        catch (PurchaseOrderMinimumOrderQuantityException exception)
+        {
+            return ValidationProblem(
+                exception.PropertyName,
+                exception.Message,
+                ApiErrorCodes.PurchaseOrderMinimumOrderQuantity);
+        }
         catch (PurchaseOrderCatalogueInvalidException exception)
         {
             return Problem(StatusCodes.Status422UnprocessableEntity, "Purchase order catalogue data is invalid.", exception.Message, ApiErrorCodes.PurchaseOrderCatalogueInvalid);
@@ -56,4 +63,14 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         title: title,
         detail: detail,
         extensions: new Dictionary<string, object?> { ["code"] = code });
+
+    private static IResult ValidationProblem(string propertyName, string message, string errorCode) => Results.ValidationProblem(
+        errors: new Dictionary<string, string[]> { [propertyName] = [message] },
+        statusCode: StatusCodes.Status422UnprocessableEntity,
+        title: "Purchase order minimum order quantity is not met.",
+        extensions: new Dictionary<string, object?>
+        {
+            ["code"] = errorCode,
+            ["errorCodes"] = new Dictionary<string, string[]> { [propertyName] = [errorCode] }
+        });
 }

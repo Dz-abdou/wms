@@ -31,5 +31,6 @@ public static class ApiErrorCodes
     public const string PurchaseOrderNotFound = "purchase_order.not_found";
     public const string PurchaseOrderImmutable = "purchase_order.immutable";
     public const string PurchaseOrderCatalogueInvalid = "purchase_order.catalogue_invalid";
+    public const string PurchaseOrderMinimumOrderQuantity = "purchase_order.minimum_order_quantity";
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
 }

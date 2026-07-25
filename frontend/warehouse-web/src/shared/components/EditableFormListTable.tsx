@@ -10,15 +10,20 @@ type FormListField = Pick<EditableFormListTableRow, "key"> & {
   name: number;
 };
 
+export type EditableFormListTableActions = {
+  add: () => void;
+  remove: (fieldName: number) => void;
+};
+
 type EditableFormListTableProps<T extends object> = {
-  name: string;
-  columns: (
-    remove: (fieldName: number) => void,
-  ) => ColumnsType<T & EditableFormListTableRow>;
+  columns: (actions: EditableFormListTableActions) => ColumnsType<
+    T & EditableFormListTableRow
+  >;
   createRow: (field: FormListField) => T;
   addLabel: string;
   addInitialValue?: unknown;
   addDisabled?: boolean;
+  name: string;
   scroll?: TableProps<T & EditableFormListTableRow>["scroll"];
 };
 
@@ -38,6 +43,7 @@ export function EditableFormListTable<T extends object>({
   return (
     <Form.List name={name}>
       {(fields, { add, remove }) => {
+        const addRow = () => add(addInitialValue);
         const rows = fields.map((field) => ({
           key: field.key,
           fieldName: field.name,
@@ -45,22 +51,25 @@ export function EditableFormListTable<T extends object>({
         }));
 
         return (
-          <>
-            <Table
-              columns={columns(remove)}
-              dataSource={rows}
-              pagination={false}
-              rowKey="key"
-              scroll={scroll}
-            />
-            <Button
-              disabled={addDisabled}
-              onClick={() => add(addInitialValue)}
-              type="dashed"
-            >
-              {addLabel}
-            </Button>
-          </>
+          <Table
+            columns={columns({ add: addRow, remove })}
+            dataSource={rows}
+            locale={{
+              emptyText: (
+                <Button
+                  aria-label={addLabel}
+                  disabled={addDisabled}
+                  onClick={addRow}
+                  type="dashed"
+                >
+                  + {addLabel}
+                </Button>
+              ),
+            }}
+            pagination={false}
+            rowKey="key"
+            scroll={scroll}
+          />
         );
       }}
     </Form.List>

@@ -3,6 +3,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
   EditableFormListTable,
+  type EditableFormListTableActions,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
@@ -35,7 +36,7 @@ export function ProductForm({
   const categories = useProductCategories();
   const feedback = useApiFeedback();
   const conversionColumns = (
-    remove: (fieldName: number) => void,
+    { add, remove }: EditableFormListTableActions,
   ): ColumnsType<UnitConversionRow & EditableFormListTableRow> => [
     {
       title: t("products.form.conversionUnit"),
@@ -91,12 +92,21 @@ export function ProductForm({
       ),
     },
     {
-      title: t("products.table.actions"),
-      key: "actions",
+      title: t("products.form.addConversion"),
+      key: "add",
       render: (_, row) => (
-        <Button danger onClick={() => remove(row.fieldName)} type="text">
-          {t("products.form.removeConversion")}
-        </Button>
+        <>
+          <Button
+            aria-label={t("products.form.addConversion")}
+            onClick={add}
+            type="text"
+          >
+            +
+          </Button>
+          <Button danger onClick={() => remove(row.fieldName)} type="text">
+            {t("products.form.removeConversion")}
+          </Button>
+        </>
       ),
     },
   ];

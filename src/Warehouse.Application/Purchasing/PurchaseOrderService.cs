@@ -122,13 +122,18 @@ public sealed class PurchaseOrderService(
 
         var products = await dbContext.Products.Where(product => catalogueItems.Values.Select(item => item.ProductId).Contains(product.Id)).ToDictionaryAsync(product => product.Id, cancellationToken);
         var lines = new List<PurchaseOrderLine>(inputs.Count);
-        foreach (var input in inputs)
+        foreach (var (input, lineIndex) in inputs.Select((input, index) => (input, index)))
         {
             var catalogueItem = catalogueItems[input.SupplierProductId];
             if (catalogueItem.SupplierId != supplierId || !catalogueItem.IsActive || !products.TryGetValue(catalogueItem.ProductId, out var product) || !product.IsActive ||
-                !product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _) || input.Quantity < catalogueItem.MinimumOrderQuantity)
+                !product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _))
             {
                 throw new PurchaseOrderCatalogueInvalidException("A purchase-order line does not match an active supplier catalogue item or its minimum order quantity.");
+            }
+
+            if (input.Quantity < catalogueItem.MinimumOrderQuantity)
+            {
+                throw new PurchaseOrderMinimumOrderQuantityException(lineIndex, catalogueItem.MinimumOrderQuantity);
             }
 
             lines.Add(PurchaseOrderLine.Create(catalogueItem, product.Sku, product.Name, input.Quantity));
