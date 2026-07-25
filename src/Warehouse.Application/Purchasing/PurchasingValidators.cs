@@ -17,7 +17,7 @@ public sealed class SupplierProductInputValidator : AbstractValidator<SupplierPr
         RuleFor(input => input.PurchaseUnitOfMeasure).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).MaximumLength(SupplierProductRules.UnitOfMeasureLength).WithErrorCode(ApiErrorCodes.ValidationMaxLength);
         RuleFor(input => input.MinimumOrderQuantity).GreaterThan(0m).WithErrorCode(ApiErrorCodes.ValidationInvalid);
         RuleFor(input => input.UnitPrice).GreaterThanOrEqualTo(0m).WithErrorCode(ApiErrorCodes.ValidationInvalid);
-        RuleFor(input => input.CurrencyCode).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).Length(SupplierProductRules.CurrencyCodeLength).WithErrorCode(ApiErrorCodes.ValidationInvalid);
+        RuleFor(input => input.CurrencyCode).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).Length(SupplierProductRules.CurrencyCodeLength).WithErrorCode(ApiErrorCodes.ValidationInvalid).Must(code => code is not null && code.Trim().All(char.IsAsciiLetter)).WithErrorCode(ApiErrorCodes.ValidationInvalid);
     }
 }
 
@@ -29,7 +29,7 @@ public sealed class UpdateSupplierProductInputValidator : AbstractValidator<Upda
         RuleFor(input => input.PurchaseUnitOfMeasure).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).MaximumLength(SupplierProductRules.UnitOfMeasureLength).WithErrorCode(ApiErrorCodes.ValidationMaxLength);
         RuleFor(input => input.MinimumOrderQuantity).GreaterThan(0m).WithErrorCode(ApiErrorCodes.ValidationInvalid);
         RuleFor(input => input.UnitPrice).GreaterThanOrEqualTo(0m).WithErrorCode(ApiErrorCodes.ValidationInvalid);
-        RuleFor(input => input.CurrencyCode).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).Length(SupplierProductRules.CurrencyCodeLength).WithErrorCode(ApiErrorCodes.ValidationInvalid);
+        RuleFor(input => input.CurrencyCode).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired).Length(SupplierProductRules.CurrencyCodeLength).WithErrorCode(ApiErrorCodes.ValidationInvalid).Must(code => code is not null && code.Trim().All(char.IsAsciiLetter)).WithErrorCode(ApiErrorCodes.ValidationInvalid);
     }
 }
 

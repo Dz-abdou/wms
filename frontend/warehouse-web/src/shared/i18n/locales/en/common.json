@@ -31,6 +31,7 @@
       "validation.failed": "Please correct the highlighted fields.",
       "validation.required": "This field is required.",
       "validation.max_length": "This value is too long.",
+      "validation.invalid": "This value is invalid.",
       "product.not_found": "The product was not found.",
       "warehouse.not_found": "The warehouse was not found.",
       "warehouse.code_conflict": "A warehouse with this code already exists.",

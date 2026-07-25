@@ -31,6 +31,7 @@
       "validation.failed": "Veuillez corriger les champs mis en évidence.",
       "validation.required": "Ce champ est obligatoire.",
       "validation.max_length": "Cette valeur est trop longue.",
+      "validation.invalid": "Cette valeur n’est pas valide.",
       "product.not_found": "Le produit est introuvable.",
       "warehouse.not_found": "L’entrepôt est introuvable.",
       "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",
