@@ -5,6 +5,7 @@ using Warehouse.Infrastructure.Auditing;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Products;
+using Warehouse.Domain.Suppliers;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
 
@@ -18,6 +19,8 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
     public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
 
     public DbSet<WarehouseEntity> Warehouses => Set<WarehouseEntity>();
+
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
 

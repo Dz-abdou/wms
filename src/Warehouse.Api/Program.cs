@@ -13,6 +13,7 @@ using Warehouse.Api.Endpoints.Auth;
 using Warehouse.Api.Endpoints.Inventory;
 using Warehouse.Api.Endpoints.Products;
 using Warehouse.Api.Endpoints.Warehouses;
+using Warehouse.Api.Endpoints.Suppliers;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -39,6 +40,7 @@ if (!string.IsNullOrWhiteSpace(frontendOrigin)) builder.Services.AddCors(options
 builder.Services.AddProblemDetails(); builder.Services.AddExceptionHandler<UnexpectedExceptionHandler>(); builder.Services.AddOpenApi(); builder.Services.AddSwaggerGen(options => options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", Description = "Enter a JWT access token." }));
 builder.Services.AddHealthChecks().AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"]).AddDbContextCheck<WarehouseDbContext>("postgresql", tags: ["ready"]);
 var app = builder.Build();
+app.MapSupplierEndpoints();
 if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScope(); await scope.ServiceProvider.GetRequiredService<Warehouse.Infrastructure.Identity.IdentityBootstrapper>().SeedDevelopmentAdminAsync(); }
 app.MapGet("/", () => Results.Ok(new { service = "Warehouse API", status = "ready" }));
 app.MapAuthEndpoints();

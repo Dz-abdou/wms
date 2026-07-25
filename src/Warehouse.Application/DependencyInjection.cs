@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Inventory;
 using Warehouse.Application.Products;
 using Warehouse.Application.Warehouses;
+using Warehouse.Application.Suppliers;
 
 namespace Warehouse.Application;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<ProductService>();
         services.AddScoped<WarehouseService>();
         services.AddScoped<ProductCategoryService>();
+        services.AddScoped<SupplierService>();
         services.AddScoped<InventoryService>();
         services.AddValidatorsFromAssemblyContaining<ProductService>();
 

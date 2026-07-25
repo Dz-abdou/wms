@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Products;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
+using Warehouse.Domain.Suppliers;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -14,6 +15,8 @@ public interface IWarehouseDbContext
     DbSet<WarehouseEntity> Warehouses { get; }
 
     DbSet<InventoryBalance> InventoryBalances { get; }
+    DbSet<Supplier> Suppliers { get; }
+
 
     DbSet<InventoryMovement> InventoryMovements { get; }
 
