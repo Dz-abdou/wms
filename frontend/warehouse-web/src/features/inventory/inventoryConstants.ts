@@ -9,3 +9,5 @@ export const inventoryRoutes = {
 } as const
 
 export const inventoryPageSize = 100
+
+export const fractionalBaseUnitCodes: ReadonlySet<string> = new Set(['KG', 'G', 'L', 'ML', 'M', 'CM', 'MM'])

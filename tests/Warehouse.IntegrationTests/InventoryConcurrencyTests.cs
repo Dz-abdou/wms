@@ -20,7 +20,8 @@ public sealed class InventoryConcurrencyTests(ProductApiFixture fixture)
             productId,
             warehouseId,
             quantity = 1m,
-            direction = InventoryAdjustmentDirection.Increase
+            direction = InventoryAdjustmentDirection.Increase,
+            unitOfMeasure = "EA"
         });
 
         using var firstScope = fixture.Factory.Services.CreateScope();

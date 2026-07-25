@@ -39,6 +39,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(2, movements.Count);
         Assert.Equal(5m, movements[0].QuantityDelta);
         Assert.Equal(-2m, movements[1].QuantityDelta);
+        Assert.Equal("EA", movements[0].UnitOfMeasure);
+        Assert.Equal(-2m, movements[1].QuantityDeltaInUnit);
         Assert.Equal(3m, movements[1].BalanceAfter);
     }
 
@@ -53,7 +55,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             productId = product.Id,
             warehouseId = warehouse.Id,
             quantity = 1m,
-            direction = InventoryAdjustmentDirection.Decrease
+            direction = InventoryAdjustmentDirection.Decrease,
+            unitOfMeasure = "EA"
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -83,19 +86,64 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(warehouse.Id, history.Items[0].WarehouseId);
         Assert.Equal("ManualIncrease", history.Items[0].Type);
     }
+    [Fact]
+    public async Task Manual_adjustment_converts_valid_product_units_and_rejects_fractional_cartons()
+    {
+        var createProductResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"UOM-{Guid.NewGuid():N}"[..14],
+            name = "Packaged inventory product",
+            baseUnitOfMeasure = "EA",
+            unitConversions = new[]
+            {
+                new { unitOfMeasure = "CTN", quantityInBaseUnit = 24m, allowsFractionalQuantity = false }
+            }
+        });
+        createProductResponse.EnsureSuccessStatusCode();
+        var product = (await createProductResponse.Content.ReadFromJsonAsync<ProductResponse>())!;
+        var warehouse = await CreateWarehouseAsync();
+
+        var invalidResponse = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
+        {
+            productId = product.Id,
+            warehouseId = warehouse.Id,
+            quantity = 1.1m,
+            direction = InventoryAdjustmentDirection.Increase,
+            unitOfMeasure = "CTN"
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
+        var problem = await invalidResponse.Content.ReadFromJsonAsync<ProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.InventoryInvalidUnitOfMeasure, problem.Code);
+
+        var result = await AdjustAsync(product.Id, warehouse.Id, 2m, InventoryAdjustmentDirection.Increase, "CTN");
+        Assert.Equal(48m, result.Quantity);
+        Assert.Equal("EA", result.BaseUnitOfMeasure);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        var movement = await dbContext.InventoryMovements.SingleAsync(candidate => candidate.ProductId == product.Id);
+        Assert.Equal("CTN", movement.UnitOfMeasure);
+        Assert.Equal(2m, movement.QuantityDeltaInUnit);
+        Assert.Equal(48m, movement.QuantityDelta);
+    }
+
 
     private async Task<InventoryBalanceResponse> AdjustAsync(
         Guid productId,
         Guid warehouseId,
         decimal quantity,
-        InventoryAdjustmentDirection direction)
+        InventoryAdjustmentDirection direction,
+        string unitOfMeasure = "EA")
     {
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
             productId,
             warehouseId,
             quantity,
-            direction
+            direction,
+            unitOfMeasure
         });
         response.EnsureSuccessStatusCode();
 

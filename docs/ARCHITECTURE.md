@@ -123,6 +123,7 @@ Feature API modules own endpoint paths and request serialization. Feature hooks 
 
 - TanStack Query for queries, mutations and cache invalidation
 - Ant Design for layout, forms, modals, tables, notifications and navigation
+- Server validation remains authoritative: map field errors inline in forms, use translated notifications for non-field mutation failures, and keep query failures in their page state.
 - Route-level pages
 - Feature-specific API hooks
 - Server-side filtering, sorting and pagination for large tables

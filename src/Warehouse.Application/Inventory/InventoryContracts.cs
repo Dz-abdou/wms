@@ -14,19 +14,23 @@ public sealed record InventoryAdjustmentInput(
     Guid ProductId,
     Guid WarehouseId,
     decimal Quantity,
-    InventoryAdjustmentDirection Direction);
+    InventoryAdjustmentDirection Direction,
+    string? UnitOfMeasure);
 
 public sealed record InventoryBalanceResponse(
     Guid ProductId,
     Guid WarehouseId,
     decimal Quantity,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    string BaseUnitOfMeasure);
 
 public sealed record InventoryMovementResponse(
     Guid Id,
     Guid ProductId,
     Guid WarehouseId,
     string Type,
+    string UnitOfMeasure,
+    decimal QuantityDeltaInUnit,
     decimal QuantityDelta,
     decimal BalanceAfter,
     DateTime CreatedAtUtc);

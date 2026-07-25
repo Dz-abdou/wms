@@ -28,6 +28,7 @@ import { productRoutes } from "../features/products/productConstants";
 import { toAppLanguage } from "../shared/i18n/constants";
 import "../shared/i18n/i18n";
 import { ApplicationLayout } from "../layouts/ApplicationLayout";
+import { ApiFeedbackProvider } from "../shared/feedback/ApiFeedbackProvider";
 import { HomePage } from "../pages/home/HomePage";
 import { AppProviders } from "./AppProviders";
 import { applicationTheme } from "./theme";
@@ -39,69 +40,71 @@ export function App() {
 
   return (
     <ConfigProvider locale={antdLocale} theme={applicationTheme}>
-      <AppProviders>
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/access-denied" element={<AccessDeniedPage />} />
-                <Route element={<ApplicationLayout />}>
-                  <Route index element={<HomePage />} />
-                  <Route
-                    path={productRoutes.listPattern}
-                    element={<ProductListPage />}
-                  />
-                  <Route
-                    path={productRoutes.create}
-                    element={<ProductCreatePage />}
-                  />
-                  <Route
-                    path={productRoutes.detailPattern}
-                    element={<ProductDetailPage />}
-                  />
-                  <Route
-                    path={productRoutes.editPattern}
-                    element={<ProductEditPage />}
-                  />
-                  <Route
-                    path={warehouseRoutes.listPattern}
-                    element={<WarehouseListPage />}
-                  />
-                  <Route
-                    path={inventoryRoutes.dashboardPattern}
-                    element={<InventoryPage />}
-                  />
-                  <Route
-                    path={warehouseRoutes.create}
-                    element={<WarehouseCreatePage />}
-                  />
-                  <Route
-                    path={warehouseRoutes.detailPattern}
-                    element={<WarehouseDetailPage />}
-                  />
-                  <Route
-                    path={warehouseRoutes.editPattern}
-                    element={<WarehouseEditPage />}
-                  />
-                  <Route
-                    element={<ProtectedRoute roles={[administratorRole]} />}
-                  >
+      <ApiFeedbackProvider>
+        <AppProviders>
+          <BrowserRouter>
+            <AuthProvider>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/access-denied" element={<AccessDeniedPage />} />
+                  <Route element={<ApplicationLayout />}>
+                    <Route index element={<HomePage />} />
                     <Route
-                      path={administrationRoutes.usersPattern}
-                      element={<UsersPage />}
+                      path={productRoutes.listPattern}
+                      element={<ProductListPage />}
                     />
                     <Route
-                      path={administrationRoutes.rolesPattern}
-                      element={<RolesPage />}
+                      path={productRoutes.create}
+                      element={<ProductCreatePage />}
                     />
+                    <Route
+                      path={productRoutes.detailPattern}
+                      element={<ProductDetailPage />}
+                    />
+                    <Route
+                      path={productRoutes.editPattern}
+                      element={<ProductEditPage />}
+                    />
+                    <Route
+                      path={warehouseRoutes.listPattern}
+                      element={<WarehouseListPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.dashboardPattern}
+                      element={<InventoryPage />}
+                    />
+                    <Route
+                      path={warehouseRoutes.create}
+                      element={<WarehouseCreatePage />}
+                    />
+                    <Route
+                      path={warehouseRoutes.detailPattern}
+                      element={<WarehouseDetailPage />}
+                    />
+                    <Route
+                      path={warehouseRoutes.editPattern}
+                      element={<WarehouseEditPage />}
+                    />
+                    <Route
+                      element={<ProtectedRoute roles={[administratorRole]} />}
+                    >
+                      <Route
+                        path={administrationRoutes.usersPattern}
+                        element={<UsersPage />}
+                      />
+                      <Route
+                        path={administrationRoutes.rolesPattern}
+                        element={<RolesPage />}
+                      />
+                    </Route>
                   </Route>
                 </Route>
-              </Route>
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </AppProviders>
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </AppProviders>
+      </ApiFeedbackProvider>
     </ConfigProvider>
   );
 }

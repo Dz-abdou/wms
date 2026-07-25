@@ -162,7 +162,8 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         (conversions ?? [])
             .Select(conversion => new ProductUnitConversionDefinition(
                 conversion.UnitOfMeasure,
-                conversion.QuantityInBaseUnit))
+                conversion.QuantityInBaseUnit,
+                conversion.AllowsFractionalQuantity))
             .ToArray();
 
     private static ProductMeasurements? ToMeasurements(ProductMeasurementsInput? measurements) =>
@@ -185,7 +186,8 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
             .OrderBy(conversion => conversion.UnitOfMeasure)
             .Select(conversion => new ProductUnitConversionResponse(
                 conversion.UnitOfMeasure,
-                conversion.QuantityInBaseUnit))
+                conversion.QuantityInBaseUnit,
+                conversion.AllowsFractionalQuantity))
             .ToArray(),
         product.Measurements is { } measurements
             ? new ProductMeasurementsResponse(

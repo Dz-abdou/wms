@@ -40,6 +40,8 @@ public sealed class InventoryBalanceTests
         var movement = InventoryMovement.CreateManualAdjustment(
             productId,
             warehouseId,
+            "EA",
+            -2m,
             -2m,
             3m,
             CreatedAtUtc,
@@ -49,6 +51,8 @@ public sealed class InventoryBalanceTests
         Assert.Equal(warehouseId, movement.WarehouseId);
         Assert.Equal(InventoryMovementType.ManualDecrease, movement.Type);
         Assert.Equal(-2m, movement.QuantityDelta);
+        Assert.Equal("EA", movement.UnitOfMeasure);
+        Assert.Equal(-2m, movement.QuantityDeltaInUnit);
         Assert.Equal(3m, movement.BalanceAfter);
     }
 }

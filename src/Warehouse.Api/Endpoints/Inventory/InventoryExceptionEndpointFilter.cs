@@ -16,6 +16,11 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status404NotFound, "Product not found.", exception.Message, ApiErrorCodes.InventoryProductNotFound);
         }
+        catch (InventoryInvalidUnitOfMeasureException exception)
+        {
+            return Problem(StatusCodes.Status400BadRequest, "Invalid unit of measure.", exception.Message, ApiErrorCodes.InventoryInvalidUnitOfMeasure);
+        }
+
         catch (InventoryWarehouseNotFoundException exception)
         {
             return Problem(StatusCodes.Status404NotFound, "Warehouse not found.", exception.Message, ApiErrorCodes.InventoryWarehouseNotFound);

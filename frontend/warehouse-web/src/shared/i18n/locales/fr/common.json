@@ -39,7 +39,8 @@
       "admin.user_not_found": "Le compte utilisateur est introuvable.",
       "admin.email_conflict": "Un compte utilise déjà cette adresse e-mail.",
       "admin.user_invalid": "Les informations ne respectent pas les exigences du compte.",
-      "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page."
+      "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page.",
+      "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné."
     }
   },
   "products": {
@@ -93,6 +94,7 @@
       "conversionQuantity": "Quantité de base",
       "conversionUnitRequired": "Une unité de conversion est requise.",
       "conversionQuantityRequired": "Une quantité de base positive est requise.",
+      "conversionAllowsFractionalQuantity": "Autoriser les quantités décimales",
       "addConversion": "Ajouter une conversion",
       "removeConversion": "Retirer",
       "netWeight": "Poids net",
@@ -242,9 +244,12 @@
       "warehouse": "Entrepôt",
       "direction": "Sens",
       "quantity": "Quantité",
+      "unitOfMeasure": "Unité de mesure",
       "productRequired": "Le produit est obligatoire.",
       "warehouseRequired": "L’entrepôt est obligatoire.",
-      "quantityRequired": "La quantité est obligatoire."
+      "unitOfMeasureRequired": "Une unité de mesure est obligatoire.",
+      "quantityRequired": "La quantité est obligatoire.",
+      "wholeQuantity": "Cette unité n’accepte que des quantités entières."
     },
     "errors": {
       "loadSources": "Les produits ou entrepôts n’ont pas pu être chargés.",

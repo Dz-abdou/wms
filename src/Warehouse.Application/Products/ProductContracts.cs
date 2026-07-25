@@ -7,7 +7,10 @@ public sealed record ProductListQuery(
     int PageSize = PaginationConstants.DefaultPageSize,
     string? Search = null) : IPagedRequest;
 
-public sealed record ProductUnitConversionInput(string? UnitOfMeasure, decimal QuantityInBaseUnit);
+public sealed record ProductUnitConversionInput(
+    string? UnitOfMeasure,
+    decimal QuantityInBaseUnit,
+    bool AllowsFractionalQuantity = false);
 
 public sealed record ProductMeasurementsInput(
     decimal? NetWeight,
@@ -29,7 +32,10 @@ public sealed record ProductInput(
 
 public sealed record SetProductStatusRequest(bool IsActive);
 
-public sealed record ProductUnitConversionResponse(string UnitOfMeasure, decimal QuantityInBaseUnit);
+public sealed record ProductUnitConversionResponse(
+    string UnitOfMeasure,
+    decimal QuantityInBaseUnit,
+    bool AllowsFractionalQuantity);
 
 public sealed record ProductMeasurementsResponse(
     decimal? NetWeight,
