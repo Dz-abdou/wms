@@ -1,4 +1,5 @@
-import { Button, Form, Input, InputNumber, Select, Space, Switch } from "antd";
+import { Button, Form, Input, InputNumber, Select, Switch, Table } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
@@ -11,6 +12,11 @@ type ProductFormProps = {
   isSubmitting: boolean;
   onSubmit: (values: ProductFormValues) => Promise<void>;
   submitLabel: string;
+};
+
+type UnitConversionRow = {
+  key: number;
+  name: number;
 };
 
 const baseUnitOptions = ["EA", "KG", "G", "L", "ML", "M", "CM", "MM"].map(
@@ -138,26 +144,36 @@ export function ProductForm({
         />
       </Form.Item>
       <Form.List name="unitConversions">
-        {(fields, { add, remove }) => (
-          <>
-            <label>{t("products.form.conversions")}</label>
-            {fields.map((field) => (
-              <Space key={field.key} align="baseline">
+        {(fields, { add, remove }) => {
+          const rows: UnitConversionRow[] = fields.map((field) => ({
+            key: field.key,
+            name: field.name,
+          }));
+          const columns: ColumnsType<UnitConversionRow> = [
+            {
+              title: t("products.form.conversionUnit"),
+              key: "unitOfMeasure",
+              render: (_, row) => (
                 <Form.Item
-                  {...field}
-                  name={[field.name, "unitOfMeasure"]}
+                  name={[row.name, "unitOfMeasure"]}
                   rules={[
                     {
                       required: true,
                       message: t("products.form.conversionUnitRequired"),
                     },
                   ]}
+                  style={{ marginBottom: 0 }}
                 >
                   <Input placeholder={t("products.form.conversionUnit")} />
                 </Form.Item>
+              ),
+            },
+            {
+              title: t("products.form.conversionQuantity"),
+              key: "quantityInBaseUnit",
+              render: (_, row) => (
                 <Form.Item
-                  {...field}
-                  name={[field.name, "quantityInBaseUnit"]}
+                  name={[row.name, "quantityInBaseUnit"]}
                   rules={[
                     {
                       required: true,
@@ -166,37 +182,55 @@ export function ProductForm({
                       message: t("products.form.conversionQuantityRequired"),
                     },
                   ]}
+                  style={{ marginBottom: 0 }}
                 >
-                  <InputNumber
-                    min={0.000001}
-                    precision={6}
-                    placeholder={t("products.form.conversionQuantity")}
-                  />
+                  <InputNumber min={0.000001} precision={6} />
                 </Form.Item>
+              ),
+            },
+            {
+              title: t("products.form.conversionAllowsFractionalQuantity"),
+              key: "allowsFractionalQuantity",
+              render: (_, row) => (
                 <Form.Item
-                  {...field}
-                  name={[field.name, "allowsFractionalQuantity"]}
+                  name={[row.name, "allowsFractionalQuantity"]}
+                  style={{ marginBottom: 0 }}
                   valuePropName="checked"
                 >
-                  <Space>
-                    <Switch
-                      aria-label={t(
-                        "products.form.conversionAllowsFractionalQuantity",
-                      )}
-                    />
-                    {t("products.form.conversionAllowsFractionalQuantity")}
-                  </Space>
+                  <Switch
+                    aria-label={t(
+                      "products.form.conversionAllowsFractionalQuantity",
+                    )}
+                  />
                 </Form.Item>
-                <Button onClick={() => remove(field.name)}>
+              ),
+            },
+            {
+              title: t("products.table.actions"),
+              key: "actions",
+              render: (_, row) => (
+                <Button danger onClick={() => remove(row.name)} type="text">
                   {t("products.form.removeConversion")}
                 </Button>
-              </Space>
-            ))}
-            <Button onClick={() => add({ allowsFractionalQuantity: false })}>
-              {t("products.form.addConversion")}
-            </Button>
-          </>
-        )}
+              ),
+            },
+          ];
+
+          return (
+            <>
+              <label>{t("products.form.conversions")}</label>
+              <Table
+                columns={columns}
+                dataSource={rows}
+                pagination={false}
+                rowKey="key"
+              />
+              <Button onClick={() => add({ allowsFractionalQuantity: false })}>
+                {t("products.form.addConversion")}
+              </Button>
+            </>
+          );
+        }}
       </Form.List>
       <Form.Item
         label={t("products.form.netWeight")}

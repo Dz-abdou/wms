@@ -295,7 +295,11 @@
       "catalogueItem": "Supplier catalogue item",
       "quantity": "Quantity",
       "product": "Product",
+      "supplierSku": "Supplier SKU",
+      "purchaseUnit": "Purchase unit",
+      "minimumOrderQuantity": "MOQ",
       "unitPrice": "Unit price",
+      "lineTotal": "Line total",
       "status": "Status",
       "actions": "Actions",
       "lines": "Order lines",
@@ -318,7 +322,34 @@
       }
     }
   },
-  "masterData": { "new": "New", "save": "Save", "edit": "Edit", "code": "Code", "name": "Name", "symbol": "Symbol", "decimals": "Decimals", "status": "Status", "actions": "Actions", "active": "Active", "inactive": "Inactive", "activate": "Activate", "deactivate": "Deactivate", "default": "Make default", "currencies": { "title": "Currencies", "subtitle": "Configure currencies used by purchasing.", "new": "New currency" }, "categories": { "title": "Product categories", "subtitle": "Configure the product catalogue hierarchy.", "new": "New category", "edit": "Edit category", "parent": "Parent category" } },
+  "masterData": {
+    "new": "New",
+    "save": "Save",
+    "edit": "Edit",
+    "code": "Code",
+    "name": "Name",
+    "symbol": "Symbol",
+    "decimals": "Decimals",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "default": "Make default",
+    "currencies": {
+      "title": "Currencies",
+      "subtitle": "Configure currencies used by purchasing.",
+      "new": "New currency"
+    },
+    "categories": {
+      "title": "Product categories",
+      "subtitle": "Configure the product catalogue hierarchy.",
+      "new": "New category",
+      "edit": "Edit category",
+      "parent": "Parent category"
+    }
+  },
   "administration": {
     "users": {
       "title": "Users",

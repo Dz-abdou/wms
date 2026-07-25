@@ -295,7 +295,11 @@
       "catalogueItem": "Article du catalogue fournisseur",
       "quantity": "Quantité",
       "product": "Produit",
+      "supplierSku": "Référence fournisseur",
+      "purchaseUnit": "Unité d’achat",
+      "minimumOrderQuantity": "QMC",
       "unitPrice": "Prix unitaire",
+      "lineTotal": "Total de ligne",
       "status": "Statut",
       "actions": "Actions",
       "lines": "Lignes de commande",
@@ -318,7 +322,34 @@
       }
     }
   },
-  "masterData": { "new": "Nouveau", "save": "Enregistrer", "edit": "Modifier", "code": "Code", "name": "Nom", "symbol": "Symbole", "decimals": "Décimales", "status": "Statut", "actions": "Actions", "active": "Actif", "inactive": "Inactif", "activate": "Activer", "deactivate": "Désactiver", "default": "Définir par défaut", "currencies": { "title": "Devises", "subtitle": "Configurez les devises utilisées pour les achats.", "new": "Nouvelle devise" }, "categories": { "title": "Catégories de produits", "subtitle": "Configurez la hiérarchie du catalogue produits.", "new": "Nouvelle catégorie", "edit": "Modifier la catégorie", "parent": "Catégorie parente" } },
+  "masterData": {
+    "new": "Nouveau",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "code": "Code",
+    "name": "Nom",
+    "symbol": "Symbole",
+    "decimals": "Décimales",
+    "status": "Statut",
+    "actions": "Actions",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "default": "Définir par défaut",
+    "currencies": {
+      "title": "Devises",
+      "subtitle": "Configurez les devises utilisées pour les achats.",
+      "new": "Nouvelle devise"
+    },
+    "categories": {
+      "title": "Catégories de produits",
+      "subtitle": "Configurez la hiérarchie du catalogue produits.",
+      "new": "Nouvelle catégorie",
+      "edit": "Modifier la catégorie",
+      "parent": "Catégorie parente"
+    }
+  },
   "administration": {
     "users": {
       "title": "Utilisateurs",
