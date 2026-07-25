@@ -80,6 +80,24 @@ body {
   margin-bottom: 24px;
 }
 
+.form-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.editable-table-add-row .ant-table-cell {
+  padding-block: 8px !important;
+}
+
+.editable-table-add-row .ant-btn {
+  font-weight: 500;
+}
+
 @media (max-width: 640px) {
   .application-header {
     gap: 12px;
@@ -97,6 +115,10 @@ body {
   .page-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .form-page-actions {
+    margin-top: 24px;
   }
 }
 .language-selector {

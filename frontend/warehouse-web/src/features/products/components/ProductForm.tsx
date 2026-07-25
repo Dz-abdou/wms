@@ -3,9 +3,9 @@ import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
   EditableFormListTable,
-  type EditableFormListTableActions,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import { useProductCategories } from "../api/useProductCategories";
@@ -13,8 +13,10 @@ import type { ProductFormValues } from "../api/productTypes";
 import { productValidation } from "../productConstants";
 
 type ProductFormProps = {
+  cancelLabel?: string;
   initialValues?: ProductFormValues;
   isSubmitting: boolean;
+  onCancel?: () => void;
   onSubmit: (values: ProductFormValues) => Promise<void>;
   submitLabel: string;
 };
@@ -28,15 +30,17 @@ const baseUnitOptions = ["EA", "KG", "G", "L", "ML", "M", "CM", "MM"].map(
 export function ProductForm({
   initialValues,
   isSubmitting,
+  onCancel,
   onSubmit,
   submitLabel,
+  cancelLabel,
 }: ProductFormProps) {
   const [form] = Form.useForm<ProductFormValues>();
   const { t } = useTranslation();
   const categories = useProductCategories();
   const feedback = useApiFeedback();
   const conversionColumns = (
-    { add, remove }: EditableFormListTableActions,
+    remove: (fieldName: number) => void,
   ): ColumnsType<UnitConversionRow & EditableFormListTableRow> => [
     {
       title: t("products.form.conversionUnit"),
@@ -92,21 +96,12 @@ export function ProductForm({
       ),
     },
     {
-      title: t("products.form.addConversion"),
-      key: "add",
+      title: t("products.table.actions"),
+      key: "actions",
       render: (_, row) => (
-        <>
-          <Button
-            aria-label={t("products.form.addConversion")}
-            onClick={add}
-            type="text"
-          >
-            +
-          </Button>
-          <Button danger onClick={() => remove(row.fieldName)} type="text">
-            {t("products.form.removeConversion")}
-          </Button>
-        </>
+        <Button danger onClick={() => remove(row.fieldName)} type="text">
+          {t("products.form.removeConversion")}
+        </Button>
       ),
     },
   ];
@@ -276,9 +271,12 @@ export function ProductForm({
           options={["M", "CM", "MM"].map((value) => ({ value, label: value }))}
         />
       </Form.Item>
-      <Button htmlType="submit" loading={isSubmitting} type="primary">
-        {submitLabel}
-      </Button>
+      <FormPageActions
+        cancelLabel={cancelLabel}
+        isSubmitting={isSubmitting}
+        onCancel={onCancel}
+        submitLabel={submitLabel}
+      />
     </Form>
   );
 }

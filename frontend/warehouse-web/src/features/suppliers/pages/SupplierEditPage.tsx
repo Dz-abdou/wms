@@ -41,6 +41,7 @@ export function SupplierEditPage() {
       ) : null}
       <Card>
         <SupplierForm
+          cancelLabel={t("suppliers.cancel")}
           errorMessageKey="suppliers.errors.update"
           initialValues={{
             code: supplier.code,
@@ -50,6 +51,7 @@ export function SupplierEditPage() {
             address: supplier.address ?? undefined,
           }}
           isSubmitting={update.isPending}
+          onCancel={() => navigate(supplierRoutes.detail(id!))}
           onSubmit={submit}
           submitLabel={t("suppliers.save")}
         />

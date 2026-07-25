@@ -30,8 +30,10 @@ export function SupplierCreatePage() {
       ) : null}
       <Card>
         <SupplierForm
+          cancelLabel={t("suppliers.cancel")}
           errorMessageKey="suppliers.errors.create"
           isSubmitting={create.isPending}
+          onCancel={() => navigate(supplierRoutes.list)}
           onSubmit={submit}
           submitLabel={t("suppliers.create")}
         />

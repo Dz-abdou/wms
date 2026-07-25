@@ -46,6 +46,7 @@ export function ProductEditPage() {
       <Typography.Title level={2}>{t("products.editTitle")}</Typography.Title>
       <Card>
         <ProductForm
+          cancelLabel={t("products.cancel")}
           initialValues={{
             sku: productQuery.data.sku,
             name: productQuery.data.name,
@@ -56,6 +57,7 @@ export function ProductEditPage() {
             measurements: productQuery.data.measurements ?? undefined,
           }}
           isSubmitting={updateProduct.isPending}
+          onCancel={() => navigate(productRoutes.detail(productId))}
           onSubmit={handleSubmit}
           submitLabel={t("products.save")}
         />

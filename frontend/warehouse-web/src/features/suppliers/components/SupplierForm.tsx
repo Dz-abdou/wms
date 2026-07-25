@@ -1,13 +1,16 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import type { SupplierInput } from "../api/supplierTypes";
 import { supplierValidation } from "../supplierConstants";
 
 type Props = {
+  cancelLabel?: string;
   initialValues?: SupplierInput;
   isSubmitting: boolean;
+  onCancel?: () => void;
   onSubmit: (values: SupplierInput) => Promise<void>;
   submitLabel: string;
   errorMessageKey: string;
@@ -16,9 +19,11 @@ type Props = {
 export function SupplierForm({
   initialValues,
   isSubmitting,
+  onCancel,
   onSubmit,
   submitLabel,
   errorMessageKey,
+  cancelLabel,
 }: Props) {
   const [form] = Form.useForm<SupplierInput>();
   const { t } = useTranslation();
@@ -126,9 +131,12 @@ export function SupplierForm({
           showCount
         />
       </Form.Item>
-      <Button htmlType="submit" loading={isSubmitting} type="primary">
-        {submitLabel}
-      </Button>
+      <FormPageActions
+        cancelLabel={cancelLabel}
+        isSubmitting={isSubmitting}
+        onCancel={onCancel}
+        submitLabel={submitLabel}
+      />
     </Form>
   );
 }

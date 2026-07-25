@@ -1,13 +1,16 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import type { WarehouseInput } from "../api/warehouseTypes";
 import { warehouseValidation } from "../warehouseConstants";
 
 type Props = {
+  cancelLabel?: string;
   initialValues?: WarehouseInput;
   isSubmitting: boolean;
+  onCancel?: () => void;
   onSubmit: (values: WarehouseInput) => Promise<void>;
   submitLabel: string;
 };
@@ -15,8 +18,10 @@ type Props = {
 export function WarehouseForm({
   initialValues,
   isSubmitting,
+  onCancel,
   onSubmit,
   submitLabel,
+  cancelLabel,
 }: Props) {
   const [form] = Form.useForm<WarehouseInput>();
   const { t } = useTranslation();
@@ -96,9 +101,12 @@ export function WarehouseForm({
           showCount
         />
       </Form.Item>
-      <Button htmlType="submit" loading={isSubmitting} type="primary">
-        {submitLabel}
-      </Button>
+      <FormPageActions
+        cancelLabel={cancelLabel}
+        isSubmitting={isSubmitting}
+        onCancel={onCancel}
+        submitLabel={submitLabel}
+      />
     </Form>
   );
 }

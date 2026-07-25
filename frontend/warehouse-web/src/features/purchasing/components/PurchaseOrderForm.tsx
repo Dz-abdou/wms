@@ -3,9 +3,9 @@ import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
   EditableFormListTable,
-  type EditableFormListTableActions,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
@@ -16,8 +16,10 @@ import type {
 } from "../api/purchasingTypes";
 
 type Props = {
+  cancelLabel?: string;
   initialValues?: PurchaseOrderInput;
   isSubmitting: boolean;
+  onCancel?: () => void;
   onSubmit: (values: PurchaseOrderInput) => Promise<void>;
   submitLabel: string;
   errorMessageKey: string;
@@ -29,9 +31,11 @@ type PurchaseOrderLineRow = {
 export function PurchaseOrderForm({
   initialValues,
   isSubmitting,
+  onCancel,
   onSubmit,
   submitLabel,
   errorMessageKey,
+  cancelLabel,
 }: Props) {
   const [form] = Form.useForm<PurchaseOrderInput>();
   const { t } = useTranslation();
@@ -57,7 +61,7 @@ export function PurchaseOrderForm({
     label: `${item.productSku} — ${item.productName}`,
   }));
   const columns = (
-    { add, remove }: EditableFormListTableActions,
+    remove: (fieldName: number) => void,
   ): ColumnsType<PurchaseOrderLineRow & EditableFormListTableRow> => [
     {
       title: t("purchasing.orders.catalogueItem"),
@@ -167,22 +171,12 @@ export function PurchaseOrderForm({
       },
     },
     {
-      title: t("purchasing.orders.addLine"),
-      key: "add",
-      width: 80,
+      title: t("purchasing.orders.actions"),
+      key: "actions",
       render: (_, row) => (
-        <>
-          <Button
-            aria-label={t("purchasing.orders.addLine")}
-            onClick={add}
-            type="text"
-          >
-            +
-          </Button>
-          <Button danger onClick={() => remove(row.fieldName)} type="text">
-            {t("purchasing.orders.removeLine")}
-          </Button>
-        </>
+        <Button danger onClick={() => remove(row.fieldName)} type="text">
+          {t("purchasing.orders.removeLine")}
+        </Button>
       ),
     },
   ];
@@ -226,11 +220,12 @@ export function PurchaseOrderForm({
         name="lines"
         scroll={{ x: 1200 }}
       />
-      <div className="form-submit">
-        <Button htmlType="submit" loading={isSubmitting} type="primary">
-          {submitLabel}
-        </Button>
-      </div>
+      <FormPageActions
+        cancelLabel={cancelLabel}
+        isSubmitting={isSubmitting}
+        onCancel={onCancel}
+        submitLabel={submitLabel}
+      />
     </Form>
   );
 }

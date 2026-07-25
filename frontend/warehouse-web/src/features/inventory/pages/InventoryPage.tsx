@@ -17,7 +17,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   EditableFormListTable,
-  type EditableFormListTableActions,
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
@@ -71,7 +70,7 @@ export function InventoryPage() {
       label: `${warehouse.code} — ${warehouse.name}`,
     }));
   const lineColumns = (
-    { add, remove }: EditableFormListTableActions,
+    remove: (fieldName: number) => void,
   ): ColumnsType<AdjustmentRow & EditableFormListTableRow> => [
     {
       title: t("inventory.form.product"),
@@ -183,17 +182,12 @@ export function InventoryPage() {
       ),
     },
     {
-      title: t("inventory.addLine"),
-      key: "add",
+      title: t("inventory.table.actions"),
+      key: "actions",
       render: (_, row) => (
-        <>
-          <Button aria-label={t("inventory.addLine")} onClick={add} type="text">
-            +
-          </Button>
-          <Button danger onClick={() => remove(row.fieldName)} type="text">
-            {t("inventory.removeLine")}
-          </Button>
-        </>
+        <Button danger onClick={() => remove(row.fieldName)} type="text">
+          {t("inventory.removeLine")}
+        </Button>
       ),
     },
   ];

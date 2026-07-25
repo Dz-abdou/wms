@@ -1,6 +1,7 @@
-import { Button, Form, Input, InputNumber, Select } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { useProducts } from "../../products/api/useProducts";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
@@ -10,15 +11,17 @@ import { usePurchasingCurrencies } from "../api/usePurchasing";
 import type { SupplierProductInput, UpdateSupplierProductInput } from "../api/purchasingTypes";
 
 type Props = {
+  cancelLabel?: string;
   initialValues?: SupplierProductInput;
   isEditing?: boolean;
   isSubmitting: boolean;
+  onCancel?: () => void;
   onSubmit: (values: SupplierProductInput | UpdateSupplierProductInput) => Promise<void>;
   submitLabel: string;
   errorMessageKey: string;
 };
 
-export function SupplierProductForm({ initialValues, isEditing = false, isSubmitting, onSubmit, submitLabel, errorMessageKey }: Props) {
+export function SupplierProductForm({ cancelLabel, initialValues, isEditing = false, isSubmitting, onCancel, onSubmit, submitLabel, errorMessageKey }: Props) {
   const [form] = Form.useForm<SupplierProductInput>();
   const { t } = useTranslation();
   const feedback = useApiFeedback();
@@ -85,6 +88,6 @@ export function SupplierProductForm({ initialValues, isEditing = false, isSubmit
     <Form.Item label={t("purchasing.catalogue.currencyCode")} name="currencyCode" rules={[{ required: true, message: t("purchasing.catalogue.currencyCodeRequired") }]}>
       <Select disabled={currencies.isLoading || isSubmitting} loading={currencies.isLoading} options={currencies.data?.map((currency) => ({ value: currency.code, label: currency.code }))} />
     </Form.Item>
-    <Button htmlType="submit" loading={isSubmitting} type="primary">{submitLabel}</Button>
+    <FormPageActions cancelLabel={cancelLabel} isSubmitting={isSubmitting} onCancel={onCancel} submitLabel={submitLabel} />
   </Form>;
 }

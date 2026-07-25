@@ -10,15 +10,8 @@ type FormListField = Pick<EditableFormListTableRow, "key"> & {
   name: number;
 };
 
-export type EditableFormListTableActions = {
-  add: () => void;
-  remove: (fieldName: number) => void;
-};
-
 type EditableFormListTableProps<T extends object> = {
-  columns: (actions: EditableFormListTableActions) => ColumnsType<
-    T & EditableFormListTableRow
-  >;
+  columns: (remove: (fieldName: number) => void) => ColumnsType<T & EditableFormListTableRow>;
   createRow: (field: FormListField) => T;
   addLabel: string;
   addInitialValue?: unknown;
@@ -50,25 +43,31 @@ export function EditableFormListTable<T extends object>({
           ...createRow(field),
         }));
 
+        const tableColumns = columns(remove);
+
         return (
           <Table
-            columns={columns({ add: addRow, remove })}
+            columns={tableColumns}
             dataSource={rows}
-            locale={{
-              emptyText: (
-                <Button
-                  aria-label={addLabel}
-                  disabled={addDisabled}
-                  onClick={addRow}
-                  type="dashed"
-                >
-                  + {addLabel}
-                </Button>
-              ),
-            }}
             pagination={false}
             rowKey="key"
             scroll={scroll}
+            summary={() => (
+              <Table.Summary>
+                <Table.Summary.Row className="editable-table-add-row">
+                  <Table.Summary.Cell colSpan={tableColumns.length} index={0}>
+                    <Button
+                      aria-label={addLabel}
+                      disabled={addDisabled}
+                      onClick={addRow}
+                      type="text"
+                    >
+                      + {addLabel}
+                    </Button>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            )}
           />
         );
       }}

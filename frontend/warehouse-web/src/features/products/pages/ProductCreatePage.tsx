@@ -21,7 +21,9 @@ export function ProductCreatePage() {
       <Typography.Title level={2}>{t("products.createTitle")}</Typography.Title>
       <Card>
         <ProductForm
+          cancelLabel={t("products.cancel")}
           isSubmitting={createProduct.isPending}
+          onCancel={() => navigate(productRoutes.list)}
           onSubmit={handleSubmit}
           submitLabel={t("products.create")}
         />
