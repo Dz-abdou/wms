@@ -36,7 +36,7 @@ describe("InventoryMovementHistoryPage", () => {
       isLoading: false,
     });
     useMovementHistoryMock.mockReturnValue({
-      data: undefined,
+      data: { items: [], page: 1, pageSize: 20, totalCount: 0 },
       error: null,
       isLoading: false,
     });
@@ -52,9 +52,7 @@ describe("InventoryMovementHistoryPage", () => {
     expect(
       screen.getByRole("heading", { name: "Movement history" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText("Select a product and warehouse to view history."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No inventory movements exist for this selection.")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "New adjustment" }),
     ).toBeInTheDocument();

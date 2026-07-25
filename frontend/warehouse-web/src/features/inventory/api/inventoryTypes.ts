@@ -25,6 +25,34 @@ export type InventoryAdjustment = {
   lines: InventoryBalance[];
 };
 
+export type InventoryAdjustmentListItem = {
+  id: string;
+  reason: InventoryAdjustmentInput["reason"];
+  reference: string | null;
+  createdAtUtc: string;
+  lineCount: number;
+};
+
+export type InventoryAdjustmentDetail = Omit<InventoryAdjustment, "lines"> & {
+  lines: InventoryAdjustmentLine[];
+};
+
+export type InventoryAdjustmentLine = {
+  movementId: string;
+  productId: string;
+  productSku: string;
+  productName: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  type: "ManualIncrease" | "ManualDecrease";
+  unitOfMeasure: string;
+  quantityDeltaInUnit: number;
+  quantityDelta: number;
+  balanceAfter: number;
+  createdAtUtc: string;
+};
+
 export type InventoryBalance = {
   productId: string;
   warehouseId: string;
@@ -35,8 +63,14 @@ export type InventoryBalance = {
 
 export type InventoryMovement = {
   id: string;
+  inventoryAdjustmentId: string | null;
   productId: string;
+  productSku: string;
+  productName: string;
   warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  adjustmentReference: string | null;
   type: "ManualIncrease" | "ManualDecrease";
   quantityDelta: number;
   unitOfMeasure: string;
@@ -45,8 +79,24 @@ export type InventoryMovement = {
   createdAtUtc: string;
 };
 
+export type InventoryMovementFilter = {
+  page: number;
+  pageSize: number;
+  productId?: string;
+  warehouseId?: string;
+  type?: InventoryMovement["type"];
+  reference?: string;
+};
+
 export type PagedInventoryMovements = {
   items: InventoryMovement[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type PagedInventoryAdjustments = {
+  items: InventoryAdjustmentListItem[];
   page: number;
   pageSize: number;
   totalCount: number;

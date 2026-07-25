@@ -46,13 +46,100 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         return response ?? throw new InvalidOperationException("Inventory adjustment did not produce a result.");
     }
 
+    public async Task<PagedResult<InventoryAdjustmentListItemResponse>> GetAdjustmentsAsync(InventoryAdjustmentListQuery query, CancellationToken cancellationToken)
+    {
+        var adjustments = dbContext.InventoryAdjustments.AsNoTracking();
+        var totalCount = await adjustments.CountAsync(cancellationToken);
+        var items = await adjustments
+            .OrderByDescending(adjustment => adjustment.CreatedAtUtc)
+            .ThenByDescending(adjustment => adjustment.Id)
+            .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(adjustment => new InventoryAdjustmentListItemResponse(
+                adjustment.Id,
+                adjustment.Reason,
+                adjustment.Reference,
+                adjustment.CreatedAtUtc,
+                dbContext.InventoryMovements.Count(movement => movement.InventoryAdjustmentId == adjustment.Id)))
+            .ToListAsync(cancellationToken);
+        return new PagedResult<InventoryAdjustmentListItemResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
+    public async Task<InventoryAdjustmentDetailResponse> GetAdjustmentByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var adjustment = await dbContext.InventoryAdjustments.AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
+            ?? throw new InventoryAdjustmentNotFoundException(id);
+        var lines = await (from movement in dbContext.InventoryMovements.AsNoTracking()
+                           join product in dbContext.Products.AsNoTracking() on movement.ProductId equals product.Id
+                           join warehouse in dbContext.Warehouses.AsNoTracking() on movement.WarehouseId equals warehouse.Id
+                           where movement.InventoryAdjustmentId == adjustment.Id
+                           orderby movement.CreatedAtUtc, movement.Id
+                           select new InventoryAdjustmentLineResponse(
+                               movement.Id,
+                               product.Id,
+                               product.Sku,
+                               product.Name,
+                               warehouse.Id,
+                               warehouse.Code,
+                               warehouse.Name,
+                               movement.Type.ToString(),
+                               movement.UnitOfMeasure,
+                               movement.QuantityDeltaInUnit,
+                               movement.QuantityDelta,
+                               movement.BalanceAfter,
+                               movement.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
+        return new InventoryAdjustmentDetailResponse(
+            adjustment.Id,
+            adjustment.Reason,
+            adjustment.Reference,
+            adjustment.Note,
+            adjustment.CreatedAtUtc,
+            lines);
+    }
+
     public async Task<PagedResult<InventoryMovementResponse>> GetMovementHistoryAsync(InventoryMovementListQuery query, CancellationToken cancellationToken)
     {
-        var movements = dbContext.InventoryMovements.AsNoTracking();
-        if (query.ProductId is { } productId) movements = movements.Where(movement => movement.ProductId == productId);
-        if (query.WarehouseId is { } warehouseId) movements = movements.Where(movement => movement.WarehouseId == warehouseId);
+        var movements = from movement in dbContext.InventoryMovements.AsNoTracking()
+                        join product in dbContext.Products.AsNoTracking() on movement.ProductId equals product.Id
+                        join warehouse in dbContext.Warehouses.AsNoTracking() on movement.WarehouseId equals warehouse.Id
+                        join adjustment in dbContext.InventoryAdjustments.AsNoTracking() on movement.InventoryAdjustmentId equals adjustment.Id into adjustments
+                        from adjustment in adjustments.DefaultIfEmpty()
+                        select new { movement, product, warehouse, adjustment };
+        if (query.ProductId is { } productId) movements = movements.Where(item => item.movement.ProductId == productId);
+        if (query.WarehouseId is { } warehouseId) movements = movements.Where(item => item.movement.WarehouseId == warehouseId);
+        if (query.Type is { } type) movements = movements.Where(item => item.movement.Type == type);
+        if (query.FromUtc is { } fromUtc) movements = movements.Where(item => item.movement.CreatedAtUtc >= fromUtc);
+        if (query.ToUtc is { } toUtc) movements = movements.Where(item => item.movement.CreatedAtUtc <= toUtc);
+        if (!string.IsNullOrWhiteSpace(query.Reference))
+        {
+            var reference = query.Reference.Trim();
+            movements = movements.Where(item => item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference));
+        }
         var totalCount = await movements.CountAsync(cancellationToken);
-        var items = await movements.OrderByDescending(movement => movement.CreatedAtUtc).ThenByDescending(movement => movement.Id).Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize).Take(query.PageSize).Select(movement => new InventoryMovementResponse(movement.Id, movement.ProductId, movement.WarehouseId, movement.Type.ToString(), movement.UnitOfMeasure, movement.QuantityDeltaInUnit, movement.QuantityDelta, movement.BalanceAfter, movement.CreatedAtUtc)).ToListAsync(cancellationToken);
+        var items = await movements
+            .OrderByDescending(item => item.movement.CreatedAtUtc)
+            .ThenByDescending(item => item.movement.Id)
+            .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(item => new InventoryMovementResponse(
+                item.movement.Id,
+                item.movement.InventoryAdjustmentId,
+                item.product.Id,
+                item.product.Sku,
+                item.product.Name,
+                item.warehouse.Id,
+                item.warehouse.Code,
+                item.warehouse.Name,
+                item.adjustment == null ? null : item.adjustment.Reference,
+                item.movement.Type.ToString(),
+                item.movement.UnitOfMeasure,
+                item.movement.QuantityDeltaInUnit,
+                item.movement.QuantityDelta,
+                item.movement.BalanceAfter,
+                item.movement.CreatedAtUtc))
+            .ToListAsync(cancellationToken);
         return new PagedResult<InventoryMovementResponse>(items, query.Page, query.PageSize, totalCount);
     }
 

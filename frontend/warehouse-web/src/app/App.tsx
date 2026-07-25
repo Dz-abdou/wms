@@ -28,6 +28,8 @@ import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrde
 import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { InventoryAdjustmentPage } from "../features/inventory/pages/InventoryAdjustmentPage";
+import { InventoryAdjustmentDetailPage } from "../features/inventory/pages/InventoryAdjustmentDetailPage";
+import { InventoryAdjustmentListPage } from "../features/inventory/pages/InventoryAdjustmentListPage";
 import { InventoryMovementHistoryPage } from "../features/inventory/pages/InventoryMovementHistoryPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
@@ -97,7 +99,15 @@ export function App() {
                     />
                     <Route
                       path={inventoryRoutes.adjustmentsPattern}
+                      element={<InventoryAdjustmentListPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentCreatePattern}
                       element={<InventoryAdjustmentPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentDetailPattern}
+                      element={<InventoryAdjustmentDetailPage />}
                     />
                     <Route
                       path={warehouseRoutes.create}

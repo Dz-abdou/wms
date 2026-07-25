@@ -39,10 +39,46 @@ public sealed record InventoryAdjustmentResponse(
     DateTime CreatedAtUtc,
     IReadOnlyList<InventoryBalanceResponse> Lines);
 
+public sealed record InventoryAdjustmentListItemResponse(
+    Guid Id,
+    InventoryAdjustmentReason Reason,
+    string? Reference,
+    DateTime CreatedAtUtc,
+    int LineCount);
+
+public sealed record InventoryAdjustmentDetailResponse(
+    Guid Id,
+    InventoryAdjustmentReason Reason,
+    string? Reference,
+    string? Note,
+    DateTime CreatedAtUtc,
+    IReadOnlyList<InventoryAdjustmentLineResponse> Lines);
+
+public sealed record InventoryAdjustmentLineResponse(
+    Guid MovementId,
+    Guid ProductId,
+    string ProductSku,
+    string ProductName,
+    Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    string Type,
+    string UnitOfMeasure,
+    decimal QuantityDeltaInUnit,
+    decimal QuantityDelta,
+    decimal BalanceAfter,
+    DateTime CreatedAtUtc);
+
 public sealed record InventoryMovementResponse(
     Guid Id,
+    Guid? InventoryAdjustmentId,
     Guid ProductId,
+    string ProductSku,
+    string ProductName,
     Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    string? AdjustmentReference,
     string Type,
     string UnitOfMeasure,
     decimal QuantityDeltaInUnit,
@@ -51,7 +87,15 @@ public sealed record InventoryMovementResponse(
     DateTime CreatedAtUtc);
 
 public sealed record InventoryMovementListQuery(
-    Guid? ProductId,
-    Guid? WarehouseId,
+    Guid? ProductId = null,
+    Guid? WarehouseId = null,
+    InventoryMovementType? Type = null,
+    DateTime? FromUtc = null,
+    DateTime? ToUtc = null,
+    string? Reference = null,
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;
+
+public sealed record InventoryAdjustmentListQuery(
     int Page = PaginationConstants.DefaultPage,
     int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;

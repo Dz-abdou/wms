@@ -62,7 +62,8 @@
       "admin.email_conflict": "Un compte utilise déjà cette adresse e-mail.",
       "admin.user_invalid": "Les informations ne respectent pas les exigences du compte.",
       "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page.",
-      "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné."
+      "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné.",
+      "inventory.adjustment_not_found": "L’ajustement de stock est introuvable."
     }
   },
   "products": {
@@ -424,10 +425,15 @@
     "title": "Stock",
     "subtitle": "Effectuez un ajustement manuel et consultez l’historique des mouvements.",
     "adjustTitle": "Ajustement manuel",
+    "adjustmentsTitle": "Ajustements",
+    "adjustmentsSubtitle": "Consultez les documents d’ajustement validés ou créez-en un nouveau.",
+    "adjustmentDetailTitle": "Ajustement de stock",
+    "adjustment": "Ajustement",
     "adjustSubtitle": "Appliquez une correction de stock documentée sur une ou plusieurs lignes.",
     "historyTitle": "Historique des mouvements",
     "historySubtitle": "Analysez les changements de stock pour un produit dans un entrepôt.",
     "newAdjustment": "Nouvel ajustement",
+    "view": "Voir",
     "viewHistory": "Voir l’historique",
     "cancel": "Annuler",
     "adjust": "Appliquer l’ajustement",
@@ -437,7 +443,12 @@
     "selectForHistory": "Sélectionnez un produit et un entrepôt pour consulter l’historique.",
     "loadingSources": "Chargement des produits et entrepôts…",
     "loadingHistory": "Chargement de l’historique des mouvements…",
+    "loadingAdjustments": "Chargement des ajustements…",
+    "loadingAdjustment": "Chargement de l’ajustement…",
     "emptyHistory": "Aucun mouvement de stock n’existe pour cette sélection.",
+    "emptyAdjustments": "Aucun ajustement de stock n’existe encore.",
+    "applyFilters": "Appliquer les filtres",
+    "lines": "Lignes",
     "types": {
       "increase": "Entrée",
       "decrease": "Sortie"
@@ -451,6 +462,11 @@
     },
     "table": {
       "type": "Type",
+      "product": "Produit",
+      "warehouse": "Entrepôt",
+      "reason": "Motif",
+      "reference": "Référence",
+      "lines": "Lignes",
       "delta": "Variation",
       "balanceAfter": "Stock après mouvement",
       "created": "Créé le"
@@ -473,7 +489,9 @@
     "errors": {
       "loadSources": "Les produits ou entrepôts n’ont pas pu être chargés.",
       "adjust": "L’ajustement de stock n’a pas pu être appliqué.",
-      "loadHistory": "L’historique des mouvements n’a pas pu être chargé."
+      "loadHistory": "L’historique des mouvements n’a pas pu être chargé.",
+      "loadAdjustments": "Les ajustements de stock n’ont pas pu être chargés.",
+      "loadAdjustment": "L’ajustement de stock n’a pas pu être chargé."
     }
   }
 }

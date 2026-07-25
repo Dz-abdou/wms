@@ -14,3 +14,6 @@ public sealed class InsufficientInventoryException(Guid productId, Guid warehous
 
 public sealed class InventoryConcurrencyException(Exception innerException)
     : Exception("The inventory balance was changed by another operation.", innerException);
+
+public sealed class InventoryAdjustmentNotFoundException(Guid adjustmentId)
+    : Exception($"Inventory adjustment '{adjustmentId}' was not found.");

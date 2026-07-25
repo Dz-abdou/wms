@@ -33,6 +33,10 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Inventory changed.", exception.Message, ApiErrorCodes.InventoryConcurrencyConflict);
         }
+        catch (InventoryAdjustmentNotFoundException exception)
+        {
+            return Problem(StatusCodes.Status404NotFound, "Inventory adjustment not found.", exception.Message, ApiErrorCodes.InventoryAdjustmentNotFound);
+        }
     }
 
     private static IResult Problem(int statusCode, string title, string detail, string code) => Results.Problem(

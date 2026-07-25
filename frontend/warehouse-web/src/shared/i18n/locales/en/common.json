@@ -62,7 +62,8 @@
       "admin.email_conflict": "An account already uses this email address.",
       "admin.user_invalid": "The user details do not meet the account requirements.",
       "admin.self_management_forbidden": "You cannot change your own account from this page.",
-      "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product."
+      "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product.",
+      "inventory.adjustment_not_found": "The inventory adjustment was not found."
     }
   },
   "products": {
@@ -422,10 +423,15 @@
     "title": "Inventory",
     "subtitle": "Apply a manual stock adjustment and review the resulting movement history.",
     "adjustTitle": "Manual adjustment",
+    "adjustmentsTitle": "Adjustments",
+    "adjustmentsSubtitle": "Review posted adjustment documents or create a new one.",
+    "adjustmentDetailTitle": "Inventory adjustment",
+    "adjustment": "Adjustment",
     "adjustSubtitle": "Apply a documented stock correction across one or more inventory lines.",
     "historyTitle": "Movement history",
     "historySubtitle": "Investigate stock changes for a product at a warehouse.",
     "newAdjustment": "New adjustment",
+    "view": "View",
     "viewHistory": "View history",
     "cancel": "Cancel",
     "adjust": "Apply adjustment",
@@ -435,7 +441,12 @@
     "selectForHistory": "Select a product and warehouse to view history.",
     "loadingSources": "Loading products and warehouses…",
     "loadingHistory": "Loading movement history…",
+    "loadingAdjustments": "Loading adjustments…",
+    "loadingAdjustment": "Loading adjustment…",
     "emptyHistory": "No inventory movements exist for this selection.",
+    "emptyAdjustments": "No inventory adjustments exist yet.",
+    "applyFilters": "Apply filters",
+    "lines": "Lines",
     "types": {
       "increase": "Increase",
       "decrease": "Decrease"
@@ -449,6 +460,11 @@
     },
     "table": {
       "type": "Type",
+      "product": "Product",
+      "warehouse": "Warehouse",
+      "reason": "Reason",
+      "reference": "Reference",
+      "lines": "Lines",
       "delta": "Change",
       "balanceAfter": "Balance after",
       "created": "Created"
@@ -471,7 +487,9 @@
     "errors": {
       "loadSources": "Products or warehouses could not be loaded.",
       "adjust": "The inventory adjustment could not be applied.",
-      "loadHistory": "Movement history could not be loaded."
+      "loadHistory": "Movement history could not be loaded.",
+      "loadAdjustments": "Inventory adjustments could not be loaded.",
+      "loadAdjustment": "The inventory adjustment could not be loaded."
     }
   }
 }

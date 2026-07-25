@@ -185,12 +185,7 @@ export function InventoryAdjustmentPage() {
   async function submit(input: InventoryAdjustmentInput) {
     try {
       const result = await adjustment.mutateAsync(input);
-      const firstLine = result.lines[0];
-      if (firstLine) {
-        navigate(
-          `${inventoryRoutes.movementHistory}?productId=${firstLine.productId}&warehouseId=${firstLine.warehouseId}`,
-        );
-      }
+      navigate(inventoryRoutes.adjustmentDetail(result.id));
     } catch (error) {
       if (!applyServerFieldErrors(form, error, t, "errors.validationFailed")) {
         feedback.notifyError(error, "inventory.errors.adjust");
@@ -293,7 +288,7 @@ export function InventoryAdjustmentPage() {
           <FormPageActions
             cancelLabel={t("inventory.cancel")}
             isSubmitting={adjustment.isPending}
-            onCancel={() => navigate(inventoryRoutes.movementHistory)}
+            onCancel={() => navigate(inventoryRoutes.adjustments)}
             submitLabel={t("inventory.adjust")}
           />
         </Form>
