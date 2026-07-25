@@ -20,7 +20,7 @@ public static class ApiErrorCodes
     public const string CurrencyCodeConflict = "currency.code_conflict";
     public const string CurrencyDefaultRequired = "currency.default_required";
     public const string CurrencyInactive = "currency.inactive";
-    public const string ProductCategoryNotFound = "product.category_not_found";
+    public const string ProductCategoryNotFound = "product_category.not_found";
     public const string ProductCategoryCodeConflict = "product_category.code_conflict";
     public const string ProductCategoryInvalidParent = "product_category.invalid_parent";
     public const string InventoryProductNotFound = "inventory.product_not_found";

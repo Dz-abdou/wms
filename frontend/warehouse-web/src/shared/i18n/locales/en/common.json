@@ -40,6 +40,9 @@
       "warehouse.not_found": "The warehouse was not found.",
       "warehouse.code_conflict": "A warehouse with this code already exists.",
       "product.sku_conflict": "A product with this SKU already exists.",
+      "product_category.not_found": "The product category was not found.",
+      "product_category.code_conflict": "A product category with this code already exists.",
+      "product_category.invalid_parent": "A category cannot be its own parent.",
       "supplier.not_found": "The supplier was not found.",
       "supplier.code_conflict": "A supplier with this code already exists.",
       "supplier_product.not_found": "The supplier catalogue item was not found.",
@@ -340,14 +343,17 @@
     "currencies": {
       "title": "Currencies",
       "subtitle": "Configure currencies used by purchasing.",
-      "new": "New currency"
+      "new": "New currency",
+      "errors": { "save": "The currency could not be saved." }
     },
     "categories": {
       "title": "Product categories",
       "subtitle": "Configure the product catalogue hierarchy.",
       "new": "New category",
       "edit": "Edit category",
-      "parent": "Parent category"
+      "parent": "Parent category",
+      "parentHelp": "Optional. Use it only to place this category under a broader category.",
+      "errors": { "save": "The product category could not be saved." }
     }
   },
   "administration": {

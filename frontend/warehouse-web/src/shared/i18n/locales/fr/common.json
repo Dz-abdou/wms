@@ -40,6 +40,9 @@
       "warehouse.not_found": "L’entrepôt est introuvable.",
       "warehouse.code_conflict": "Un entrepôt avec ce code existe déjà.",
       "product.sku_conflict": "Un produit avec cette référence existe déjà.",
+      "product_category.not_found": "La catégorie de produit est introuvable.",
+      "product_category.code_conflict": "Une catégorie de produit avec ce code existe déjà.",
+      "product_category.invalid_parent": "Une catégorie ne peut pas être sa propre catégorie parente.",
       "supplier.not_found": "Le fournisseur est introuvable.",
       "supplier.code_conflict": "Un fournisseur avec ce code existe déjà.",
       "supplier_product.not_found": "L’article du catalogue fournisseur est introuvable.",
@@ -340,14 +343,19 @@
     "currencies": {
       "title": "Devises",
       "subtitle": "Configurez les devises utilisées pour les achats.",
-      "new": "Nouvelle devise"
+      "new": "Nouvelle devise",
+      "errors": { "save": "La devise n’a pas pu être enregistrée." }
     },
     "categories": {
       "title": "Catégories de produits",
       "subtitle": "Configurez la hiérarchie du catalogue produits.",
       "new": "Nouvelle catégorie",
       "edit": "Modifier la catégorie",
-      "parent": "Catégorie parente"
+      "parent": "Catégorie parente",
+      "parentHelp": "Facultatif. Utilisez-le seulement pour placer cette catégorie sous une catégorie plus large.",
+      "errors": {
+        "save": "La catégorie de produit n’a pas pu être enregistrée."
+      }
     }
   },
   "administration": {
