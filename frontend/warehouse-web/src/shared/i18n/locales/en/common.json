@@ -11,7 +11,11 @@
     "purchaseOrders": "Purchase orders",
     "inventory": "Inventory",
     "users": "Users",
-    "roles": "Roles"
+    "roles": "Roles",
+    "masterData": "Master data",
+    "categories": "Product categories",
+    "currencies": "Currencies",
+    "inbound": "Inbound"
   },
   "language": {
     "label": "Language",
@@ -314,6 +318,7 @@
       }
     }
   },
+  "masterData": { "new": "New", "save": "Save", "edit": "Edit", "code": "Code", "name": "Name", "symbol": "Symbol", "decimals": "Decimals", "status": "Status", "actions": "Actions", "active": "Active", "inactive": "Inactive", "activate": "Activate", "deactivate": "Deactivate", "default": "Make default", "currencies": { "title": "Currencies", "subtitle": "Configure currencies used by purchasing.", "new": "New currency" }, "categories": { "title": "Product categories", "subtitle": "Configure the product catalogue hierarchy.", "new": "New category", "edit": "Edit category", "parent": "Parent category" } },
   "administration": {
     "users": {
       "title": "Users",

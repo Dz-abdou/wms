@@ -15,6 +15,7 @@ using Warehouse.Api.Endpoints.Products;
 using Warehouse.Api.Endpoints.Warehouses;
 using Warehouse.Api.Endpoints.Suppliers;
 using Warehouse.Api.Endpoints.Purchasing;
+using Warehouse.Api.Endpoints.Currencies;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -42,7 +43,7 @@ builder.Services.AddProblemDetails(); builder.Services.AddExceptionHandler<Unexp
 builder.Services.AddHealthChecks().AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"]).AddDbContextCheck<WarehouseDbContext>("postgresql", tags: ["ready"]);
 var app = builder.Build();
 app.MapSupplierEndpoints();
-app.MapPurchasingReferenceEndpoints();
+app.MapCurrencyEndpoints();
 app.MapSupplierProductEndpoints();
 app.MapPurchaseOrderEndpoints();
 if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScope(); await scope.ServiceProvider.GetRequiredService<Warehouse.Infrastructure.Identity.IdentityBootstrapper>().SeedDevelopmentAdminAsync(); }

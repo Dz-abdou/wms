@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPurchaseOrder,
+  createCurrency,
+  getCurrencies,
   createSupplierProduct,
   getPurchasingCurrencies,
   getPurchaseOrder,
@@ -8,6 +10,8 @@ import {
   getSupplierProduct,
   getSupplierProducts,
   setSupplierProductStatus,
+  setCurrencyStatus,
+  setDefaultCurrency,
   submitPurchaseOrder,
   updatePurchaseOrder,
   updateSupplierProduct,
@@ -26,6 +30,11 @@ export const purchasingKeys = {
 export function usePurchasingCurrencies() {
   return useQuery({ queryKey: purchasingKeys.currencies(), queryFn: ({ signal }) => getPurchasingCurrencies(signal), staleTime: Infinity });
 }
+
+export function useCurrencies() { return useQuery({ queryKey: purchasingKeys.currencies(), queryFn: ({ signal }) => getCurrencies(signal) }); }
+export function useCreateCurrency() { const queryClient = useQueryClient(); return useMutation({ mutationFn: createCurrency, onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
+export function useSetCurrencyStatus() { const queryClient = useQueryClient(); return useMutation({ mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => setCurrencyStatus(id, isActive), onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
+export function useSetDefaultCurrency() { const queryClient = useQueryClient(); return useMutation({ mutationFn: setDefaultCurrency, onSuccess: () => queryClient.invalidateQueries({ queryKey: purchasingKeys.currencies() }) }); }
 
 export function useSupplierProducts(page: number, pageSize: number, supplierId?: string) {
   return useQuery({ queryKey: purchasingKeys.catalogue(page, pageSize, supplierId), queryFn: ({ signal }) => getSupplierProducts(page, pageSize, supplierId, signal) });

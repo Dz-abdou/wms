@@ -64,6 +64,26 @@ public sealed class ProductCategoryService(
         return ToResponse(category);
     }
 
+    public async Task<ProductCategoryResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        ToResponse(await FindAsync(id, cancellationToken));
+
+    public async Task<ProductCategoryResponse> UpdateAsync(Guid id, ProductCategoryInput input, CancellationToken cancellationToken)
+    {
+        var category = await FindAsync(id, cancellationToken);
+        if (input.ParentCategoryId == id) throw new ProductCategoryInvalidParentException(id);
+        if (input.ParentCategoryId is { } parentCategoryId && !await dbContext.ProductCategories.AnyAsync(candidate => candidate.Id == parentCategoryId, cancellationToken)) throw new ProductCategoryNotFoundException(parentCategoryId);
+        var normalizedCode = ProductCategory.NormalizeCode(input.Code);
+        if (await dbContext.ProductCategories.AnyAsync(candidate => candidate.Code == normalizedCode && candidate.Id != id, cancellationToken)) throw new ProductCategoryCodeConflictException(normalizedCode);
+        category.Update(input.Code, input.Name, input.ParentCategoryId, timeProvider.GetUtcNow().UtcDateTime, currentUser.UserId);
+        try { await dbContext.SaveChangesAsync(cancellationToken); }
+        catch (DbUpdateException exception) { throw new ProductCategoryCodeConflictException(normalizedCode, exception); }
+        return ToResponse(category);
+    }
+
+    private async Task<ProductCategory> FindAsync(Guid id, CancellationToken cancellationToken) =>
+        await dbContext.ProductCategories.SingleOrDefaultAsync(category => category.Id == id, cancellationToken)
+        ?? throw new ProductCategoryNotFoundException(id);
+
     private static ProductCategoryResponse ToResponse(ProductCategory category) => new(
         category.Id,
         category.Code,

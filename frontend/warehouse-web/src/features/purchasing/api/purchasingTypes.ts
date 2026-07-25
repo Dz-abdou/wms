@@ -16,10 +16,19 @@ export type SupplierProduct = {
   updatedAtUtc: string;
 };
 
-export type CurrencyOption = {
+export type Currency = {
+  id: string;
   code: string;
+  name: string;
+  symbol: string | null;
+  decimalPlaces: number;
+  isActive: boolean;
   isDefault: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
 };
+
+export type CurrencyInput = Pick<Currency, "code" | "name" | "symbol" | "decimalPlaces">;
 
 export type SupplierProductInput = {
   supplierId: string;

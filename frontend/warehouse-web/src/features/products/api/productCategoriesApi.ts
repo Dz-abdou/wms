@@ -10,3 +10,11 @@ export function getProductCategories(signal?: AbortSignal) {
   )
 }
 
+export function createProductCategory(input: Pick<ProductCategory, 'code' | 'name' | 'parentCategoryId'>) {
+  return requestJson<ProductCategory>(productCategoriesPath, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
+}
+
+export function updateProductCategory(id: string, input: Pick<ProductCategory, 'code' | 'name' | 'parentCategoryId'>) {
+  return requestJson<ProductCategory>(`${productCategoriesPath}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
+}
+

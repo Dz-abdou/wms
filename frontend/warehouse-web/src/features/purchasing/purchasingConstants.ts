@@ -1,5 +1,5 @@
 export const purchasingApiPaths = {
-  currencies: "/api/purchasing/currencies",
+  currencies: "/api/currencies",
   supplierProducts: "/api/supplier-products",
   supplierProductById: (id: string) => `/api/supplier-products/${id}`,
   supplierProductStatus: (id: string) => `/api/supplier-products/${id}/status`,
@@ -10,6 +10,8 @@ export const purchasingApiPaths = {
 
 export const purchasingRoutes = {
   catalogue: "/supplier-catalogue",
+  currencies: "/currencies",
+  currenciesPattern: "currencies",
   cataloguePattern: "supplier-catalogue",
   catalogueCreate: "/supplier-catalogue/new",
   catalogueCreatePattern: "supplier-catalogue/new",

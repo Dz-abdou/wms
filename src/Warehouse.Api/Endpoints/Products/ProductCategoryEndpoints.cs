@@ -21,6 +21,12 @@ public static class ProductCategoryEndpoints
         group.MapPost("", CreateAsync)
             .RequireAuthorization(AuthorizationPolicies.ManageCatalog)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManageCatalog));
+        group.MapGet("/{id:guid}", GetByIdAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadCatalog)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadCatalog));
+        group.MapPut("/{id:guid}", UpdateAsync)
+            .RequireAuthorization(AuthorizationPolicies.ManageCatalog)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManageCatalog));
 
         return endpoints;
     }
@@ -45,5 +51,14 @@ public static class ProductCategoryEndpoints
         return validationProblem ?? Results.Created(
             $"{BasePath}",
             await categoryService.CreateAsync(input, cancellationToken));
+    }
+
+    private static async Task<IResult> GetByIdAsync(Guid id, ProductCategoryService categoryService, CancellationToken cancellationToken) =>
+        Results.Ok(await categoryService.GetByIdAsync(id, cancellationToken));
+
+    private static async Task<IResult> UpdateAsync(Guid id, ProductCategoryInput input, IValidator<ProductCategoryInput> validator, ProductCategoryService categoryService, CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(input, cancellationToken);
+        return validationProblem ?? Results.Ok(await categoryService.UpdateAsync(id, input, cancellationToken));
     }
 }

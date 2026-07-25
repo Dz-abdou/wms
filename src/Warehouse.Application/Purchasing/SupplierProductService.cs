@@ -13,8 +13,7 @@ namespace Warehouse.Application.Purchasing;
 public sealed class SupplierProductService(
     IWarehouseDbContext dbContext,
     TimeProvider timeProvider,
-    ICurrentUser currentUser,
-    ICurrencyCatalogue currencyCatalogue)
+    ICurrentUser currentUser)
 {
     public async Task<PagedResult<SupplierProductResponse>> GetListAsync(SupplierProductListQuery query, CancellationToken cancellationToken)
     {
@@ -55,7 +54,7 @@ public sealed class SupplierProductService(
         var supplier = await FindSupplierAsync(input.SupplierId, cancellationToken);
         var product = await FindProductAsync(input.ProductId, cancellationToken);
         var currencyCode = SupplierProduct.NormalizeCurrencyCode(input.CurrencyCode);
-        EnsurePurchasable(supplier.IsActive, product, input.PurchaseUnitOfMeasure, input.MinimumOrderQuantity, currencyCode);
+        await EnsurePurchasableAsync(supplier.IsActive, product, input.PurchaseUnitOfMeasure, input.MinimumOrderQuantity, currencyCode, cancellationToken);
 
         var catalogueItem = SupplierProduct.Create(
             input.SupplierId,
@@ -79,7 +78,7 @@ public sealed class SupplierProductService(
         var supplier = await FindSupplierAsync(catalogueItem.SupplierId, cancellationToken);
         var product = await FindProductAsync(catalogueItem.ProductId, cancellationToken);
         var currencyCode = SupplierProduct.NormalizeCurrencyCode(input.CurrencyCode);
-        EnsurePurchasable(supplier.IsActive, product, input.PurchaseUnitOfMeasure, input.MinimumOrderQuantity, currencyCode);
+        await EnsurePurchasableAsync(supplier.IsActive, product, input.PurchaseUnitOfMeasure, input.MinimumOrderQuantity, currencyCode, cancellationToken);
         var unitOfMeasure = ProductUnitOfMeasure.NormalizeUnitOfMeasure(input.PurchaseUnitOfMeasure);
         await EnsureUniqueAsync(catalogueItem.SupplierId, catalogueItem.ProductId, unitOfMeasure, id, cancellationToken);
         catalogueItem.Update(input.SupplierSku, unitOfMeasure, input.MinimumOrderQuantity, input.UnitPrice, currencyCode, UtcNow(), currentUser.UserId);
@@ -136,14 +135,14 @@ public sealed class SupplierProductService(
         }
     }
 
-    private void EnsurePurchasable(bool supplierIsActive, Product product, string? unitOfMeasure, decimal minimumOrderQuantity, string currencyCode)
+    private async Task EnsurePurchasableAsync(bool supplierIsActive, Product product, string? unitOfMeasure, decimal minimumOrderQuantity, string currencyCode, CancellationToken cancellationToken)
     {
         if (!supplierIsActive || !product.IsActive || !product.TryConvertToBaseQuantity(unitOfMeasure, minimumOrderQuantity, out _))
         {
             throw new PurchaseOrderCatalogueInvalidException("The supplier, product, purchase unit, or minimum order quantity is not valid for purchasing.");
         }
 
-        if (!currencyCatalogue.IsSupported(currencyCode))
+        if (!await dbContext.Currencies.AnyAsync(currency => currency.Code == currencyCode && currency.IsActive, cancellationToken))
         {
             throw new SupplierProductCurrencyNotSupportedException(currencyCode);
         }

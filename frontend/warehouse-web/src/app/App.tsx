@@ -37,6 +37,8 @@ import { ProductCreatePage } from "../features/products/pages/ProductCreatePage"
 import { ProductDetailPage } from "../features/products/pages/ProductDetailPage";
 import { ProductEditPage } from "../features/products/pages/ProductEditPage";
 import { ProductListPage } from "../features/products/pages/ProductListPage";
+import { ProductCategoryListPage } from "../features/products/pages/ProductCategoryListPage";
+import { CurrencyListPage } from "../features/purchasing/pages/CurrencyListPage";
 import { productRoutes } from "../features/products/productConstants";
 import { toAppLanguage } from "../shared/i18n/constants";
 import "../shared/i18n/i18n";
@@ -79,6 +81,7 @@ export function App() {
                       path={productRoutes.editPattern}
                       element={<ProductEditPage />}
                     />
+                    <Route path={productRoutes.categoriesPattern} element={<ProductCategoryListPage />} />
                     <Route
                       path={warehouseRoutes.listPattern}
                       element={<WarehouseListPage />}
@@ -116,6 +119,7 @@ export function App() {
                       element={<SupplierEditPage />}
                     />
                     <Route path={purchasingRoutes.cataloguePattern} element={<SupplierCatalogueListPage />} />
+                    <Route path={purchasingRoutes.currenciesPattern} element={<CurrencyListPage />} />
                     <Route path={purchasingRoutes.catalogueCreatePattern} element={<SupplierCatalogueCreatePage />} />
                     <Route path={purchasingRoutes.catalogueEditPattern} element={<SupplierCatalogueEditPage />} />
                     <Route path={purchasingRoutes.ordersPattern} element={<PurchaseOrderListPage />} />

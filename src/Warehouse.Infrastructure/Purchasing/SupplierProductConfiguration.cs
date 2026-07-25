@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Warehouse.Domain.Products;
 using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Suppliers;
+using Warehouse.Domain.Currencies;
 
 namespace Warehouse.Infrastructure.Purchasing;
 
@@ -37,5 +38,6 @@ public sealed class SupplierProductConfiguration : IEntityTypeConfiguration<Supp
         builder.HasIndex(supplierProduct => supplierProduct.ProductId);
         builder.HasOne<Supplier>().WithMany().HasForeignKey(supplierProduct => supplierProduct.SupplierId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Product>().WithMany().HasForeignKey(supplierProduct => supplierProduct.ProductId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Currency>().WithMany().HasPrincipalKey(currency => currency.Code).HasForeignKey(supplierProduct => supplierProduct.CurrencyCode).OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -1,7 +1,8 @@
 import { requestJson } from "../../../shared/api/apiClient";
 import { purchasingApiPaths } from "../purchasingConstants";
 import type {
-  CurrencyOption,
+  Currency,
+  CurrencyInput,
   PurchaseOrder,
   PurchaseOrderInput,
   PurchaseOrderListResult,
@@ -12,8 +13,13 @@ import type {
 } from "./purchasingTypes";
 
 export function getPurchasingCurrencies(signal?: AbortSignal) {
-  return requestJson<CurrencyOption[]>(purchasingApiPaths.currencies, { signal });
+  return requestJson<{ items: Currency[] }>(`${purchasingApiPaths.currencies}?activeOnly=true&page=1&pageSize=100`, { signal }).then((result) => result.items);
 }
+
+export function getCurrencies(signal?: AbortSignal) { return requestJson<{ items: Currency[] }>(`${purchasingApiPaths.currencies}?page=1&pageSize=100`, { signal }); }
+export function createCurrency(input: CurrencyInput) { return requestJson<Currency>(purchasingApiPaths.currencies, jsonRequest("POST", input)); }
+export function setCurrencyStatus(id: string, isActive: boolean) { return requestJson<Currency>(`${purchasingApiPaths.currencies}/${id}/status`, jsonRequest("PATCH", { isActive })); }
+export function setDefaultCurrency(id: string) { return requestJson<Currency>(`${purchasingApiPaths.currencies}/${id}/default`, jsonRequest("PATCH", {})); }
 
 export function getSupplierProducts(page: number, pageSize: number, supplierId?: string, signal?: AbortSignal) {
   const parameters = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Errors;
 using Warehouse.Application.Common.Models;
+using Warehouse.Application.Currencies;
 using Warehouse.Application.Products;
 using Warehouse.Application.Purchasing;
 using Warehouse.Application.Suppliers;
@@ -18,10 +19,10 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     [Fact]
     public async Task Supplier_catalogue_uses_the_centralized_currency_catalogue()
     {
-        var currencies = await fixture.Client.GetFromJsonAsync<IReadOnlyCollection<CurrencyOption>>("/api/purchasing/currencies");
+        var currencies = await fixture.Client.GetFromJsonAsync<PagedResult<CurrencyResponse>>("/api/currencies?activeOnly=true&page=1&pageSize=20");
 
         Assert.NotNull(currencies);
-        Assert.Contains(currencies, currency => currency.Code == "DZD" && currency.IsDefault);
+        Assert.Contains(currencies.Items, currency => currency.Code == "DZD" && currency.IsDefault);
 
         var supplier = await CreateSupplierAsync();
         var product = await CreateProductAsync();
