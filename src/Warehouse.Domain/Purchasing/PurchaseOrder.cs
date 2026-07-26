@@ -225,7 +225,6 @@ public sealed class PurchaseOrderStatusHistory
         Id = id; PreviousStatus = previousStatus; Status = status; ChangedAtUtc = changedAtUtc; ActorUserId = actorUserId; Reason = reason;
     }
     public Guid Id { get; private set; }
-    public int LineNumber { get; private set; }
     public PurchaseOrderStatus? PreviousStatus { get; private set; }
     public PurchaseOrderStatus Status { get; private set; }
     public DateTime ChangedAtUtc { get; private set; }
@@ -263,6 +262,7 @@ public sealed class PurchaseOrderLine
     }
 
     public Guid Id { get; private set; }
+    public int LineNumber { get; private set; }
     public Guid SupplierProductId { get; private set; }
     public Guid ProductId { get; private set; }
     public string ProductSku { get; private set; } = null!;
