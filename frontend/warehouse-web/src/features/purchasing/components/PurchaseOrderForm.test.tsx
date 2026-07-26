@@ -4,16 +4,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
 import { PurchaseOrderForm } from "./PurchaseOrderForm";
 
-const { useSuppliersMock, useSupplierProductsMock } = vi.hoisted(() => ({
+const { useSuppliersMock, useSupplierProductsMock, usePurchasingCurrenciesMock, useWarehousesMock } = vi.hoisted(() => ({
   useSuppliersMock: vi.fn(),
   useSupplierProductsMock: vi.fn(),
+  usePurchasingCurrenciesMock: vi.fn(),
+  useWarehousesMock: vi.fn(),
 }));
 
 vi.mock("../../suppliers/api/useSuppliers", () => ({
   useSuppliers: useSuppliersMock,
 }));
+vi.mock("../../warehouses/api/useWarehouses", () => ({
+  useWarehouses: useWarehousesMock,
+}));
 vi.mock("../api/usePurchasing", () => ({
   useSupplierProducts: useSupplierProductsMock,
+  usePurchasingCurrencies: usePurchasingCurrenciesMock,
 }));
 vi.mock("../../../shared/feedback/ApiFeedbackProvider", () => ({
   useApiFeedback: () => ({ notifyError: vi.fn() }),
@@ -53,6 +59,8 @@ describe("PurchaseOrderForm", () => {
       },
       isLoading: false,
     });
+    useWarehousesMock.mockReturnValue({ data: { items: [] } });
+    usePurchasingCurrenciesMock.mockReturnValue({ data: [] });
   });
 
   it("uses an editable table for purchase-order lines", async () => {
