@@ -79,3 +79,12 @@ public sealed class PurchaseOrderVersionInputValidator : AbstractValidator<Purch
     public PurchaseOrderVersionInputValidator() =>
         RuleFor(input => input.Version).GreaterThanOrEqualTo(0).WithErrorCode(ApiErrorCodes.ValidationInvalid);
 }
+
+public sealed class PurchaseOrderCancelInputValidator : AbstractValidator<PurchaseOrderCancelInput>
+{
+    public PurchaseOrderCancelInputValidator()
+    {
+        RuleFor(input => input.Version).GreaterThanOrEqualTo(0).WithErrorCode(ApiErrorCodes.ValidationInvalid);
+        RuleFor(input => input.Reason).MaximumLength(PurchaseOrderRules.MaxStatusReasonLength).WithErrorCode(ApiErrorCodes.ValidationMaxLength);
+    }
+}

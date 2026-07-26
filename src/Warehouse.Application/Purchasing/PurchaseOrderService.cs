@@ -106,6 +106,16 @@ public sealed class PurchaseOrderService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
+    public async Task<PurchaseOrderResponse> CancelAsync(Guid id, PurchaseOrderCancelInput input, CancellationToken cancellationToken)
+    {
+        var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
+        if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
+        var actorUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
+        purchaseOrder.Cancel(input.Reason, UtcNow(), actorUserId);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return await GetByIdAsync(id, cancellationToken);
+    }
+
     private async Task<PurchaseOrder> FindTrackedAsync(Guid id, CancellationToken cancellationToken) =>
         await dbContext.PurchaseOrders.Include(order => order.Lines).SingleOrDefaultAsync(order => order.Id == id, cancellationToken)
         ?? throw new PurchaseOrderNotFoundException(id);

@@ -150,6 +150,25 @@ public sealed class PurchaseOrder : PersistentEntity
         SetUpdatedByUser(actorUserId);
     }
 
+    public void Cancel(string? reason, DateTime updatedAtUtc, Guid actorUserId)
+    {
+        EnsureUtc(updatedAtUtc);
+        if (Status is not (PurchaseOrderStatus.Draft or PurchaseOrderStatus.Submitted))
+            throw new InvalidOperationException("This purchase order cannot be cancelled in its current state.");
+
+        var previousStatus = Status;
+        Status = PurchaseOrderStatus.Cancelled;
+        statusHistory.Add(PurchaseOrderStatusHistory.Create(
+            previousStatus,
+            Status,
+            updatedAtUtc,
+            actorUserId,
+            NormalizeOptional(reason, PurchaseOrderRules.MaxStatusReasonLength, nameof(reason))));
+        Version++;
+        UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
+    }
+
     private void EnsureDraft()
     {
         if (Status != PurchaseOrderStatus.Draft)

@@ -59,6 +59,8 @@ public sealed record PurchaseOrderLineInput(Guid SupplierProductId, decimal Quan
 
 public sealed record PurchaseOrderVersionInput(int Version);
 
+public sealed record PurchaseOrderCancelInput(int Version, string? Reason);
+
 public sealed record PurchaseOrderInput(
     Guid SupplierId,
     Guid DestinationWarehouseId,

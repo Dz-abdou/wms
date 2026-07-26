@@ -6,6 +6,7 @@ export const purchasingApiPaths = {
   purchaseOrders: "/api/purchase-orders",
   purchaseOrderById: (id: string) => `/api/purchase-orders/${id}`,
   purchaseOrderSubmit: (id: string) => `/api/purchase-orders/${id}/submit`,
+  purchaseOrderCancel: (id: string) => `/api/purchase-orders/${id}/cancel`,
 } as const;
 
 export const purchasingRoutes = {
