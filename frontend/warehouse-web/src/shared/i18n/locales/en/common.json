@@ -328,6 +328,7 @@
       "number": "Order number",
       "warehouse": "Destination warehouse",
       "currency": "Currency",
+      "currencyFromCatalogue": "Set automatically from the first catalogue item.",
       "orderDate": "Order date",
       "buyer": "Buyer",
       "expectedDeliveryDate": "Expected delivery date",

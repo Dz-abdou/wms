@@ -109,8 +109,11 @@ Stable purchase-order codes include `purchase_order.concurrency_conflict`,
 ## Frontend Requirements
 
 - The draft create/edit page has a header form followed by the existing editable
-  line table. The header contains supplier, destination warehouse, currency,
-  order date, expected delivery date, supplier reference, and notes.
+  line table. The header contains supplier, destination warehouse, catalogue-
+  derived currency, order date, expected delivery date, supplier reference, and
+  notes. The first selected active catalogue item sets the currency; subsequent
+  line selectors show only items in that currency. Changing the source line
+  clears incompatible selections rather than allowing mixed-currency orders.
 - The line table shows catalogue item, product, supplier SKU, UoM, MOQ,
   quantity, unit price, currency, derived line amount, and remove action. Its
   add action stays in the table footer.

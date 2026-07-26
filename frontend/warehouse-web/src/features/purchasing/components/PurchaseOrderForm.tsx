@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from "react";
 import { Button, Form, Input, InputNumber, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
@@ -10,10 +11,7 @@ import { useSuppliers } from "../../suppliers/api/useSuppliers";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
-import {
-  usePurchasingCurrencies,
-  useSupplierProducts,
-} from "../api/usePurchasing";
+import { useSupplierProducts } from "../api/usePurchasing";
 import type {
   PurchaseOrderInput,
   SupplierProduct,
@@ -47,7 +45,6 @@ export function PurchaseOrderForm({
   const supplierId = Form.useWatch("supplierId", form);
   const suppliers = useSuppliers({ page: 1, pageSize: 100 });
   const warehouses = useWarehouses({ page: 1, pageSize: 100 });
-  const currencies = usePurchasingCurrencies();
   const catalogue = useSupplierProducts({ page: 1, pageSize: 100, supplierId });
   const lines = Form.useWatch("lines", form);
 
@@ -60,12 +57,69 @@ export function PurchaseOrderForm({
     }
   }
 
-  const catalogueItems =
-    catalogue.data?.items.filter((item) => item.isActive) ?? [];
-  const catalogueOptions = catalogueItems.map((item) => ({
+  const catalogueItems = useMemo(
+    () => catalogue.data?.items.filter((item) => item.isActive) ?? [],
+    [catalogue.data?.items],
+  );
+  const selectedCatalogueItems = useMemo(
+    () =>
+      lines
+        ?.map((line) =>
+          catalogueItems.find((item) => item.id === line.supplierProductId),
+        )
+        .filter((item): item is SupplierProduct => item !== undefined) ?? [],
+    [catalogueItems, lines],
+  );
+  const selectedCurrencyCode = selectedCatalogueItems[0]?.currencyCode;
+  const hasSelectedCatalogueItem = Boolean(
+    lines?.some((line) => line.supplierProductId),
+  );
+  const compatibleCatalogueItems = selectedCurrencyCode
+    ? catalogueItems.filter(
+        (item) => item.currencyCode === selectedCurrencyCode,
+      )
+    : catalogueItems;
+  const catalogueOptions = compatibleCatalogueItems.map((item) => ({
     value: item.id,
     label: `${item.productSku} — ${item.productName}`,
   }));
+
+  useEffect(() => {
+    if (!selectedCurrencyCode) {
+      if (!hasSelectedCatalogueItem && form.getFieldValue("currencyCode")) {
+        form.setFieldValue("currencyCode", undefined);
+      }
+      return;
+    }
+
+    const incompatibleLines = lines?.map((line) => {
+      const catalogueItem = catalogueItems.find(
+        (item) => item.id === line.supplierProductId,
+      );
+      return catalogueItem &&
+        catalogueItem.currencyCode !== selectedCurrencyCode
+        ? { ...line, supplierProductId: undefined }
+        : line;
+    });
+    const hasIncompatibleLine = incompatibleLines?.some(
+      (line, index) => line !== lines?.[index],
+    );
+    if (
+      form.getFieldValue("currencyCode") !== selectedCurrencyCode ||
+      hasIncompatibleLine
+    ) {
+      form.setFieldsValue({
+        currencyCode: selectedCurrencyCode,
+        ...(hasIncompatibleLine ? { lines: incompatibleLines } : {}),
+      });
+    }
+  }, [
+    catalogueItems,
+    form,
+    hasSelectedCatalogueItem,
+    lines,
+    selectedCurrencyCode,
+  ]);
   const columns = (
     remove: (fieldName: number) => void,
   ): ColumnsType<PurchaseOrderLineRow & EditableFormListTableRow> => [
@@ -195,7 +249,9 @@ export function PurchaseOrderForm({
       onFinish={submit}
       requiredMark="optional"
       onValuesChange={(changedValues) => {
-        if (changedValues.supplierId) form.setFieldsValue({ lines: [] });
+        if ("supplierId" in changedValues) {
+          form.setFieldsValue({ currencyCode: undefined, lines: [] });
+        }
       }}
     >
       <Form.Item
@@ -232,13 +288,9 @@ export function PurchaseOrderForm({
         label={t("purchasing.orders.currency")}
         name="currencyCode"
         rules={[{ required: true, message: t("errors.validationFailed") }]}
+        extra={t("purchasing.orders.currencyFromCatalogue")}
       >
-        <Select
-          options={currencies.data?.map((currency) => ({
-            value: currency.code,
-            label: currency.code,
-          }))}
-        />
+        <Input readOnly />
       </Form.Item>
       <Form.Item
         label={t("purchasing.orders.orderDate")}

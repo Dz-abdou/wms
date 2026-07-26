@@ -328,6 +328,7 @@
       "number": "Numéro de commande",
       "warehouse": "Entrepôt de destination",
       "currency": "Devise",
+      "currencyFromCatalogue": "Définie automatiquement à partir du premier article du catalogue.",
       "orderDate": "Date de commande",
       "buyer": "Acheteur",
       "expectedDeliveryDate": "Date de livraison prévue",
