@@ -41,6 +41,36 @@ Every create/edit page finishes with the shared form action bar: Cancel is left-
 
 Use horizontal scrolling for genuinely wide operational tables rather than hiding essential fields. High-volume selectors must use server-side search rather than a fixed first-page list. For stock operations, reject or explicitly consolidate duplicate product/warehouse lines and validate the projected final quantity before committing. Frontend tests must cover adding/removing a line, line validation, derived values, and failed atomic submissions; backend tests must prove no partial persistence on failure.
 
+## Application UI/UX Consistency Standard
+
+The application must feel like one operational system rather than a collection of feature pages. This standard applies to every existing and future authenticated screen.
+
+### Page layouts and return behaviour
+
+- A list page has a consistent title/subtitle area, one contextual primary action, an optional filter toolbar, and explicit loading, empty, error, and populated states.
+- A create/edit page has a visible `Back to …` link above its heading, grouped form sections where the form is long, and the standard Cancel/Create or Save action bar at the bottom. The top return link and bottom Cancel action target the same safe route.
+- A detail page has `Back to …`, title/status, contextual actions, a summary area, and related tables/timeline sections. A detail action must preserve the document's read-only/status rules.
+- Back must be an explicit known route, never blind browser history. Links from a list preserve that list's current path and URL query; direct navigation or a refreshed page uses the safe feature-list fallback. A dirty form warns before leaving.
+- A modal is reserved for short master-data configuration. It uses a shared Cancel/Save footer and does not excuse the parent list from providing loading, empty, error, and populated states.
+
+### Actions, tables, and feedback
+
+- One page has at most one visually primary action. Use neutral secondary actions for edit/navigation and confirmed danger actions for deactivate, cancel, submit, or other irreversible operations.
+- Do not nest a router link inside a button. Shared navigation/action primitives own the accessible semantics.
+- Operational ledgers are read-only. A shortcut to a related document action must be named as that action (for example `Record adjustment`), never `New movement`.
+- Lists retain filters in URL query parameters where practical. Filter toolbars, pagination, empty states, and retryable error states use the shared layout instead of bespoke cards.
+- All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
+
+### Navigation and visual foundations
+
+- Navigation is grouped by business area: Master data, Inbound, Outbound, Inventory, and Administration. Administration itself is a group, not separate top-level items.
+- The layout must remain usable at narrower widths as operational groups grow; group structure and active-state behaviour stay consistent across desktop and responsive navigation.
+- Shared theme/layout tokens own colour, spacing, type scale, borders, cards, and responsive breakpoints. Feature code adds only feature-specific presentation.
+
+### Future-feature definition of done
+
+Every feature specification must state its page type, return target/fallback, action hierarchy, table/filter states, and responsive behaviour. New pages must use the shared layouts and action primitives from their first implementation. Frontend tests must prove any newly introduced shared interaction, including return destinations and dirty-form protection when applicable.
+
 ## Priority 1 — Purchase Order Hardening
 
 ### Purchase Order Header

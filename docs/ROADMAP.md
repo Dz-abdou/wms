@@ -21,11 +21,31 @@ Every future business document or multi-line warehouse operation must be designe
 - For a batch stock adjustment, the header owns reason, optional reference/note, actor and timestamp; the lines own product, warehouse/location where applicable, direction, UoM, and quantity. The API must reject or explicitly consolidate duplicate product/warehouse lines and validate the final projected balance.
 - New feature specifications must name the table columns, derived values, header fields, empty/loading/error states, responsive horizontal-scroll behavior, validation rules, and frontend/API tests before implementation starts.
 
+## Application UI/UX Standard
+
+Every authenticated screen must use the shared application layout and one of the shared page layouts below. A feature may add business-specific content, but it must not invent a competing header, action placement, return path, feedback state, or table/form structure.
+
+| Screen type | Required structure |
+|---|---|
+| List | Page heading with title/subtitle, contextual primary `New …` action when creation is permitted, optional filter toolbar, then loading/empty/error/populated table states. |
+| Create/edit | A visible `Back to …` link above the heading, title and optional context, grouped form content, then the shared end-of-form Cancel/Create or Save action bar. |
+| Read-only detail | A visible `Back to …` link, title with status where applicable, a right-aligned contextual action area, summary content, then related read-only tables/timeline sections. |
+| Short configuration dialog | The containing list retains full loading/empty/error states. The dialog uses a shared Cancel/Save footer; use it only for small reference-data forms, not operational documents. |
+| Ledger/history | Read-only list/filter/detail links. It never presents a primary action that implies a ledger row can be created directly. |
+
+- Return controls use an explicit safe route, not `navigate(-1)`. When a user enters a detail or form from a list, preserve the list path and query string as the return destination; a direct URL or refresh falls back to the feature list. Warn before abandoning a dirty form.
+- Use exactly one primary page action. Secondary actions are neutral; destructive or irreversible actions require confirmation and must not visually compete with the primary action.
+- Use shared page-layout/action components rather than a `<Link>` nested inside a `<Button>`. All navigation targets and visible copy remain centralized and localized.
+- Lists with filters must keep filter state in URL query parameters where practical, so return links, refresh, and sharing preserve the user context. Every list and selector needs clear loading, empty, error, and populated states.
+- Keep navigation grouped by business area. It must remain usable at narrower widths; future items extend the group rather than adding a new ungrouped top-level action.
+- Shared theme tokens own common colour, spacing, typography, border, and responsive layout decisions. Feature CSS may only cover behaviour that is genuinely feature-specific.
+- A feature specification must name the page type, return target, action hierarchy, table/filter states, and any responsive behaviour before UI implementation begins. Frontend tests cover the shared behaviour when a new page type or interaction is introduced.
+
 ## Current Planning State
 
-The supplier-management and core purchase-order slices are intentionally combined on `features/Suppliers-+-Purchase-Orders` by explicit developer decision. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders; the developer owns the generated purchasing migration files.
+The supplier-management and core purchase-order slices are merged. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders.
 
-Once that branch is reviewed, the migration is manually applied, and the slice is fully verified and merged, the next approved work is **Phase 4.1 — Purchase Order Operational Hardening**. Its purpose is to close the operational gaps before any goods-receipt work begins. In particular, Phase 5 must not start until the Phase 4.1 exit criteria pass.
+The active branch is the approved cross-cutting **UI/UX Consistency** slice. It applies the Application UI/UX Standard to the existing completed screens without changing business workflow sequencing, APIs, or data models. Once it is merged, the next business workflow is **Phase 4.1 — Purchase Order Operational Hardening**. Phase 5 must not start until Phase 4.1 exit criteria pass.
 
 The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
 
