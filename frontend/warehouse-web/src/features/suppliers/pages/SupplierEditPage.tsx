@@ -15,14 +15,32 @@ export function SupplierEditPage() {
   const { t } = useTranslation();
   const supplierQuery = useSupplier(id);
   const update = useUpdateSupplier(id ?? "");
-  const { goBack, returnTo } = useReturnDestination(supplierRoutes.detail(id ?? ""));
+  const { goBack, returnTo } = useReturnDestination(
+    supplierRoutes.detail(id ?? ""),
+  );
 
   if (supplierQuery.isLoading) {
-    return <Spin className="page-spinner" size="large" tip={t("suppliers.loadingOne")} />;
+    return (
+      <Spin
+        className="page-spinner"
+        size="large"
+        tip={t("suppliers.loadingOne")}
+      />
+    );
   }
 
   if (supplierQuery.error || !supplierQuery.data || !id) {
-    return <Alert message={getErrorMessage(t, supplierQuery.error, "suppliers.errors.load")} showIcon type="error" />;
+    return (
+      <Alert
+        message={getErrorMessage(
+          t,
+          supplierQuery.error,
+          "suppliers.errors.load",
+        )}
+        showIcon
+        type="error"
+      />
+    );
   }
 
   async function submit(values: SupplierInput) {
@@ -55,6 +73,7 @@ export function SupplierEditPage() {
             email: supplier.email ?? undefined,
             phoneNumber: supplier.phoneNumber ?? undefined,
             address: supplier.address ?? undefined,
+            defaultCurrencyCode: supplier.defaultCurrencyCode,
           }}
           isSubmitting={update.isPending}
           onCancel={goBack}

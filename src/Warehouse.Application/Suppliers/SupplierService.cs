@@ -25,7 +25,8 @@ public sealed class SupplierService(IWarehouseDbContext dbContext, TimeProvider 
 
     public async Task<SupplierResponse> CreateAsync(SupplierInput input, CancellationToken cancellationToken)
     {
-        var supplier = Supplier.Create(input.Code, input.Name, input.Email, input.PhoneNumber, input.Address, UtcNow(), currentUser.UserId);
+        var supplier = Supplier.Create(input.Code, input.Name, input.Email, input.PhoneNumber, input.Address, UtcNow(), currentUser.UserId, input.DefaultCurrencyCode ?? SupplierRules.DefaultCurrencyCode);
+        await EnsureDefaultCurrencyIsActiveAsync(supplier.DefaultCurrencyCode, cancellationToken);
         await EnsureCodeAvailableAsync(supplier.Code, null, cancellationToken);
         dbContext.Suppliers.Add(supplier);
         await SaveAsync(supplier.Code, cancellationToken);
@@ -37,7 +38,9 @@ public sealed class SupplierService(IWarehouseDbContext dbContext, TimeProvider 
         var supplier = await FindAsync(id, false, cancellationToken);
         var code = Supplier.NormalizeCode(input.Code);
         await EnsureCodeAvailableAsync(code, id, cancellationToken);
-        supplier.Update(code, input.Name, input.Email, input.PhoneNumber, input.Address, UtcNow(), currentUser.UserId);
+        var defaultCurrencyCode = Supplier.NormalizeCurrencyCode(input.DefaultCurrencyCode ?? SupplierRules.DefaultCurrencyCode);
+        await EnsureDefaultCurrencyIsActiveAsync(defaultCurrencyCode, cancellationToken);
+        supplier.Update(code, input.Name, input.Email, input.PhoneNumber, input.Address, UtcNow(), currentUser.UserId, defaultCurrencyCode);
         await SaveAsync(code, cancellationToken);
         return ToResponse(supplier);
     }
@@ -62,6 +65,14 @@ public sealed class SupplierService(IWarehouseDbContext dbContext, TimeProvider 
         if (await dbContext.Suppliers.AnyAsync(supplier => supplier.Code == code && supplier.Id != excludedId, cancellationToken)) throw new SupplierCodeConflictException(code);
     }
 
+    private async Task EnsureDefaultCurrencyIsActiveAsync(string currencyCode, CancellationToken cancellationToken)
+    {
+        if (!await dbContext.Currencies.AnyAsync(currency => currency.Code == currencyCode && currency.IsActive, cancellationToken))
+        {
+            throw new SupplierDefaultCurrencyNotSupportedException(currencyCode);
+        }
+    }
+
     private async Task SaveAsync(string code, CancellationToken cancellationToken)
     {
         try { await dbContext.SaveChangesAsync(cancellationToken); }
@@ -69,5 +80,5 @@ public sealed class SupplierService(IWarehouseDbContext dbContext, TimeProvider 
     }
 
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
-    private static SupplierResponse ToResponse(Supplier supplier) => new(supplier.Id, supplier.Code, supplier.Name, supplier.Email, supplier.PhoneNumber, supplier.Address, supplier.IsActive, supplier.CreatedAtUtc, supplier.UpdatedAtUtc);
+    private static SupplierResponse ToResponse(Supplier supplier) => new(supplier.Id, supplier.Code, supplier.Name, supplier.Email, supplier.PhoneNumber, supplier.Address, supplier.DefaultCurrencyCode, supplier.IsActive, supplier.CreatedAtUtc, supplier.UpdatedAtUtc);
 }

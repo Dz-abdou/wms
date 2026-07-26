@@ -17,6 +17,15 @@ public sealed class SupplierTests
         Assert.Equal("+213 555 000 000", supplier.PhoneNumber);
         Assert.Equal("1 Main Street", supplier.Address);
         Assert.True(supplier.IsActive);
+        Assert.Equal(SupplierRules.DefaultCurrencyCode, supplier.DefaultCurrencyCode);
+    }
+
+    [Fact]
+    public void Create_normalizes_default_currency()
+    {
+        var supplier = Supplier.Create("SUPPLIER-01", "Acme supplies", null, null, null, CreatedAtUtc, defaultCurrencyCode: " eur ");
+
+        Assert.Equal("EUR", supplier.DefaultCurrencyCode);
     }
 
     [Theory]

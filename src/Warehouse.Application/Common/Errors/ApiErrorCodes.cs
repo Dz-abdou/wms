@@ -13,6 +13,7 @@ public static class ApiErrorCodes
     public const string ProductSkuConflict = "product.sku_conflict";
     public const string SupplierNotFound = "supplier.not_found";
     public const string SupplierCodeConflict = "supplier.code_conflict";
+    public const string SupplierDefaultCurrencyNotSupported = "supplier.default_currency_not_supported";
     public const string SupplierProductNotFound = "supplier_product.not_found";
     public const string SupplierProductConflict = "supplier_product.conflict";
     public const string SupplierProductCurrencyNotSupported = "supplier_product.currency_not_supported";
@@ -37,6 +38,8 @@ public static class ApiErrorCodes
     public const string PurchaseOrderCatalogueItemUnavailable = "purchase_order.catalogue_item_unavailable";
     public const string PurchaseOrderDuplicateCatalogueItem = "purchase_order.duplicate_catalogue_item";
     public const string PurchaseOrderCurrencyMismatch = "purchase_order.currency_mismatch";
+    public const string PurchaseOrderCurrencyNotAvailable = "purchase_order.currency_not_available";
+    public const string PurchaseOrderCurrencyLocked = "purchase_order.currency_locked";
     public const string PurchaseOrderMinimumOrderQuantity = "purchase_order.minimum_order_quantity";
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";

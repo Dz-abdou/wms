@@ -60,15 +60,16 @@ public sealed class PurchaseOrderService(
 
     public async Task<PurchaseOrderResponse> CreateAsync(PurchaseOrderInput input, CancellationToken cancellationToken)
     {
-        await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
+        var supplier = await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
         await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
-        var lines = await ResolveLinesAsync(input.SupplierId, input.CurrencyCode, input.Lines ?? [], cancellationToken);
+        var currencyCode = await ResolvePurchaseOrderCurrencyAsync(supplier, input.CurrencyCode, cancellationToken);
+        var lines = await ResolveLinesAsync(input.SupplierId, currencyCode, input.Lines ?? [], cancellationToken);
         var now = UtcNow();
         var sequence = PurchaseOrderNumberSequence.Create(now.Year);
         dbContext.PurchaseOrderNumberSequences.Add(sequence);
         await dbContext.SaveChangesAsync(cancellationToken);
         var buyerUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
-        var purchaseOrder = PurchaseOrder.Create(sequence.ToNumber(), input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
+        var purchaseOrder = PurchaseOrder.Create(sequence.ToNumber(), input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
         purchaseOrder.ReplaceLines(lines, UtcNow(), currentUser.UserId);
         dbContext.PurchaseOrders.Add(purchaseOrder);
         await SaveWithConcurrencyHandlingAsync(purchaseOrder.Id, cancellationToken);
@@ -80,11 +81,20 @@ public sealed class PurchaseOrderService(
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         EnsureDraft(purchaseOrder);
         if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
-        await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
+        var supplier = await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
         await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
-        var lines = await ResolveLinesAsync(input.SupplierId, input.CurrencyCode, input.Lines ?? [], cancellationToken);
+        var currencyCode = await ResolvePurchaseOrderCurrencyAsync(supplier, input.CurrencyCode, cancellationToken);
+        if (purchaseOrder.Lines.Count > 0 && !string.Equals(purchaseOrder.CurrencyCode, currencyCode, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new PurchaseOrderFieldValidationException(
+                "CurrencyCode",
+                ApiErrorCodes.PurchaseOrderCurrencyLocked,
+                "The purchase-order currency cannot change after a catalogue line has been selected.");
+        }
+
+        var lines = await ResolveLinesAsync(input.SupplierId, currencyCode, input.Lines ?? [], cancellationToken);
         var updatedAtUtc = UtcNow();
-        purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, input.Version ?? -1, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
+        purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, input.Version ?? -1, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
         purchaseOrder.ReplaceLines(lines, updatedAtUtc, currentUser.UserId);
         await SaveWithConcurrencyHandlingAsync(id, cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
@@ -123,7 +133,7 @@ public sealed class PurchaseOrderService(
         await dbContext.PurchaseOrders.Include(order => order.Lines).SingleOrDefaultAsync(order => order.Id == id, cancellationToken)
         ?? throw new PurchaseOrderNotFoundException(id);
 
-    private async Task EnsureSupplierIsActiveAsync(Guid supplierId, CancellationToken cancellationToken)
+    private async Task<Warehouse.Domain.Suppliers.Supplier> EnsureSupplierIsActiveAsync(Guid supplierId, CancellationToken cancellationToken)
     {
         var supplier = await dbContext.Suppliers.SingleOrDefaultAsync(candidate => candidate.Id == supplierId, cancellationToken)
             ?? throw new PurchaseOrderFieldValidationException(
@@ -137,6 +147,8 @@ public sealed class PurchaseOrderService(
                 ApiErrorCodes.PurchaseOrderSupplierUnavailable,
                 "The selected supplier is inactive.");
         }
+
+        return supplier;
     }
 
     private async Task EnsureWarehouseIsActiveAsync(Guid warehouseId, CancellationToken cancellationToken)
@@ -201,6 +213,36 @@ public sealed class PurchaseOrderService(
         }
 
         return lines;
+    }
+
+    private async Task<string> ResolvePurchaseOrderCurrencyAsync(Warehouse.Domain.Suppliers.Supplier supplier, string? requestedCurrencyCode, CancellationToken cancellationToken)
+    {
+        var currencyCode = string.IsNullOrWhiteSpace(requestedCurrencyCode)
+            ? supplier.DefaultCurrencyCode
+            : SupplierProduct.NormalizeCurrencyCode(requestedCurrencyCode);
+        var isActiveCurrency = await dbContext.Currencies.AnyAsync(
+            currency => currency.Code == currencyCode && currency.IsActive,
+            cancellationToken);
+        if (!isActiveCurrency)
+        {
+            throw new PurchaseOrderFieldValidationException(
+                "CurrencyCode",
+                ApiErrorCodes.PurchaseOrderCurrencyNotAvailable,
+                "The selected purchase-order currency is not active.");
+        }
+
+        if (!string.Equals(currencyCode, supplier.DefaultCurrencyCode, StringComparison.OrdinalIgnoreCase)
+            && !await dbContext.SupplierProducts.AnyAsync(
+                item => item.SupplierId == supplier.Id && item.IsActive && item.CurrencyCode == currencyCode,
+                cancellationToken))
+        {
+            throw new PurchaseOrderFieldValidationException(
+                "CurrencyCode",
+                ApiErrorCodes.PurchaseOrderCurrencyNotAvailable,
+                "The selected currency is not available in this supplier's active catalogue.");
+        }
+
+        return currencyCode;
     }
 
     private async Task ValidateDraftLinesAsync(Guid supplierId, string? currencyCode, IReadOnlyCollection<PurchaseOrderLine> lines, CancellationToken cancellationToken)

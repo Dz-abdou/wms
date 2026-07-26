@@ -106,14 +106,21 @@ Stable purchase-order codes include `purchase_order.concurrency_conflict`,
 `purchase_order.catalogue_item_unavailable`, and
 `purchase_order.duplicate_catalogue_item`.
 
+Exchange-rate conversion, rate source/date snapshots, and permissions for
+currency conversion are explicitly deferred. They must be introduced together
+in a dedicated accounting/purchasing enhancement, not represented by unused
+fields on the purchase order.
+
 ## Frontend Requirements
 
 - The draft create/edit page has a header form followed by the existing editable
-  line table. The header contains supplier, destination warehouse, catalogue-
-  derived currency, order date, expected delivery date, supplier reference, and
-  notes. The first selected active catalogue item sets the currency; subsequent
-  line selectors show only items in that currency. Changing the source line
-  clears incompatible selections rather than allowing mixed-currency orders.
+  line table. The header contains supplier, destination warehouse, currency,
+  order date, expected delivery date, supplier reference, and notes. Currency
+  defaults from the selected supplier and may be overridden only before a
+  catalogue line is selected. Override choices are limited to the supplier's
+  default currency and active catalogue currencies; after a line is selected,
+  the field locks and later line selectors show only items in that currency.
+  This prevents mixed-currency orders without silently converting prices.
 - The line table shows catalogue item, product, supplier SKU, UoM, MOQ,
   quantity, unit price, currency, derived line amount, and remove action. Its
   add action stays in the table footer.

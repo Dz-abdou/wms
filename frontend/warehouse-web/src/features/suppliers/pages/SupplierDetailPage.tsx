@@ -21,15 +21,33 @@ export function SupplierDetailPage() {
   const { returnTo } = useReturnDestination(supplierRoutes.list);
 
   if (supplierQuery.isLoading) {
-    return <Spin className="page-spinner" size="large" tip={t("suppliers.loadingOne")} />;
+    return (
+      <Spin
+        className="page-spinner"
+        size="large"
+        tip={t("suppliers.loadingOne")}
+      />
+    );
   }
 
   if (supplierQuery.error || !supplierQuery.data || !id) {
-    return <Alert message={getErrorMessage(t, supplierQuery.error, "suppliers.errors.load")} showIcon type="error" />;
+    return (
+      <Alert
+        message={getErrorMessage(
+          t,
+          supplierQuery.error,
+          "suppliers.errors.load",
+        )}
+        showIcon
+        type="error"
+      />
+    );
   }
 
   const supplier = supplierQuery.data;
-  const action = t(supplier.isActive ? "suppliers.deactivate" : "suppliers.activate");
+  const action = t(
+    supplier.isActive ? "suppliers.deactivate" : "suppliers.activate",
+  );
   const missingValue = t("suppliers.missingValue");
 
   return (
@@ -61,23 +79,48 @@ export function SupplierDetailPage() {
       {setStatus.error ? (
         <Alert
           className="page-alert"
-          message={getErrorMessage(t, setStatus.error, "suppliers.errors.status")}
+          message={getErrorMessage(
+            t,
+            setStatus.error,
+            "suppliers.errors.status",
+          )}
           showIcon
           type="error"
         />
       ) : null}
       <Descriptions bordered column={1}>
-        <Descriptions.Item label={t("suppliers.table.code")}>{supplier.code}</Descriptions.Item>
-        <Descriptions.Item label={t("suppliers.table.name")}>{supplier.name}</Descriptions.Item>
-        <Descriptions.Item label={t("suppliers.table.email")}>{supplier.email ?? missingValue}</Descriptions.Item>
-        <Descriptions.Item label={t("suppliers.table.phoneNumber")}>{supplier.phoneNumber ?? missingValue}</Descriptions.Item>
-        <Descriptions.Item label={t("suppliers.table.address")}>{supplier.address ?? missingValue}</Descriptions.Item>
-        <Descriptions.Item label={t("suppliers.table.status")}><ProductStatusTag isActive={supplier.isActive} /></Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.code")}>
+          {supplier.code}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.name")}>
+          {supplier.name}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.email")}>
+          {supplier.email ?? missingValue}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.phoneNumber")}>
+          {supplier.phoneNumber ?? missingValue}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.address")}>
+          {supplier.address ?? missingValue}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.defaultCurrency")}>
+          {supplier.defaultCurrencyCode}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("suppliers.table.status")}>
+          <ProductStatusTag isActive={supplier.isActive} />
+        </Descriptions.Item>
         <Descriptions.Item label={t("suppliers.table.created")}>
-          {formatDateTime(supplier.createdAtUtc, toAppLanguage(i18n.resolvedLanguage))}
+          {formatDateTime(
+            supplier.createdAtUtc,
+            toAppLanguage(i18n.resolvedLanguage),
+          )}
         </Descriptions.Item>
         <Descriptions.Item label={t("suppliers.table.updated")}>
-          {formatDateTime(supplier.updatedAtUtc, toAppLanguage(i18n.resolvedLanguage))}
+          {formatDateTime(
+            supplier.updatedAtUtc,
+            toAppLanguage(i18n.resolvedLanguage),
+          )}
         </Descriptions.Item>
       </Descriptions>
     </DetailPageLayout>

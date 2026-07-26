@@ -35,6 +35,11 @@ export function SupplierListPage() {
       { title: t("suppliers.table.code"), dataIndex: "code", key: "code" },
       { title: t("suppliers.table.name"), dataIndex: "name", key: "name" },
       {
+        title: t("suppliers.table.defaultCurrency"),
+        dataIndex: "defaultCurrencyCode",
+        key: "defaultCurrencyCode",
+      },
+      {
         title: t("suppliers.table.status"),
         dataIndex: "isActive",
         key: "isActive",

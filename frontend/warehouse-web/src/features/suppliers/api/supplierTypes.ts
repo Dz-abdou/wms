@@ -5,6 +5,7 @@ export type Supplier = {
   email: string | null;
   phoneNumber: string | null;
   address: string | null;
+  defaultCurrencyCode: string;
   isActive: boolean;
   createdAtUtc: string;
   updatedAtUtc: string;
@@ -16,6 +17,7 @@ export type SupplierInput = {
   email?: string;
   phoneNumber?: string;
   address?: string;
+  defaultCurrencyCode?: string;
 };
 
 export type SupplierListResult = {

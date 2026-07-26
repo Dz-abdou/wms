@@ -13,7 +13,7 @@ Allow authorized operators to maintain a trustworthy supplier catalogue before p
 ## Scope
 
 - Create, edit, view, paginate, activate, and deactivate suppliers.
-- Store a unique supplier code, name, and optional contact details.
+- Store a unique supplier code, name, default purchasing currency, and optional contact details.
 - Provide English/French UI text and stable API error codes.
 
 ## Out of Scope
@@ -32,13 +32,14 @@ Preferred supplier, lead time, and effective price history are planned catalogue
 1. Code is required, trimmed, stored uppercase, 1–32 characters, and unique.
 2. Name is required, trimmed, and 1–200 characters.
 3. Email, phone number, and address are optional; when supplied they are trimmed and limited to 320, 50, and 500 characters respectively.
-4. New suppliers are active; status changes are idempotent.
-5. Missing suppliers return `supplier.not_found`; duplicate codes return `supplier.code_conflict`.
-6. Catalogue readers can view suppliers; catalogue managers can create, edit, and change supplier status.
+4. Default currency is a required active ISO currency from the centrally managed currency catalogue. Existing API callers that omit it receive the current company default, `DZD`.
+5. New suppliers are active; status changes are idempotent.
+6. Missing suppliers return `supplier.not_found`; duplicate codes return `supplier.code_conflict`.
+7. Catalogue readers can view suppliers; catalogue managers can create, edit, and change supplier status.
 
 ## Data Model
 
-`Supplier`: UUID ID, Code, Name, optional Email, PhoneNumber, and Address, active status, and UTC creation/update metadata. PostgreSQL enforces nonblank, uppercase, uniquely indexed supplier codes and nonblank names.
+`Supplier`: UUID ID, Code, Name, required `DefaultCurrencyCode`, optional Email, PhoneNumber, and Address, active status, and UTC creation/update metadata. PostgreSQL enforces nonblank, uppercase, uniquely indexed supplier codes and nonblank names.
 
 ## API
 

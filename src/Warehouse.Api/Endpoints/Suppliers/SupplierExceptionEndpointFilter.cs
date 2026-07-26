@@ -16,5 +16,20 @@ public sealed class SupplierExceptionEndpointFilter : IEndpointFilter
         {
             return Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Supplier code already exists.", detail: exception.Message, extensions: new Dictionary<string, object?> { ["code"] = ApiErrorCodes.SupplierCodeConflict });
         }
+        catch (SupplierDefaultCurrencyNotSupportedException exception)
+        {
+            return Results.ValidationProblem(
+                errors: new Dictionary<string, string[]> { ["DefaultCurrencyCode"] = [exception.Message] },
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Supplier default currency is not available.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = ApiErrorCodes.SupplierDefaultCurrencyNotSupported,
+                    ["errorCodes"] = new Dictionary<string, string[]>
+                    {
+                        ["DefaultCurrencyCode"] = [ApiErrorCodes.SupplierDefaultCurrencyNotSupported]
+                    }
+                });
+        }
     }
 }

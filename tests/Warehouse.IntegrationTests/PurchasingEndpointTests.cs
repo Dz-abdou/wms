@@ -267,7 +267,7 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
-    public async Task Purchase_order_marks_the_currency_field_when_it_does_not_match_the_catalogue_item()
+    public async Task Purchase_order_marks_the_currency_field_when_it_is_not_available_for_the_supplier()
     {
         var supplier = await CreateSupplierAsync();
         var product = await CreateProductAsync();
@@ -283,7 +283,29 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
             lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
         });
 
-        await AssertFieldErrorAsync(response, "CurrencyCode", ApiErrorCodes.PurchaseOrderCurrencyMismatch);
+        await AssertFieldErrorAsync(response, "CurrencyCode", ApiErrorCodes.PurchaseOrderCurrencyNotAvailable);
+    }
+
+    [Fact]
+    public async Task Purchase_order_defaults_to_the_supplier_currency_when_the_request_omits_it()
+    {
+        var supplier = await CreateSupplierAsync("USD");
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m, "USD");
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            orderDate = "2026-07-26",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+
+        response.EnsureSuccessStatusCode();
+        var purchaseOrder = await response.Content.ReadFromJsonAsync<PurchaseOrderResponse>();
+        Assert.NotNull(purchaseOrder);
+        Assert.Equal("USD", purchaseOrder.CurrencyCode);
     }
 
     [Fact]
@@ -320,9 +342,9 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         await Assert.ThrowsAsync<DbUpdateException>(() => dbContext.SaveChangesAsync());
     }
 
-    private async Task<SupplierResponse> CreateSupplierAsync()
+    private async Task<SupplierResponse> CreateSupplierAsync(string defaultCurrencyCode = "DZD")
     {
-        var response = await fixture.Client.PostAsJsonAsync("/api/suppliers", new { code = $"SUP-{Guid.NewGuid():N}"[..16], name = "Purchase supplier" });
+        var response = await fixture.Client.PostAsJsonAsync("/api/suppliers", new { code = $"SUP-{Guid.NewGuid():N}"[..16], name = "Purchase supplier", defaultCurrencyCode });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<SupplierResponse>())!;
     }
@@ -341,7 +363,7 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         return (await response.Content.ReadFromJsonAsync<WarehouseResponse>())!;
     }
 
-    private async Task<SupplierProductResponse> CreateCatalogueItemAsync(Guid supplierId, Guid productId, string unitOfMeasure, decimal minimumOrderQuantity)
+    private async Task<SupplierProductResponse> CreateCatalogueItemAsync(Guid supplierId, Guid productId, string unitOfMeasure, decimal minimumOrderQuantity, string currencyCode = "DZD")
     {
         var response = await fixture.Client.PostAsJsonAsync("/api/supplier-products", new
         {
@@ -351,7 +373,7 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
             purchaseUnitOfMeasure = unitOfMeasure,
             minimumOrderQuantity,
             unitPrice = 12.5m,
-            currencyCode = "DZD"
+            currencyCode
         });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<SupplierProductResponse>())!;

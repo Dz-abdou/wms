@@ -4,7 +4,7 @@ namespace Warehouse.Domain.Suppliers;
 
 public sealed class Supplier : PersistentEntity
 {
-    private Supplier(Guid id, string code, string name, string? email, string? phoneNumber, string? address, bool isActive, DateTime createdAtUtc, DateTime updatedAtUtc, Guid? createdByUserId, Guid? updatedByUserId)
+    private Supplier(Guid id, string code, string name, string? email, string? phoneNumber, string? address, string defaultCurrencyCode, bool isActive, DateTime createdAtUtc, DateTime updatedAtUtc, Guid? createdByUserId, Guid? updatedByUserId)
         : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         Code = code;
@@ -12,6 +12,7 @@ public sealed class Supplier : PersistentEntity
         Email = email;
         PhoneNumber = phoneNumber;
         Address = address;
+        DefaultCurrencyCode = defaultCurrencyCode;
         IsActive = isActive;
     }
 
@@ -20,15 +21,16 @@ public sealed class Supplier : PersistentEntity
     public string? Email { get; private set; }
     public string? PhoneNumber { get; private set; }
     public string? Address { get; private set; }
+    public string DefaultCurrencyCode { get; private set; } = null!;
     public bool IsActive { get; private set; }
 
-    public static Supplier Create(string? code, string? name, string? email, string? phoneNumber, string? address, DateTime createdAtUtc, Guid? actorUserId = null)
+    public static Supplier Create(string? code, string? name, string? email, string? phoneNumber, string? address, DateTime createdAtUtc, Guid? actorUserId = null, string? defaultCurrencyCode = SupplierRules.DefaultCurrencyCode)
     {
         EnsureUtc(createdAtUtc);
-        return new Supplier(Guid.NewGuid(), NormalizeCode(code), NormalizeRequired(name, SupplierRules.MaxNameLength, "Supplier name"), NormalizeOptional(email, SupplierRules.MaxEmailLength, "Supplier email"), NormalizeOptional(phoneNumber, SupplierRules.MaxPhoneNumberLength, "Supplier phone number"), NormalizeOptional(address, SupplierRules.MaxAddressLength, "Supplier address"), true, createdAtUtc, createdAtUtc, actorUserId, actorUserId);
+        return new Supplier(Guid.NewGuid(), NormalizeCode(code), NormalizeRequired(name, SupplierRules.MaxNameLength, "Supplier name"), NormalizeOptional(email, SupplierRules.MaxEmailLength, "Supplier email"), NormalizeOptional(phoneNumber, SupplierRules.MaxPhoneNumberLength, "Supplier phone number"), NormalizeOptional(address, SupplierRules.MaxAddressLength, "Supplier address"), NormalizeCurrencyCode(defaultCurrencyCode), true, createdAtUtc, createdAtUtc, actorUserId, actorUserId);
     }
 
-    public void Update(string? code, string? name, string? email, string? phoneNumber, string? address, DateTime updatedAtUtc, Guid? actorUserId = null)
+    public void Update(string? code, string? name, string? email, string? phoneNumber, string? address, DateTime updatedAtUtc, Guid? actorUserId = null, string? defaultCurrencyCode = SupplierRules.DefaultCurrencyCode)
     {
         EnsureUtc(updatedAtUtc);
         var normalizedCode = NormalizeCode(code);
@@ -36,12 +38,14 @@ public sealed class Supplier : PersistentEntity
         var normalizedEmail = NormalizeOptional(email, SupplierRules.MaxEmailLength, "Supplier email");
         var normalizedPhoneNumber = NormalizeOptional(phoneNumber, SupplierRules.MaxPhoneNumberLength, "Supplier phone number");
         var normalizedAddress = NormalizeOptional(address, SupplierRules.MaxAddressLength, "Supplier address");
-        if (Code == normalizedCode && Name == normalizedName && Email == normalizedEmail && PhoneNumber == normalizedPhoneNumber && Address == normalizedAddress) return;
+        var normalizedDefaultCurrencyCode = NormalizeCurrencyCode(defaultCurrencyCode);
+        if (Code == normalizedCode && Name == normalizedName && Email == normalizedEmail && PhoneNumber == normalizedPhoneNumber && Address == normalizedAddress && DefaultCurrencyCode == normalizedDefaultCurrencyCode) return;
         Code = normalizedCode;
         Name = normalizedName;
         Email = normalizedEmail;
         PhoneNumber = normalizedPhoneNumber;
         Address = normalizedAddress;
+        DefaultCurrencyCode = normalizedDefaultCurrencyCode;
         UpdatedAtUtc = updatedAtUtc;
         SetUpdatedByUser(actorUserId);
     }
@@ -61,6 +65,17 @@ public sealed class Supplier : PersistentEntity
         if (string.IsNullOrWhiteSpace(trimmed)) throw new ArgumentException("Supplier code is required.", nameof(code));
         if (trimmed.Length > SupplierRules.MaxCodeLength) throw new ArgumentException($"Supplier code cannot exceed {SupplierRules.MaxCodeLength} characters.", nameof(code));
         return trimmed.ToUpperInvariant();
+    }
+
+    public static string NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = currencyCode?.Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length != SupplierRules.CurrencyCodeLength || normalized.Any(character => !char.IsAsciiLetter(character)))
+        {
+            throw new ArgumentException("Supplier default currency must be a three-letter ISO code.", nameof(currencyCode));
+        }
+
+        return normalized;
     }
 
     private static string NormalizeRequired(string? value, int maximumLength, string label)

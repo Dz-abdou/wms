@@ -30,7 +30,13 @@ describe("PurchaseOrderForm", () => {
     useSuppliersMock.mockReturnValue({
       data: {
         items: [
-          { id: "supplier-1", code: "SUP", name: "Supplier", isActive: true },
+          {
+            id: "supplier-1",
+            code: "SUP",
+            name: "Supplier",
+            defaultCurrencyCode: "DZD",
+            isActive: true,
+          },
         ],
       },
     });
@@ -92,12 +98,12 @@ describe("PurchaseOrderForm", () => {
     );
     await user.click(await screen.findByText("SKU-1 — Product"));
 
-    const currency = screen.getByRole("textbox", { name: "Currency" });
-    expect(currency).toHaveValue("DZD");
-    expect(currency).toBeDisabled();
+    expect(screen.getByText("DZD")).toBeInTheDocument();
+    const currency = screen.getByRole("combobox", { name: "Currency" });
+    expect(currency.closest(".ant-select")).toHaveClass("ant-select-disabled");
   }, 20_000);
 
-  it("only offers catalogue items in the first selected line currency", async () => {
+  it("filters catalogue items and locks a pre-line currency override after a line is selected", async () => {
     const user = userEvent.setup();
     useSupplierProductsMock.mockReturnValue({
       data: {
@@ -143,19 +149,17 @@ describe("PurchaseOrderForm", () => {
     render(
       <PurchaseOrderForm
         errorMessageKey="purchasing.orders.errors.create"
+        initialValues={{
+          supplierId: "supplier-1",
+          currencyCode: "USD",
+          lines: [{ supplierProductId: "catalogue-2", quantity: 2 }],
+        }}
         isSubmitting={false}
         onSubmit={async () => undefined}
         submitLabel="Create draft"
       />,
     );
 
-    await user.click(screen.getByRole("combobox", { name: "Supplier" }));
-    await user.click(await screen.findByText("SUP — Supplier"));
-    await user.click(screen.getByRole("button", { name: "Add line" }));
-    await user.click(
-      screen.getByRole("combobox", { name: "Supplier catalogue item" }),
-    );
-    await user.click(await screen.findByText("SKU-1 — Dinar product"));
     await user.click(screen.getByRole("button", { name: "Add line" }));
 
     const catalogueSelectors = screen.getAllByRole("combobox", {
@@ -166,14 +170,17 @@ describe("PurchaseOrderForm", () => {
     const options = screen.getByRole("listbox");
     expect(
       within(options).getByRole("option", {
-        name: "SKU-1 — Dinar product",
+        name: "SKU-2 — Dollar product",
       }),
     ).toBeInTheDocument();
     expect(
       within(options).queryByRole("option", {
-        name: "SKU-2 — Dollar product",
+        name: "SKU-1 — Dinar product",
       }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("combobox", { name: "Currency" }).closest(".ant-select"),
+    ).toHaveClass("ant-select-disabled");
   });
 
   it("shows the MOQ error beside an existing invalid quantity", async () => {
