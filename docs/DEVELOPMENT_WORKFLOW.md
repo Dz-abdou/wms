@@ -50,6 +50,7 @@ Include:
 - backend changes
 - frontend changes
 - frontend formatting for every changed frontend file
+- localization-key audit for every changed frontend screen
 - validation
 - unit tests
 - integration tests
@@ -74,6 +75,9 @@ Every approved roadmap or implementation-plan step is completed on its own branc
 - Every frontend file changed by the step must be formatted with the repository
   formatter before it is committed. Do not leave formatting cleanup for a later
   branch or rely on linting alone to detect it.
+- For each changed frontend screen, verify that every direct translation key
+  exists in both locale JSON files. Raw keys rendered in the UI are defects;
+  add a focused regression test when a missing key was user-visible.
 - Before opening the pull request, run the relevant checks and describe its scope, decisions, tests, and known risks.
 
 ## 4. Implement One Slice

@@ -326,7 +326,7 @@
       "orderDate": "Order date",
       "buyer": "Buyer",
       "expectedDeliveryDate": "Expected delivery date",
-      "lineCount": "Lines",
+      "lineCount": "Line count",
       "supplierReference": "Supplier reference",
       "notes": "Notes",
       "total": "Total",

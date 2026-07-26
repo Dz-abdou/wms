@@ -40,6 +40,15 @@ Apply this standard whenever a phase introduces purchase orders, receipts, order
 
 The line-table specification must identify its editable columns, read-only derived columns, remove/add behavior, validation, server errors, and how each selected line is constrained by master data. Typical context includes product/SKU, supplier SKU, UoM, MOQ, available/outstanding quantity, currency, unit price, and line amount. The reusable editable-table component exposes one full-width table-footer row with an accessible `+ Add line` action; the row action column remains reserved for actions on that row, such as Remove. It must not render a detached add button below the table or repeat the add action in every row.
 
+Every operational document line has a stable, one-based `LineNumber` (`#1`,
+`#2`, and so on), unique within its parent document. It identifies that exact
+line in receipts, exceptions, audit records, integrations, and support
+conversations; use it as a line reference, never as a quantity. Once a line is
+referenced by a downstream document or the parent is final, do not reuse its
+number for a different line. A document list may instead show a **Line count**:
+the aggregate number of lines on the document. Label that summary explicitly
+as `Line count` / `Nombre de lignes`, not `Line number` or `Lines`.
+
 Client validation should use the selected master-data context to prevent obvious invalid entries immediately (for example, a quantity below catalogue MOQ). The backend must repeat those checks immediately before persistence. If a line fails, it returns a 4xx validation Problem Details response containing `errors` and stable `errorCodes` for the exact nested field, such as `Lines[0].Quantity`; the frontend maps the nested property to its `Form.List` field path, translates the code, and displays the message beside that cell. A generic toast is reserved for non-field errors only.
 
 Every create/edit page finishes with the shared form action bar: Cancel is left-aligned and returns to the relevant list or read-only detail route, while the primary Create/Save action is right-aligned. This is part of the page contract, not a feature-specific layout decision.
@@ -65,8 +74,14 @@ The application must feel like one operational system rather than a collection o
 - Operational ledgers are read-only. A shortcut to a related document action must be named as that action (for example `Record adjustment`), never `New movement`.
 - Lists retain filters in URL query parameters where practical. Filter toolbars, pagination, empty states, and retryable error states use the shared layout instead of bespoke cards.
 - Every list search/filter is executed by the backend before pagination. The frontend must not filter only the current loaded page or use Ant Design's default in-memory table filters. Shared list controls synchronize an explicit query string (`q`, `status`, `supplierId`, date range, and so on) with feature-owned API request parameters.
+- A table with more columns than its content area must scroll horizontally
+  inside the table wrapper; it must never create a page-level horizontal
+  scrollbar. Set an explicit Ant Design `scroll.x` width when a feature knows
+  its operational columns, and retain the shared table-wrapper containment.
 - Choose filters from the operational decision, not from every visible field. Initial guidance: Products—SKU/name and active/category; Warehouses—code/name and active; Suppliers—code/name and active; Categories/Currencies—code/name and active where applicable; Supplier Catalogue—supplier/product/status/currency; Purchase Orders—supplier/status and, after hardening, warehouse/date; Adjustments—reason/date/reference; Movement History—product/warehouse/type/reference/date; Users—email/role.
 - All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
+- Before frontend completion, audit direct translation-key use against both
+  locale files. A raw key on screen is a release-blocking localization defect.
 - Every changed frontend file is formatted with the repository formatter before
   review; linting is an additional verification step, not a substitute for
   formatting.

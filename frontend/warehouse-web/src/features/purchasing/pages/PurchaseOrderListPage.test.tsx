@@ -103,6 +103,9 @@ describe("PurchaseOrderListPage", () => {
     expect(
       screen.getByRole("columnheader", { name: "Destination warehouse" }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Line count" }),
+    ).toBeInTheDocument();
   });
 });
 
