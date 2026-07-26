@@ -71,7 +71,7 @@ export type SupplierProductListQuery = {
   currencyCode?: string;
 };
 
-export type PurchaseOrderStatus = 0 | 1;
+export type PurchaseOrderStatus = 0 | 1 | 2 | 3 | 4;
 
 export type PurchaseOrderLineInput = {
   supplierProductId: string;
@@ -80,6 +80,13 @@ export type PurchaseOrderLineInput = {
 
 export type PurchaseOrderInput = {
   supplierId: string;
+  destinationWarehouseId?: string;
+  currencyCode?: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
+  supplierReference?: string;
+  notes?: string;
+  version?: number;
   lines: PurchaseOrderLineInput[];
 };
 
@@ -92,6 +99,7 @@ export type PurchaseOrderLine = PurchaseOrderLineInput & {
   purchaseUnitOfMeasure: string;
   unitPrice: number;
   currencyCode: string;
+  lineAmount: number;
 };
 
 export type PurchaseOrder = {
@@ -99,8 +107,21 @@ export type PurchaseOrder = {
   supplierId: string;
   supplierCode: string;
   supplierName: string;
+  number?: string;
+  destinationWarehouseId?: string;
+  destinationWarehouseCode?: string;
+  destinationWarehouseName?: string;
+  currencyCode?: string;
+  orderDate?: string;
+  expectedDeliveryDate?: string;
+  buyerUserId?: string;
+  supplierReference?: string;
+  notes?: string;
   status: PurchaseOrderStatus;
   lines: PurchaseOrderLine[];
+  totalAmount: number;
+  version: number;
+  submittedAtUtc?: string;
   createdAtUtc: string;
   updatedAtUtc: string;
 };
@@ -117,4 +138,7 @@ export type PurchaseOrderListQuery = {
   pageSize: number;
   supplierId?: string;
   status?: PurchaseOrderStatus;
+  warehouseId?: string;
+  fromOrderDate?: string;
+  toOrderDate?: string;
 };

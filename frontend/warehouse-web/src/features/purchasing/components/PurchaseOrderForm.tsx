@@ -1,4 +1,4 @@
-import { Button, Form, InputNumber, Select } from "antd";
+import { Button, Form, Input, InputNumber, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,9 +7,10 @@ import {
 } from "../../../shared/components/EditableFormListTable";
 import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
+import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
-import { useSupplierProducts } from "../api/usePurchasing";
+import { usePurchasingCurrencies, useSupplierProducts } from "../api/usePurchasing";
 import type {
   PurchaseOrderInput,
   SupplierProduct,
@@ -42,6 +43,8 @@ export function PurchaseOrderForm({
   const feedback = useApiFeedback();
   const supplierId = Form.useWatch("supplierId", form);
   const suppliers = useSuppliers({ page: 1, pageSize: 100 });
+  const warehouses = useWarehouses({ page: 1, pageSize: 100 });
+  const currencies = usePurchasingCurrencies();
   const catalogue = useSupplierProducts({ page: 1, pageSize: 100, supplierId });
   const lines = Form.useWatch("lines", form);
 
@@ -207,6 +210,35 @@ export function PurchaseOrderForm({
               label: `${supplier.code} — ${supplier.name}`,
             }))}
         />
+      </Form.Item>
+      <Form.Item
+        label={t("inventory.form.warehouse")}
+        name="destinationWarehouseId"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+      >
+        <Select
+          options={warehouses.data?.items.filter((warehouse) => warehouse.isActive).map((warehouse) => ({ value: warehouse.id, label: `${warehouse.code} — ${warehouse.name}` }))}
+        />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.catalogue.currencyCode")}
+        name="currencyCode"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+      >
+        <Select options={currencies.data?.map((currency) => ({ value: currency.code, label: currency.code }))} />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.created")}
+        name="orderDate"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+      >
+        <Input type="date" />
+      </Form.Item>
+      <Form.Item label={t("purchasing.orders.supplierSku")} name="supplierReference">
+        <Input />
+      </Form.Item>
+      <Form.Item label={t("purchasing.orders.notes")} name="notes">
+        <Input.TextArea rows={3} />
       </Form.Item>
       <EditableFormListTable<PurchaseOrderLineRow>
         addDisabled={!supplierId}

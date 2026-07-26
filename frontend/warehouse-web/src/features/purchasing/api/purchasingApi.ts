@@ -128,6 +128,10 @@ export function getPurchaseOrders(
   if (query.supplierId) parameters.set("supplierId", query.supplierId);
   if (query.status !== undefined)
     parameters.set("status", String(query.status));
+  if (query.warehouseId) parameters.set("warehouseId", query.warehouseId);
+  if (query.fromOrderDate)
+    parameters.set("fromOrderDate", query.fromOrderDate);
+  if (query.toOrderDate) parameters.set("toOrderDate", query.toOrderDate);
   return requestJson<PurchaseOrderListResult>(
     `${purchasingApiPaths.purchaseOrders}?${parameters}`,
     { signal },
