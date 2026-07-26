@@ -146,6 +146,14 @@ body {
   margin-bottom: 24px;
 }
 
+.page-layout .ant-table-wrapper {
+  max-width: 100%;
+}
+
+.page-layout .ant-table-content {
+  overflow-x: auto;
+}
+
 .form-page-actions {
   display: flex;
   align-items: center;

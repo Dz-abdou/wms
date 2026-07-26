@@ -217,6 +217,7 @@ export function PurchaseOrderListPage() {
           loading={orders.isFetching}
           pagination={listQuery.toTablePagination(orders.data)}
           rowKey="id"
+          scroll={{ x: 1400 }}
         />
       ) : null}
     </ListPageLayout>

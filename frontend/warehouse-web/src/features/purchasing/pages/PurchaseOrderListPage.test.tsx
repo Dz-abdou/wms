@@ -97,6 +97,12 @@ describe("PurchaseOrderListPage", () => {
     );
     expect(screen.getByText("ACME — Acme Supplies")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Order number" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Destination warehouse" }),
+    ).toBeInTheDocument();
   });
 });
 
