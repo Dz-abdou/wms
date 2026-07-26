@@ -52,11 +52,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
 
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId = product.Id,
-            warehouseId = warehouse.Id,
-            quantity = 1m,
-            direction = InventoryAdjustmentDirection.Decrease,
-            unitOfMeasure = "EA"
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1m, direction = InventoryAdjustmentDirection.Decrease, unitOfMeasure = "EA" } }
         });
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -86,6 +83,48 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(warehouse.Id, history.Items[0].WarehouseId);
         Assert.Equal("ManualIncrease", history.Items[0].Type);
     }
+
+    [Fact]
+    public async Task Adjustment_documents_are_listed_detailed_and_linked_to_ledger_movements()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var adjustment = await CreateAdjustmentAsync(
+            product.Id,
+            warehouse.Id,
+            3m,
+            InventoryAdjustmentDirection.Increase,
+            "COUNT-2026-001");
+
+        var list = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryAdjustmentListItemResponse>>(
+            "/api/inventory/adjustments?page=1&pageSize=20");
+        Assert.NotNull(list);
+        var listItem = Assert.Single(list.Items.Where(item => item.Id == adjustment.Id));
+        Assert.Equal("COUNT-2026-001", listItem.Reference);
+        Assert.Equal(1, listItem.LineCount);
+
+        var detail = await fixture.Client.GetFromJsonAsync<InventoryAdjustmentDetailResponse>(
+            $"/api/inventory/adjustments/{adjustment.Id}");
+        Assert.NotNull(detail);
+        var line = Assert.Single(detail.Lines);
+        Assert.Equal(product.Sku, line.ProductSku);
+        Assert.Equal(warehouse.Code, line.WarehouseCode);
+        Assert.Equal("ManualIncrease", line.Type);
+
+        var ledger = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryMovementResponse>>(
+            "/api/inventory/movements?type=ManualIncrease&reference=COUNT-2026-001&page=1&pageSize=20");
+        Assert.NotNull(ledger);
+        var movement = Assert.Single(ledger.Items.Where(item => item.InventoryAdjustmentId == adjustment.Id));
+        Assert.Equal(product.Name, movement.ProductName);
+        Assert.Equal(warehouse.Name, movement.WarehouseName);
+        Assert.Equal("COUNT-2026-001", movement.AdjustmentReference);
+
+        var missing = await fixture.Client.GetAsync($"/api/inventory/adjustments/{Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+        var problem = await missing.Content.ReadFromJsonAsync<ProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.InventoryAdjustmentNotFound, problem.Code);
+    }
     [Fact]
     public async Task Manual_adjustment_converts_valid_product_units_and_rejects_fractional_cartons()
     {
@@ -105,11 +144,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
 
         var invalidResponse = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId = product.Id,
-            warehouseId = warehouse.Id,
-            quantity = 1.1m,
-            direction = InventoryAdjustmentDirection.Increase,
-            unitOfMeasure = "CTN"
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1.1m, direction = InventoryAdjustmentDirection.Increase, unitOfMeasure = "CTN" } }
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, invalidResponse.StatusCode);
@@ -139,15 +175,29 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
     {
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
         {
-            productId,
-            warehouseId,
-            quantity,
-            direction,
-            unitOfMeasure
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId, warehouseId, quantity, direction, unitOfMeasure } }
         });
         response.EnsureSuccessStatusCode();
 
-        return (await response.Content.ReadFromJsonAsync<InventoryBalanceResponse>())!;
+        return (await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>())!.Lines.Single();
+    }
+
+    private async Task<InventoryAdjustmentResponse> CreateAdjustmentAsync(
+        Guid productId,
+        Guid warehouseId,
+        decimal quantity,
+        InventoryAdjustmentDirection direction,
+        string reference)
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
+        {
+            reason = Warehouse.Domain.Inventory.InventoryAdjustmentReason.StockCorrection,
+            reference,
+            lines = new[] { new { productId, warehouseId, quantity, direction, unitOfMeasure = "EA" } }
+        });
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>())!;
     }
 
     private async Task<ProductResponse> CreateProductAsync()

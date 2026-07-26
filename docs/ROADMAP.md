@@ -1,5 +1,34 @@
 # Implementation Roadmap
 
+## How to Use This Roadmap
+
+This is the authoritative sequence of implementation phases. Read it with [the Operational WMS Enhancement Plan](OPERATIONAL_WMS_PLAN.md), which supplies the business rules, fields, relationships, screens, and operational rationale that each roadmap phase must satisfy. The feature specification in `docs/features/` then narrows one approved vertical slice into implementation-ready acceptance criteria.
+
+Do not treat the operational plan as permission to implement multiple phases at once. Follow the development workflow: inspect the existing code, create or refresh the next feature specification, agree scope, then complete one branch/PR before moving on.
+
+## Transactional Screen Standard
+
+Every future business document or multi-line warehouse operation must be designed as a complete workflow from the beginning; do not first ship stacked repeated form fields and plan a table conversion later.
+
+- A document create/edit screen uses a small header form for shared data, followed by an editable Ant Design Table for its lines. `Form.List` remains the form-state owner; table cells contain the relevant Ant Design input controls.
+- A document detail screen uses the same conceptual layout: read-only header/summary, read-only line table, totals where commercial values apply, and a status/history timeline when the document changes state.
+- The editable table must show the user-input fields plus the operational context needed to make a safe decision: product/reference, UoM, available or outstanding quantity when relevant, price/currency/line amount when relevant, and an explicit remove action. Derived values are read-only.
+- The shared editable-table component must provide its add-row action inside the table as a full-width footer row with an accessible `+ Add line` control. Keep each data row's action column reserved for row-specific actions such as Remove; do not place a separate add button beneath the table or repeat add controls on every row.
+- Validate a selected line against its applicable master-data constraints before submission (for example MOQ, available quantity, permitted UoM, or outstanding quantity). The API remains authoritative and must return any revalidation failure as a 4xx validation Problem Details response keyed to the exact nested field (for example `Lines[2].Quantity`), with a stable field error code. The frontend must translate that code and display it on the corresponding table cell rather than only showing a generic notification.
+- Repeated packaging/UoM conversion records use a small editable table as soon as there can be more than one conversion.
+- Every create/edit page uses the shared end-of-form action bar: Cancel returns to the safe list/detail route on the left and the primary Create/Save action is on the right. Do not leave a submit button floating independently in a form or rely only on a header action for a multi-field form.
+- A multi-line inventory-changing operation must have one backend command that validates and persists every line in one database transaction. Never implement a batch UI by issuing one adjustment request per row. The command must create the required inventory movement for every committed line and fail without partial stock changes.
+- For a batch stock adjustment, the header owns reason, optional reference/note, actor and timestamp; the lines own product, warehouse/location where applicable, direction, UoM, and quantity. The API must reject or explicitly consolidate duplicate product/warehouse lines and validate the final projected balance.
+- New feature specifications must name the table columns, derived values, header fields, empty/loading/error states, responsive horizontal-scroll behavior, validation rules, and frontend/API tests before implementation starts.
+
+## Current Planning State
+
+The supplier-management and core purchase-order slices are intentionally combined on `features/Suppliers-+-Purchase-Orders` by explicit developer decision. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders; the developer owns the generated purchasing migration files.
+
+Once that branch is reviewed, the migration is manually applied, and the slice is fully verified and merged, the next approved work is **Phase 4.1 — Purchase Order Operational Hardening**. Its purpose is to close the operational gaps before any goods-receipt work begins. In particular, Phase 5 must not start until the Phase 4.1 exit criteria pass.
+
+The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
+
 ## Phase 0 — Foundation
 
 ### Goal
@@ -248,6 +277,7 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 ### Deliverables
 
 - Supplier management
+- Supplier product catalogue: a many-to-many supplier/product relationship with supplier-specific SKU, preferred-supplier selection, lead time, minimum order quantity, valid purchase unit, and price/currency history or effective price.
 - Draft purchase order
 - Purchase order lines
 - Submit purchase order
@@ -259,6 +289,31 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 - Valid purchase order can be created and submitted.
 - Invalid quantities are rejected.
 - Submitted orders cannot be freely changed.
+- A purchase-order line can be validated against the selected supplier's catalogue; a product is not limited to one supplier.
+
+---
+
+## Phase 4.1 — Purchase Order Operational Hardening
+
+### Goal
+
+Make submitted purchase orders reliable inbound documents before goods receipts depend on them.
+
+### Deliverables
+
+- Human-readable, unique purchase-order number.
+- Required destination warehouse, header currency, order date, buyer, and concurrency token.
+- Optional expected delivery date, supplier reference, and notes.
+- Immutable submitted-line snapshots for product/supplier identifiers, UoM conversion factor, quantities, price, currency, and line amount.
+- Explicit status transition/history records for Draft, Submitted, PartiallyReceived, Received/Closed, and Cancelled.
+- Purchase-order list and detail views with operational filtering, totals, and status timeline.
+- Draft PO screen with a header form and editable line table showing catalogue item, product, supplier SKU, purchase UoM, MOQ, quantity, unit price, currency, line amount, and remove action.
+
+### Exit Criteria
+
+- Concurrent draft edits return a stable conflict rather than silently overwriting data.
+- Submitted PO data remains correct after product conversion, supplier catalogue, or price changes.
+- Each PO has one destination warehouse and one currency.
 
 ---
 
@@ -272,12 +327,35 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 - Update inventory
 - Create inventory movements
 - Complete purchase order when fully received
+- Capture supplier delivery-note reference, receiver, and receipt timestamp.
+- Record accepted and damaged/rejected quantity separately.
+- Link every receipt inventory movement to its receipt and purchase-order line.
+- Goods-receipt header form and editable receipt-line table; submit all lines through one atomic receipt command.
 
 ### Exit Criteria
 
 - Partial and complete receipt workflows pass.
 - Receipt and inventory changes are atomic.
 - Automated tests pass.
+
+---
+
+## Phase 5.2 — Inventory Control Operations
+
+### Deliverables
+
+- Searchable inventory overview by product and warehouse.
+- Mandatory adjustment reason and optional reference/note.
+- Movement source-document references and human-readable document numbers.
+- Adjustment-document header and editable multi-line adjustment table; persist all valid lines and their inventory movements atomically.
+- Cycle-count and inter-warehouse transfer workflows.
+- Warehouse-specific reorder point, safety stock, and reorder quantity when planning is introduced.
+
+### Exit Criteria
+
+- Stock adjustments are explainable from reason and source records.
+- Transfers create linked out/in movements without changing total company stock.
+- Inactive products and warehouses cannot be adjusted through the API.
 
 ---
 
@@ -310,11 +388,21 @@ Add lot-aware stock allocation and inventory costing after goods receipts establ
 
 ### Deliverables
 
-- Customer management
-- Draft sales order
-- Sales order lines
-- Submit sales order
-- Order status tracking
+- Customer management with active/blocked state, contacts, and multiple shipping/billing addresses.
+- Human-readable, unique sales-order numbers and customer/address snapshots.
+- Draft sales order, line entry, submit/cancel workflow, actor/timestamp history, and optimistic concurrency.
+- Product/UoM/conversion/quantity snapshots on submitted sales-order lines.
+- Sales-order header form and editable order-line table with product, UoM, quantity, availability context, commercial values where enabled, and line total.
+- Requested ship date, customer reference, delivery instructions, and optional commercial currency/pricing fields.
+- Explicit states: Draft, Submitted, Allocated, PartiallyShipped, Shipped/Closed, and Cancelled.
+- Searchable sales-order list and detail pages with customer, status, date, and fulfilment-progress filters.
+
+### Exit Criteria
+
+- A blocked customer cannot receive a new submitted sales order.
+- A submitted order retains its selected shipping address, product/UoM conversion, and quantities when master data later changes.
+- Concurrent draft changes return a stable conflict rather than overwriting another user's work.
+- Automated domain, API/persistence, and frontend workflow tests pass.
 
 ---
 
@@ -322,18 +410,56 @@ Add lot-aware stock allocation and inventory costing after goods receipts establ
 
 ### Deliverables
 
-- Reserve available stock
-- Reject insufficient stock
-- Release reservation when required
-- Confirm shipment
-- Reduce inventory
-- Create shipment movements
+- Atomically reserve available stock by sales-order line and warehouse.
+- Reject insufficient stock; allow controlled partial allocation only when the business policy permits it.
+- Release reservation on cancellation, controlled order change, expiry, or authorised shortage handling.
+- Pick-task workspace and exception/short-pick reasons.
+- Shipment header/lines, carrier/service/tracking fields, customer-address snapshot, and print/export-ready detail.
+- Confirm shipment, reduce inventory, release allocations, and create linked shipment movements in one transaction.
+- Status history and read-only document timeline for reservation, picking, shipment, cancellation, and override events.
 
 ### Exit Criteria
 
 - Reserved stock cannot be double allocated.
 - Shipment updates all related records atomically.
+- A cancelled or failed shipment cannot reduce inventory.
+- Shipment and inventory movement records identify the source sales-order line and document number.
 - Automated tests pass.
+
+---
+
+## Phase 7.1 — Operational Support
+
+### Deliverables
+
+- Company profile, default currency/time zone, and transactional document-number policies.
+- Role-aware UI actions, user profile/session settings, and backend authorization policies for operational roles.
+- Read-only operational history views; inventory movements remain the stock ledger.
+- Dashboard queues for overdue inbound, pending receipts, low stock, allocation/picking backlog, and exceptions.
+- Permission-aware CSV/export and print views for stable operational documents and lists.
+
+### Exit Criteria
+
+- Document numbers are unique under concurrent creation.
+- Operational changes are explainable by source document, reason, actor, and timestamp.
+- Dashboard figures link to the filtered underlying records.
+
+---
+
+## Phase 7.2 — Traceability and Returns (Conditional)
+
+### Deliverables
+
+- Per-product lot, expiry, serial, and quality-hold settings.
+- Lot/serial capture at goods receipt and preservation through stock movement, allocation, and shipment.
+- Supplier returns and customer return/RMA workflows with reason, disposition, and stock movements.
+- FEFO allocation, recall/traceability reports, and bin locations only after the relevant input data is reliable.
+
+### Exit Criteria
+
+- Traceability can follow an enabled lot/serial from receipt through shipment or return.
+- A return disposition always produces an auditable inventory outcome.
+- Automated tests cover enabled traceability rules without burdening ordinary non-traceable products.
 
 ---
 
@@ -367,6 +493,7 @@ Do not work on the next item before the previous item meets its definition of do
 13. Sales orders
 14. Reservations
 15. Shipping
-16. Audit logs
-17. Dashboard
-18. Deployment and documentation
+16. Operational support and document control
+17. Conditional traceability and returns
+18. Dashboard and reporting
+19. Deployment and documentation

@@ -10,3 +10,6 @@ public sealed class ProductCategoryNotFoundException(Guid categoryId)
 
 public sealed class ProductCategoryCodeConflictException(string code, Exception? innerException = null)
     : Exception($"Product category code '{code}' already exists.", innerException);
+
+public sealed class ProductCategoryInvalidParentException(Guid categoryId)
+    : Exception($"Product category '{categoryId}' cannot be its own parent.");

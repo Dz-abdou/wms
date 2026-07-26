@@ -1,11 +1,26 @@
 using FluentValidation;
 using Warehouse.Application.Common.Pagination;
+using Warehouse.Domain.Inventory;
 
 namespace Warehouse.Application.Inventory;
 
 public sealed class InventoryAdjustmentInputValidator : AbstractValidator<InventoryAdjustmentInput>
 {
     public InventoryAdjustmentInputValidator()
+    {
+        RuleFor(input => input.Reason).IsInEnum();
+        RuleFor(input => input.Reference).MaximumLength(InventoryAdjustmentRules.MaxReferenceLength);
+        RuleFor(input => input.Note).MaximumLength(InventoryAdjustmentRules.MaxNoteLength);
+        RuleFor(input => input.Lines).NotEmpty();
+        RuleForEach(input => input.Lines).SetValidator(new InventoryAdjustmentLineInputValidator());
+        RuleFor(input => input.Lines).Must(lines => lines.Select(line => new { line.ProductId, line.WarehouseId }).Distinct().Count() == lines.Count)
+            .WithMessage("Each product and warehouse combination can appear only once.");
+    }
+}
+
+public sealed class InventoryAdjustmentLineInputValidator : AbstractValidator<InventoryAdjustmentLineInput>
+{
+    public InventoryAdjustmentLineInputValidator()
     {
         RuleFor(input => input.ProductId).NotEmpty();
         RuleFor(input => input.WarehouseId).NotEmpty();
@@ -15,4 +30,15 @@ public sealed class InventoryAdjustmentInputValidator : AbstractValidator<Invent
     }
 }
 
-public sealed class InventoryMovementListQueryValidator : PagedRequestValidator<InventoryMovementListQuery>;
+public sealed class InventoryMovementListQueryValidator : PagedRequestValidator<InventoryMovementListQuery>
+{
+    public InventoryMovementListQueryValidator()
+    {
+        RuleFor(query => query.Type).IsInEnum().When(query => query.Type.HasValue);
+        RuleFor(query => query.Reference).MaximumLength(InventoryAdjustmentRules.MaxReferenceLength);
+        RuleFor(query => query.ToUtc).GreaterThanOrEqualTo(query => query.FromUtc)
+            .When(query => query.FromUtc.HasValue && query.ToUtc.HasValue);
+    }
+}
+
+public sealed class InventoryAdjustmentListQueryValidator : PagedRequestValidator<InventoryAdjustmentListQuery>;

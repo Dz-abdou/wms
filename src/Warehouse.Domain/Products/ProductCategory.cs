@@ -61,6 +61,21 @@ public sealed class ProductCategory : PersistentEntity
         return normalized;
     }
 
+    public void Update(string? code, string? name, Guid? parentCategoryId, DateTime updatedAtUtc, Guid? actorUserId = null)
+    {
+        EnsureUtc(updatedAtUtc, nameof(updatedAtUtc));
+        if (parentCategoryId == Id)
+        {
+            throw new ArgumentException("A category cannot be its own parent.", nameof(parentCategoryId));
+        }
+
+        Code = NormalizeCode(code);
+        Name = NormalizeName(name);
+        ParentCategoryId = parentCategoryId;
+        UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
+    }
+
     private static string NormalizeName(string? name)
     {
         var normalized = name?.Trim();

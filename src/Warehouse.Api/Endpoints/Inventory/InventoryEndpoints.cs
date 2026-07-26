@@ -16,6 +16,12 @@ public static class InventoryEndpoints
         group.MapGet(InventoryApiRoutes.MovementHistoryPath, GetMovementHistoryAsync)
             .RequireAuthorization(AuthorizationPolicies.ReadInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapGet(InventoryApiRoutes.AdjustmentPath, GetAdjustmentsAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapGet(InventoryApiRoutes.AdjustmentByIdPath, GetAdjustmentByIdAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
         group.MapPost(InventoryApiRoutes.AdjustmentPath, AdjustAsync)
             .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
@@ -42,4 +48,20 @@ public static class InventoryEndpoints
         var validationProblem = await validator.ValidateRequestAsync(input, cancellationToken);
         return validationProblem ?? Results.Ok(await inventoryService.AdjustAsync(input, cancellationToken));
     }
+
+    private static async Task<IResult> GetAdjustmentsAsync(
+        [AsParameters] InventoryAdjustmentListQuery query,
+        IValidator<InventoryAdjustmentListQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetAdjustmentsAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetAdjustmentByIdAsync(
+        Guid id,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await inventoryService.GetAdjustmentByIdAsync(id, cancellationToken));
 }

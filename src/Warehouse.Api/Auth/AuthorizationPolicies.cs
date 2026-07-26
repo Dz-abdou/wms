@@ -9,6 +9,8 @@ public static class AuthorizationPolicies
     public const string ReadCatalog = "catalog.read";
     public const string ReadInventory = "inventory.read";
     public const string AdjustInventory = "inventory.adjust";
+    public const string ReadPurchasing = "purchasing.read";
+    public const string ManagePurchasing = "purchasing.manage";
     public const string AdminRole = ApplicationRoles.Admin;
     public const string ManagerRole = ApplicationRoles.Manager;
     public const string OperatorRole = ApplicationRoles.Operator;

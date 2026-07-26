@@ -5,6 +5,9 @@ using Warehouse.Infrastructure.Auditing;
 using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Products;
+using Warehouse.Domain.Purchasing;
+using Warehouse.Domain.Currencies;
+using Warehouse.Domain.Suppliers;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
 
@@ -19,7 +22,17 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 
     public DbSet<WarehouseEntity> Warehouses => Set<WarehouseEntity>();
 
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+    public DbSet<SupplierProduct> SupplierProducts => Set<SupplierProduct>();
+
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+
+    public DbSet<Currency> Currencies => Set<Currency>();
+
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
+
+    public DbSet<InventoryAdjustment> InventoryAdjustments => Set<InventoryAdjustment>();
 
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 

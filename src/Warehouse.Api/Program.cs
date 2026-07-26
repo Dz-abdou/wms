@@ -13,6 +13,9 @@ using Warehouse.Api.Endpoints.Auth;
 using Warehouse.Api.Endpoints.Inventory;
 using Warehouse.Api.Endpoints.Products;
 using Warehouse.Api.Endpoints.Warehouses;
+using Warehouse.Api.Endpoints.Suppliers;
+using Warehouse.Api.Endpoints.Purchasing;
+using Warehouse.Api.Endpoints.Currencies;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -33,12 +36,16 @@ builder.Services.AddScoped<Warehouse.Application.Common.Auditing.IAuditContext, 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidIssuer = jwt.Issuer, ValidateAudience = true, ValidAudience = jwt.Audience, ValidateIssuerSigningKey = true, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.SigningKey)), ValidateLifetime = true, ClockSkew = TimeSpan.FromMinutes(1) });
-builder.Services.AddAuthorization(options => { options.AddPolicy(AuthorizationPolicies.ReadCatalog, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole, AuthorizationPolicies.OperatorRole)); options.AddPolicy(AuthorizationPolicies.ManageCatalog, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole)); options.AddPolicy(AuthorizationPolicies.ReadInventory, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole, AuthorizationPolicies.OperatorRole)); options.AddPolicy(AuthorizationPolicies.AdjustInventory, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole)); options.AddPolicy(AuthorizationPolicies.ManageAdministration, policy => policy.RequireRole(AuthorizationPolicies.AdminRole)); });
+builder.Services.AddAuthorization(options => { options.AddPolicy(AuthorizationPolicies.ReadCatalog, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole, AuthorizationPolicies.OperatorRole)); options.AddPolicy(AuthorizationPolicies.ManageCatalog, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole)); options.AddPolicy(AuthorizationPolicies.ReadInventory, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole, AuthorizationPolicies.OperatorRole)); options.AddPolicy(AuthorizationPolicies.AdjustInventory, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole)); options.AddPolicy(AuthorizationPolicies.ReadPurchasing, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole, AuthorizationPolicies.OperatorRole)); options.AddPolicy(AuthorizationPolicies.ManagePurchasing, policy => policy.RequireRole(AuthorizationPolicies.AdminRole, AuthorizationPolicies.ManagerRole)); options.AddPolicy(AuthorizationPolicies.ManageAdministration, policy => policy.RequireRole(AuthorizationPolicies.AdminRole)); });
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationProblemDetailsMiddlewareResultHandler>();
 if (!string.IsNullOrWhiteSpace(frontendOrigin)) builder.Services.AddCors(options => options.AddPolicy("frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddProblemDetails(); builder.Services.AddExceptionHandler<UnexpectedExceptionHandler>(); builder.Services.AddOpenApi(); builder.Services.AddSwaggerGen(options => options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", Description = "Enter a JWT access token." }));
 builder.Services.AddHealthChecks().AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"]).AddDbContextCheck<WarehouseDbContext>("postgresql", tags: ["ready"]);
 var app = builder.Build();
+app.MapSupplierEndpoints();
+app.MapCurrencyEndpoints();
+app.MapSupplierProductEndpoints();
+app.MapPurchaseOrderEndpoints();
 if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScope(); await scope.ServiceProvider.GetRequiredService<Warehouse.Infrastructure.Identity.IdentityBootstrapper>().SeedDevelopmentAdminAsync(); }
 app.MapGet("/", () => Results.Ok(new { service = "Warehouse API", status = "ready" }));
 app.MapAuthEndpoints();

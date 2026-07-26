@@ -4,8 +4,16 @@ export const inventoryApiPaths = {
 } as const
 
 export const inventoryRoutes = {
-  dashboard: '/inventory',
-  dashboardPattern: 'inventory',
+  root: "/inventory",
+  rootPattern: "inventory",
+  movementHistory: "/inventory/movements",
+  movementHistoryPattern: "inventory/movements",
+  adjustments: "/inventory/adjustments",
+  adjustmentsPattern: "inventory/adjustments",
+  adjustmentCreate: "/inventory/adjustments/new",
+  adjustmentCreatePattern: "inventory/adjustments/new",
+  adjustmentDetail: (id: string) => `/inventory/adjustments/${id}`,
+  adjustmentDetailPattern: "inventory/adjustments/:id",
 } as const
 
 export const inventoryPageSize = 100

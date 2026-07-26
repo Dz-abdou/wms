@@ -8,6 +8,8 @@ import {
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
 import { productRoutes } from "../features/products/productConstants";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
+import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -19,15 +21,28 @@ export function ApplicationLayout() {
   const { t } = useTranslation();
   const selectedKey = location.pathname.startsWith(productRoutes.list)
     ? "products"
+    : location.pathname.startsWith(productRoutes.categories)
+      ? "categories"
     : location.pathname.startsWith(warehouseRoutes.list)
       ? "warehouses"
-      : location.pathname.startsWith(inventoryRoutes.dashboard)
-        ? "inventory"
-      : location.pathname.startsWith(administrationRoutes.users)
-        ? "users"
-        : location.pathname.startsWith(administrationRoutes.roles)
-          ? "roles"
-          : "home";
+      : location.pathname.startsWith(supplierRoutes.list)
+        ? "suppliers"
+        : location.pathname.startsWith(purchasingRoutes.catalogue)
+          ? "catalogue"
+          : location.pathname.startsWith(purchasingRoutes.currencies)
+            ? "currencies"
+          : location.pathname.startsWith(purchasingRoutes.orders)
+            ? "purchase-orders"
+            : location.pathname.startsWith(inventoryRoutes.adjustments)
+              ? "inventory-adjustments"
+              : location.pathname.startsWith(inventoryRoutes.movementHistory) ||
+                  location.pathname.startsWith(inventoryRoutes.root)
+                ? "inventory-movements"
+              : location.pathname.startsWith(administrationRoutes.users)
+                ? "users"
+                : location.pathname.startsWith(administrationRoutes.roles)
+                  ? "roles"
+                  : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -40,25 +55,38 @@ export function ApplicationLayout() {
           className="application-menu"
           items={[
             { key: "home", label: <Link to="/">{t("navigation.home")}</Link> },
-            {
-              key: "products",
-              label: (
-                <Link to={productRoutes.list}>{t("navigation.products")}</Link>
-              ),
-            },
-            {
-              key: "warehouses",
-              label: (
-                <Link to={warehouseRoutes.list}>
-                  {t("navigation.warehouses")}
-                </Link>
-              ),
-            },
+            { key: "master-data", label: t("navigation.masterData"), children: [
+              { key: "products", label: <Link to={productRoutes.list}>{t("navigation.products")}</Link> },
+              { key: "categories", label: <Link to={productRoutes.categories}>{t("navigation.categories")}</Link> },
+              { key: "warehouses", label: <Link to={warehouseRoutes.list}>{t("navigation.warehouses")}</Link> },
+              { key: "suppliers", label: <Link to={supplierRoutes.list}>{t("navigation.suppliers")}</Link> },
+              { key: "currencies", label: <Link to={purchasingRoutes.currencies}>{t("navigation.currencies")}</Link> },
+            ] },
+            { key: "inbound", label: t("navigation.inbound"), children: [
+              { key: "catalogue", label: <Link to={purchasingRoutes.catalogue}>{t("navigation.supplierCatalogue")}</Link> },
+              { key: "purchase-orders", label: <Link to={purchasingRoutes.orders}>{t("navigation.purchaseOrders")}</Link> },
+            ] },
             {
               key: "inventory",
-              label: (
-                <Link to={inventoryRoutes.dashboard}>{t("navigation.inventory")}</Link>
-              ),
+              label: t("navigation.inventory"),
+              children: [
+                {
+                  key: "inventory-movements",
+                  label: (
+                    <Link to={inventoryRoutes.movementHistory}>
+                      {t("navigation.movementHistory")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "inventory-adjustments",
+                  label: (
+                    <Link to={inventoryRoutes.adjustments}>
+                      {t("navigation.adjustments")}
+                    </Link>
+                  ),
+                },
+              ],
             },
             ...(isAdministrator
               ? [

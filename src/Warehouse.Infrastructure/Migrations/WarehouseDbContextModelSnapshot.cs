@@ -152,6 +152,152 @@ namespace Warehouse.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Warehouse.Domain.Currencies.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("DecimalPlaces")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Currencies_Code");
+
+                    b.HasIndex("IsDefault")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Currencies_OneDefault")
+                        .HasFilter("\"IsDefault\" = true");
+
+                    b.ToTable("Currencies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Currencies_Code_NotBlank", "btrim(\"Code\") <> ''");
+
+                            t.HasCheckConstraint("CK_Currencies_Code_Uppercase", "\"Code\" = upper(\"Code\")");
+
+                            t.HasCheckConstraint("CK_Currencies_DecimalPlaces_Valid", "\"DecimalPlaces\" BETWEEN 0 AND 4");
+
+                            t.HasCheckConstraint("CK_Currencies_Default_Active", "NOT \"IsDefault\" OR \"IsActive\"");
+
+                            t.HasCheckConstraint("CK_Currencies_Name_NotBlank", "btrim(\"Name\") <> ''");
+                        });
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("49f755f8-c6cd-4b22-8615-083b0d5536f2"),
+                            Code = "DZD",
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsDefault = true,
+                            Name = "Algerian dinar",
+                            Symbol = "DA",
+                            UpdatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("d3fa10b2-a7fc-4a75-a5f6-1d2a8efc1d96"),
+                            Code = "EUR",
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsDefault = false,
+                            Name = "Euro",
+                            Symbol = "€",
+                            UpdatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = new Guid("6b5c1ad6-f3a3-48e5-8222-4ca8b16a44ce"),
+                            Code = "USD",
+                            CreatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DecimalPlaces = 2,
+                            IsActive = true,
+                            IsDefault = false,
+                            Name = "US dollar",
+                            Symbol = "$",
+                            UpdatedAtUtc = new DateTime(2026, 7, 25, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Inventory.InventoryAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAtUtc");
+
+                    b.ToTable("InventoryAdjustments", (string)null);
+                });
+
             modelBuilder.Entity("Warehouse.Domain.Inventory.InventoryBalance", b =>
                 {
                     b.Property<Guid>("Id")
@@ -211,6 +357,9 @@ namespace Warehouse.Infrastructure.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("InventoryAdjustmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uuid");
 
@@ -242,6 +391,8 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InventoryAdjustmentId");
 
                     b.HasIndex("ProductId", "WarehouseId", "CreatedAtUtc");
 
@@ -367,6 +518,175 @@ namespace Warehouse.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_ProductCategories_Code_Uppercase", "\"Code\" = upper(\"Code\")");
 
                             t.HasCheckConstraint("CK_ProductCategories_Name_NotBlank", "btrim(\"Name\") <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Purchasing.PurchaseOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupplierId", "Status");
+
+                    b.ToTable("PurchaseOrders", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PurchaseOrders_Status_Valid", "\"Status\" IN (0, 1)");
+                        });
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Purchasing.SupplierProduct", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<decimal>("MinimumOrderQuantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PurchaseUnitOfMeasure")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SupplierSku")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyCode");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId", "ProductId", "PurchaseUnitOfMeasure")
+                        .IsUnique()
+                        .HasDatabaseName("UX_SupplierProducts_Supplier_Product_Unit");
+
+                    b.ToTable("SupplierProducts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SupplierProducts_CurrencyCode_Uppercase", "\"CurrencyCode\" = upper(\"CurrencyCode\")");
+
+                            t.HasCheckConstraint("CK_SupplierProducts_MinimumOrderQuantity_Positive", "\"MinimumOrderQuantity\" > 0");
+
+                            t.HasCheckConstraint("CK_SupplierProducts_UnitPrice_NonNegative", "\"UnitPrice\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Suppliers.Supplier", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Suppliers_Code");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Suppliers_Name");
+
+                    b.ToTable("Suppliers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Suppliers_Code_NotBlank", "btrim(\"Code\") <> ''");
+
+                            t.HasCheckConstraint("CK_Suppliers_Code_Uppercase", "\"Code\" = upper(\"Code\")");
+
+                            t.HasCheckConstraint("CK_Suppliers_Name_NotBlank", "btrim(\"Name\") <> ''");
                         });
                 });
 
@@ -578,6 +898,14 @@ namespace Warehouse.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Warehouse.Domain.Inventory.InventoryMovement", b =>
+                {
+                    b.HasOne("Warehouse.Domain.Inventory.InventoryAdjustment", null)
+                        .WithMany()
+                        .HasForeignKey("InventoryAdjustmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("Warehouse.Domain.Products.Product", b =>
                 {
                     b.HasOne("Warehouse.Domain.Products.ProductCategory", null)
@@ -668,6 +996,119 @@ namespace Warehouse.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Purchasing.PurchaseOrder", b =>
+                {
+                    b.HasOne("Warehouse.Domain.Suppliers.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsMany("Warehouse.Domain.Purchasing.PurchaseOrderLine", "Lines", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("CurrencyCode")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)");
+
+                            b1.Property<Guid>("ProductId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("ProductName")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("character varying(200)");
+
+                            b1.Property<string>("ProductSku")
+                                .IsRequired()
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)");
+
+                            b1.Property<Guid>("PurchaseOrderId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("PurchaseUnitOfMeasure")
+                                .IsRequired()
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)");
+
+                            b1.Property<decimal>("Quantity")
+                                .HasPrecision(18, 6)
+                                .HasColumnType("numeric(18,6)");
+
+                            b1.Property<Guid>("SupplierProductId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("SupplierSku")
+                                .HasMaxLength(64)
+                                .HasColumnType("character varying(64)");
+
+                            b1.Property<decimal>("UnitPrice")
+                                .HasPrecision(18, 4)
+                                .HasColumnType("numeric(18,4)");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("ProductId");
+
+                            b1.HasIndex("PurchaseOrderId");
+
+                            b1.HasIndex("SupplierProductId", "PurchaseUnitOfMeasure");
+
+                            b1.ToTable("PurchaseOrderLines", null, t =>
+                                {
+                                    t.HasCheckConstraint("CK_PurchaseOrderLines_CurrencyCode_Uppercase", "\"CurrencyCode\" = upper(\"CurrencyCode\")");
+
+                                    t.HasCheckConstraint("CK_PurchaseOrderLines_Quantity_Positive", "\"Quantity\" > 0");
+
+                                    t.HasCheckConstraint("CK_PurchaseOrderLines_UnitPrice_NonNegative", "\"UnitPrice\" >= 0");
+                                });
+
+                            b1.HasOne("Warehouse.Domain.Products.Product", null)
+                                .WithMany()
+                                .HasForeignKey("ProductId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("PurchaseOrderId");
+
+                            b1.HasOne("Warehouse.Domain.Purchasing.SupplierProduct", null)
+                                .WithMany()
+                                .HasForeignKey("SupplierProductId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+                        });
+
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Purchasing.SupplierProduct", b =>
+                {
+                    b.HasOne("Warehouse.Domain.Currencies.Currency", null)
+                        .WithMany()
+                        .HasForeignKey("CurrencyCode")
+                        .HasPrincipalKey("Code")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Warehouse.Domain.Products.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Warehouse.Domain.Suppliers.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Warehouse.Infrastructure.Identity.RefreshToken", b =>

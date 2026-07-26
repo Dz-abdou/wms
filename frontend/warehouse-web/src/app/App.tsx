@@ -1,7 +1,7 @@
 import { ConfigProvider } from "antd";
 import enUs from "antd/locale/en_US";
 import frFr from "antd/locale/fr_FR";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RolesPage } from "../features/administration/pages/RolesPage";
 import { UsersPage } from "../features/administration/pages/UsersPage";
@@ -14,7 +14,23 @@ import { WarehouseDetailPage } from "../features/warehouses/pages/WarehouseDetai
 import { WarehouseEditPage } from "../features/warehouses/pages/WarehouseEditPage";
 import { WarehouseListPage } from "../features/warehouses/pages/WarehouseListPage";
 import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
-import { InventoryPage } from "../features/inventory/pages/InventoryPage";
+import { SupplierCreatePage } from "../features/suppliers/pages/SupplierCreatePage";
+import { SupplierDetailPage } from "../features/suppliers/pages/SupplierDetailPage";
+import { SupplierEditPage } from "../features/suppliers/pages/SupplierEditPage";
+import { SupplierListPage } from "../features/suppliers/pages/SupplierListPage";
+import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { SupplierCatalogueCreatePage } from "../features/purchasing/pages/SupplierCatalogueCreatePage";
+import { SupplierCatalogueEditPage } from "../features/purchasing/pages/SupplierCatalogueEditPage";
+import { SupplierCatalogueListPage } from "../features/purchasing/pages/SupplierCatalogueListPage";
+import { PurchaseOrderCreatePage } from "../features/purchasing/pages/PurchaseOrderCreatePage";
+import { PurchaseOrderDetailPage } from "../features/purchasing/pages/PurchaseOrderDetailPage";
+import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrderEditPage";
+import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
+import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
+import { InventoryAdjustmentPage } from "../features/inventory/pages/InventoryAdjustmentPage";
+import { InventoryAdjustmentDetailPage } from "../features/inventory/pages/InventoryAdjustmentDetailPage";
+import { InventoryAdjustmentListPage } from "../features/inventory/pages/InventoryAdjustmentListPage";
+import { InventoryMovementHistoryPage } from "../features/inventory/pages/InventoryMovementHistoryPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
@@ -24,6 +40,8 @@ import { ProductCreatePage } from "../features/products/pages/ProductCreatePage"
 import { ProductDetailPage } from "../features/products/pages/ProductDetailPage";
 import { ProductEditPage } from "../features/products/pages/ProductEditPage";
 import { ProductListPage } from "../features/products/pages/ProductListPage";
+import { ProductCategoryListPage } from "../features/products/pages/ProductCategoryListPage";
+import { CurrencyListPage } from "../features/purchasing/pages/CurrencyListPage";
 import { productRoutes } from "../features/products/productConstants";
 import { toAppLanguage } from "../shared/i18n/constants";
 import "../shared/i18n/i18n";
@@ -66,13 +84,30 @@ export function App() {
                       path={productRoutes.editPattern}
                       element={<ProductEditPage />}
                     />
+                    <Route path={productRoutes.categoriesPattern} element={<ProductCategoryListPage />} />
                     <Route
                       path={warehouseRoutes.listPattern}
                       element={<WarehouseListPage />}
                     />
                     <Route
-                      path={inventoryRoutes.dashboardPattern}
-                      element={<InventoryPage />}
+                      path={inventoryRoutes.rootPattern}
+                      element={<Navigate replace to={inventoryRoutes.movementHistory} />}
+                    />
+                    <Route
+                      path={inventoryRoutes.movementHistoryPattern}
+                      element={<InventoryMovementHistoryPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentsPattern}
+                      element={<InventoryAdjustmentListPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentCreatePattern}
+                      element={<InventoryAdjustmentPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.adjustmentDetailPattern}
+                      element={<InventoryAdjustmentDetailPage />}
                     />
                     <Route
                       path={warehouseRoutes.create}
@@ -86,6 +121,30 @@ export function App() {
                       path={warehouseRoutes.editPattern}
                       element={<WarehouseEditPage />}
                     />
+                    <Route
+                      path={supplierRoutes.listPattern}
+                      element={<SupplierListPage />}
+                    />
+                    <Route
+                      path={supplierRoutes.create}
+                      element={<SupplierCreatePage />}
+                    />
+                    <Route
+                      path={supplierRoutes.detailPattern}
+                      element={<SupplierDetailPage />}
+                    />
+                    <Route
+                      path={supplierRoutes.editPattern}
+                      element={<SupplierEditPage />}
+                    />
+                    <Route path={purchasingRoutes.cataloguePattern} element={<SupplierCatalogueListPage />} />
+                    <Route path={purchasingRoutes.currenciesPattern} element={<CurrencyListPage />} />
+                    <Route path={purchasingRoutes.catalogueCreatePattern} element={<SupplierCatalogueCreatePage />} />
+                    <Route path={purchasingRoutes.catalogueEditPattern} element={<SupplierCatalogueEditPage />} />
+                    <Route path={purchasingRoutes.ordersPattern} element={<PurchaseOrderListPage />} />
+                    <Route path={purchasingRoutes.orderCreate} element={<PurchaseOrderCreatePage />} />
+                    <Route path={purchasingRoutes.orderDetailPattern} element={<PurchaseOrderDetailPage />} />
+                    <Route path={purchasingRoutes.orderEditPattern} element={<PurchaseOrderEditPage />} />
                     <Route
                       element={<ProtectedRoute roles={[administratorRole]} />}
                     >

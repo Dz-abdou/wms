@@ -11,7 +11,9 @@ export const productRoutes = {
   edit: (id: string) => `/products/${id}/edit`,
   editPattern: 'products/:id/edit',
   list: '/products',
-  listPattern: 'products'
+  listPattern: 'products',
+  categories: '/product-categories',
+  categoriesPattern: 'product-categories'
 } as const
 
 export const productPagination = {

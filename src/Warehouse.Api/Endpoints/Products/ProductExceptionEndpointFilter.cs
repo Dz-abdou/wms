@@ -46,6 +46,14 @@ public sealed class ProductExceptionEndpointFilter : IEndpointFilter
                 detail: exception.Message,
                 extensions: new Dictionary<string, object?> { ["code"] = ApiErrorCodes.ProductCategoryCodeConflict });
         }
+        catch (ProductCategoryInvalidParentException exception)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Invalid product category parent.",
+                detail: exception.Message,
+                extensions: new Dictionary<string, object?> { ["code"] = ApiErrorCodes.ProductCategoryInvalidParent });
+        }
 
 
     }
