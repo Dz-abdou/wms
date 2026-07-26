@@ -68,6 +68,7 @@
       "purchase_order.minimum_order_quantity": "La quantité est inférieure à la quantité minimale commandable du fournisseur.",
       "purchase_order.submission_invalid": "Cette commande ne peut pas encore être soumise.",
       "purchase_order.concurrency_conflict": "Cette commande a été mise à jour par un autre utilisateur. Actualisez-la et examinez les dernières modifications avant de l’enregistrer à nouveau.",
+      "purchase_order.invalid_transition": "Cette commande ne peut pas effectuer ce changement de statut.",
       "auth.invalid_credentials": "L’e-mail ou le mot de passe est incorrect.",
       "auth.invalid_refresh_token": "Votre session a expiré. Veuillez vous reconnecter.",
       "auth.unauthenticated": "Veuillez vous connecter pour continuer.",
@@ -260,7 +261,10 @@
     "cancel": "Annuler",
     "status": {
       "draft": "Brouillon",
-      "submitted": "Soumise"
+      "submitted": "Soumise",
+      "partiallyReceived": "Partiellement reçue",
+      "received": "Reçue",
+      "cancelled": "Annulée"
     },
     "catalogue": {
       "title": "Catalogue fournisseurs",
@@ -332,6 +336,8 @@
       "minimumOrderQuantity": "QMC",
       "unitPrice": "Prix unitaire",
       "lineTotal": "Total de ligne",
+      "lineNumber": "N°",
+      "baseQuantity": "Quantité de base",
       "status": "Statut",
       "actions": "Actions",
       "lines": "Lignes de commande",
@@ -348,11 +354,13 @@
       "empty": "Aucune commande d’achat n’existe encore.",
       "submittedReadOnly": "Les commandes soumises sont en lecture seule.",
       "concurrencyHint": "Ce brouillon a été modifié ailleurs. Actualisez-le et examinez la dernière version avant de l’enregistrer à nouveau.",
+      "refresh": "Actualiser",
       "errors": {
         "load": "La commande d’achat n’a pas pu être chargée.",
         "create": "La commande d’achat n’a pas pu être créée.",
         "update": "La commande d’achat n’a pas pu être mise à jour.",
-        "submit": "La commande d’achat n’a pas pu être soumise."
+        "submit": "La commande d’achat n’a pas pu être soumise.",
+        "cancel": "La commande d’achat n’a pas pu être annulée."
       }
     }
   },

@@ -1,7 +1,10 @@
-import { Alert, Card, Spin } from "antd";
+import { Alert, Button, Card, Spin } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getErrorMessage } from "../../../shared/errors/problemDetails";
+import {
+  getErrorMessage,
+  hasProblemCode,
+} from "../../../shared/errors/problemDetails";
 import { usePurchaseOrder, useUpdatePurchaseOrder } from "../api/usePurchasing";
 import type { PurchaseOrderInput } from "../api/purchasingTypes";
 import { PurchaseOrderForm } from "../components/PurchaseOrderForm";
@@ -59,7 +62,30 @@ export function PurchaseOrderEditPage() {
     >
       {update.error ? (
         <Alert
+          action={
+            hasProblemCode(
+              update.error,
+              "purchase_order.concurrency_conflict",
+            ) ? (
+              <Button
+                onClick={async () => {
+                  await orderQuery.refetch();
+                  update.reset();
+                }}
+              >
+                {t("purchasing.orders.refresh")}
+              </Button>
+            ) : undefined
+          }
           className="page-alert"
+          description={
+            hasProblemCode(
+              update.error,
+              "purchase_order.concurrency_conflict",
+            )
+              ? t("purchasing.orders.concurrencyHint")
+              : undefined
+          }
           message={getErrorMessage(
             t,
             update.error,
@@ -71,6 +97,7 @@ export function PurchaseOrderEditPage() {
       ) : null}
       <Card>
         <PurchaseOrderForm
+          key={order.version}
           cancelLabel={t("purchasing.cancel")}
           errorMessageKey="purchasing.orders.errors.update"
           initialValues={{

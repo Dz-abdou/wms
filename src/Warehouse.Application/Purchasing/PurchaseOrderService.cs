@@ -110,6 +110,8 @@ public sealed class PurchaseOrderService(
     {
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
+        if (purchaseOrder.Status is not (PurchaseOrderStatus.Draft or PurchaseOrderStatus.Submitted))
+            throw new PurchaseOrderInvalidTransitionException(id);
         var actorUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
         purchaseOrder.Cancel(input.Reason, UtcNow(), actorUserId);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -208,6 +210,7 @@ public sealed class PurchaseOrderService(
         purchaseOrder.Status,
         purchaseOrder.Lines.Select(line => new PurchaseOrderLineResponse(
             line.Id,
+            line.LineNumber,
             line.SupplierProductId,
             line.ProductId,
             line.ProductSku,
@@ -215,6 +218,8 @@ public sealed class PurchaseOrderService(
             line.SupplierSku,
             line.PurchaseUnitOfMeasure,
             line.Quantity,
+            line.QuantityInBaseUnit,
+            line.ConversionFactorToBaseUnit,
             line.UnitPrice,
             line.CurrencyCode,
             line.LineAmount)).ToList(),

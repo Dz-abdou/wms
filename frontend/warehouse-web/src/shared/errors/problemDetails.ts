@@ -10,6 +10,10 @@ export function getErrorMessage(t: TFunction, error: unknown, fallbackKey: strin
   return error instanceof ApiError ? getProblemMessage(t, error.problem, fallbackKey) : t(fallbackKey)
 }
 
+export function hasProblemCode(error: unknown, code: string): boolean {
+  return error instanceof ApiError && error.problem.code === code
+}
+
 export function getFieldErrorMessages(
   t: TFunction,
   errorCodes: string[] | undefined,

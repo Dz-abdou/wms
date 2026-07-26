@@ -74,6 +74,7 @@ public sealed record PurchaseOrderInput(
 
 public sealed record PurchaseOrderLineResponse(
     Guid Id,
+    int LineNumber,
     Guid SupplierProductId,
     Guid ProductId,
     string ProductSku,
@@ -81,6 +82,8 @@ public sealed record PurchaseOrderLineResponse(
     string? SupplierSku,
     string PurchaseUnitOfMeasure,
     decimal Quantity,
+    decimal QuantityInBaseUnit,
+    decimal ConversionFactorToBaseUnit,
     decimal UnitPrice,
     string CurrencyCode,
     decimal LineAmount);

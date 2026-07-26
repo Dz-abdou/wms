@@ -88,13 +88,31 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         Assert.Equal(PurchaseOrderStatus.Draft, draft.Status);
         var line = Assert.Single(draft.Lines);
         Assert.Equal(product.Sku, line.ProductSku);
+        Assert.Equal(1, line.LineNumber);
+        Assert.Equal(3m, line.QuantityInBaseUnit);
+        Assert.Equal(1m, line.ConversionFactorToBaseUnit);
         Assert.Equal(catalogueItem.UnitPrice, line.UnitPrice);
+        Assert.Equal(37.5m, line.LineAmount);
 
         var submitted = await fixture.Client.PatchAsJsonAsync($"/api/purchase-orders/{draft.Id}/submit", new { version = draft.Version });
         submitted.EnsureSuccessStatusCode();
         var submittedOrder = await submitted.Content.ReadFromJsonAsync<PurchaseOrderResponse>();
         Assert.NotNull(submittedOrder);
         Assert.Equal(PurchaseOrderStatus.Submitted, submittedOrder.Status);
+        Assert.Equal(draft.Version + 1, submittedOrder.Version);
+
+        var catalogueUpdate = await fixture.Client.PutAsJsonAsync($"/api/supplier-products/{catalogueItem.Id}", new
+        {
+            supplierSku = "SUP-ITEM-001",
+            purchaseUnitOfMeasure = "EA",
+            minimumOrderQuantity = 2m,
+            unitPrice = 20m,
+            currencyCode = "DZD"
+        });
+        catalogueUpdate.EnsureSuccessStatusCode();
+        var reloaded = await fixture.Client.GetFromJsonAsync<PurchaseOrderResponse>($"/api/purchase-orders/{draft.Id}");
+        Assert.NotNull(reloaded);
+        Assert.Equal(12.5m, Assert.Single(reloaded.Lines).UnitPrice);
 
         var update = await fixture.Client.PutAsJsonAsync($"/api/purchase-orders/{draft.Id}", new
         {
@@ -107,6 +125,69 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         });
         Assert.Equal(HttpStatusCode.Conflict, update.StatusCode);
         await AssertCodeAsync(update, ApiErrorCodes.PurchaseOrderImmutable);
+
+        var cancelled = await fixture.Client.PatchAsJsonAsync($"/api/purchase-orders/{draft.Id}/cancel", new { version = submittedOrder.Version, reason = "Supplier unavailable" });
+        cancelled.EnsureSuccessStatusCode();
+        var cancelledOrder = await cancelled.Content.ReadFromJsonAsync<PurchaseOrderResponse>();
+        Assert.NotNull(cancelledOrder);
+        Assert.Equal(PurchaseOrderStatus.Cancelled, cancelledOrder.Status);
+        Assert.Equal(submittedOrder.Version + 1, cancelledOrder.Version);
+        Assert.Equal(3, cancelledOrder.StatusHistory.Count);
+
+        var invalidCancel = await fixture.Client.PatchAsJsonAsync($"/api/purchase-orders/{draft.Id}/cancel", new { version = cancelledOrder.Version });
+        Assert.Equal(HttpStatusCode.Conflict, invalidCancel.StatusCode);
+        await AssertCodeAsync(invalidCancel, ApiErrorCodes.PurchaseOrderInvalidTransition);
+    }
+
+    [Fact]
+    public async Task Purchase_order_update_rejects_a_stale_version_without_overwriting_the_draft()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+        var create = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            notes = "Original",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+        create.EnsureSuccessStatusCode();
+        var draft = await create.Content.ReadFromJsonAsync<PurchaseOrderResponse>();
+        Assert.NotNull(draft);
+
+        var current = await fixture.Client.PutAsJsonAsync($"/api/purchase-orders/{draft.Id}", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            notes = "Current update",
+            version = draft.Version,
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+        current.EnsureSuccessStatusCode();
+
+        var stale = await fixture.Client.PutAsJsonAsync($"/api/purchase-orders/{draft.Id}", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            notes = "Stale update",
+            version = draft.Version,
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+        Assert.Equal(HttpStatusCode.Conflict, stale.StatusCode);
+        await AssertCodeAsync(stale, ApiErrorCodes.PurchaseOrderConcurrencyConflict);
+
+        var persisted = await fixture.Client.GetFromJsonAsync<PurchaseOrderResponse>($"/api/purchase-orders/{draft.Id}");
+        Assert.NotNull(persisted);
+        Assert.Equal("Current update", persisted.Notes);
+        Assert.Equal(draft.Version + 1, persisted.Version);
     }
 
     [Fact]

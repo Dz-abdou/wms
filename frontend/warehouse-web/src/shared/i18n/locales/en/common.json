@@ -68,6 +68,7 @@
       "purchase_order.minimum_order_quantity": "Quantity is below the supplier minimum order quantity.",
       "purchase_order.submission_invalid": "This purchase order cannot be submitted yet.",
       "purchase_order.concurrency_conflict": "This purchase order was updated by another user. Refresh it and review the latest changes before saving again.",
+      "purchase_order.invalid_transition": "This purchase order cannot make that status change.",
       "auth.invalid_credentials": "Email or password is incorrect.",
       "auth.invalid_refresh_token": "Your session has expired. Please sign in again.",
       "auth.unauthenticated": "Please sign in to continue.",
@@ -260,7 +261,10 @@
     "cancel": "Cancel",
     "status": {
       "draft": "Draft",
-      "submitted": "Submitted"
+      "submitted": "Submitted",
+      "partiallyReceived": "Partially received",
+      "received": "Received",
+      "cancelled": "Cancelled"
     },
     "catalogue": {
       "title": "Supplier catalogue",
@@ -332,6 +336,8 @@
       "minimumOrderQuantity": "MOQ",
       "unitPrice": "Unit price",
       "lineTotal": "Line total",
+      "lineNumber": "#",
+      "baseQuantity": "Base quantity",
       "status": "Status",
       "actions": "Actions",
       "lines": "Order lines",
@@ -348,11 +354,13 @@
       "empty": "No purchase orders exist yet.",
       "submittedReadOnly": "Submitted purchase orders are read-only.",
       "concurrencyHint": "This draft was updated elsewhere. Refresh and review the latest version before saving again.",
+      "refresh": "Refresh",
       "errors": {
         "load": "The purchase order could not be loaded.",
         "create": "The purchase order could not be created.",
         "update": "The purchase order could not be updated.",
-        "submit": "The purchase order could not be submitted."
+        "submit": "The purchase order could not be submitted.",
+        "cancel": "The purchase order could not be cancelled."
       }
     }
   },

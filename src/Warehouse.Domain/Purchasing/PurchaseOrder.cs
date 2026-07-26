@@ -142,6 +142,7 @@ public sealed class PurchaseOrder : PersistentEntity
 
         Status = PurchaseOrderStatus.Submitted;
         SubmittedAtUtc = updatedAtUtc;
+        Version++;
         if (actorUserId is { } userId)
         {
             statusHistory.Add(PurchaseOrderStatusHistory.Create(PurchaseOrderStatus.Draft, Status, updatedAtUtc, userId, null));
@@ -158,6 +159,7 @@ public sealed class PurchaseOrder : PersistentEntity
 
         var previousStatus = Status;
         Status = PurchaseOrderStatus.Cancelled;
+        Version++;
         statusHistory.Add(PurchaseOrderStatusHistory.Create(
             previousStatus,
             Status,

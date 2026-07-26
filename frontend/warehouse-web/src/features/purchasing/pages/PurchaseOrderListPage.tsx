@@ -7,7 +7,11 @@ import { useUrlListQuery } from "../../../shared/pagination/pagination";
 import { usePurchaseOrders } from "../api/usePurchasing";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
-import type { PurchaseOrder } from "../api/purchasingTypes";
+import {
+  purchaseOrderStatusColors,
+  purchaseOrderStatusTranslationKeys,
+  type PurchaseOrder,
+} from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
 import {
   ListFilter,
@@ -74,12 +78,8 @@ export function PurchaseOrderListPage() {
         title: t("purchasing.orders.status"),
         key: "status",
         render: (_, item) => (
-          <Tag color={item.status === 0 ? "gold" : "green"}>
-            {t(
-              item.status === 0
-                ? "purchasing.status.draft"
-                : "purchasing.status.submitted",
-            )}
+          <Tag color={purchaseOrderStatusColors[item.status]}>
+            {t(purchaseOrderStatusTranslationKeys[item.status])}
           </Tag>
         ),
       },
@@ -126,6 +126,9 @@ export function PurchaseOrderListPage() {
               options={[
                 { value: "0", label: t("purchasing.status.draft") },
                 { value: "1", label: t("purchasing.status.submitted") },
+                { value: "2", label: t("purchasing.status.partiallyReceived") },
+                { value: "3", label: t("purchasing.status.received") },
+                { value: "4", label: t("purchasing.status.cancelled") },
               ]}
               placeholder={t("purchasing.orders.status")}
               value={status}

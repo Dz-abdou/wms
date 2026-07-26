@@ -20,7 +20,11 @@ import {
   usePurchaseOrder,
   useSubmitPurchaseOrder,
 } from "../api/usePurchasing";
-import type { PurchaseOrderLine } from "../api/purchasingTypes";
+import {
+  purchaseOrderStatusColors,
+  purchaseOrderStatusTranslationKeys,
+  type PurchaseOrderLine,
+} from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
 import {
   DetailPageLayout,
@@ -58,6 +62,12 @@ export function PurchaseOrderDetailPage() {
   const order = orderQuery.data;
   const columns: ColumnsType<PurchaseOrderLine> = [
     {
+      title: t("purchasing.orders.lineNumber"),
+      dataIndex: "lineNumber",
+      key: "lineNumber",
+      width: 72,
+    },
+    {
       title: t("purchasing.orders.product"),
       key: "product",
       render: (_, line) => `${line.productSku} — ${line.productName}`,
@@ -66,6 +76,11 @@ export function PurchaseOrderDetailPage() {
       title: t("purchasing.orders.quantity"),
       key: "quantity",
       render: (_, line) => `${line.quantity} ${line.purchaseUnitOfMeasure}`,
+    },
+    {
+      title: t("purchasing.orders.baseQuantity"),
+      key: "baseQuantity",
+      render: (_, line) => line.quantityInBaseUnit,
     },
     {
       title: t("purchasing.orders.unitPrice"),
@@ -81,22 +96,26 @@ export function PurchaseOrderDetailPage() {
   return (
     <DetailPageLayout
       actions={
-        order.status === 0 ? (
+        order.status === 0 || order.status === 1 ? (
           <>
-            <RouteActionButton to={purchasingRoutes.orderEdit(id)}>
-              {t("purchasing.edit")}
-            </RouteActionButton>
-            <Popconfirm
-              cancelText={t("purchasing.cancel")}
-              description={t("purchasing.orders.submitDescription")}
-              okText={t("purchasing.orders.submit")}
-              onConfirm={() => submit.mutateAsync(order.version)}
-              title={t("purchasing.orders.submitTitle")}
-            >
-              <Button loading={submit.isPending} type="primary">
-                {t("purchasing.orders.submit")}
-              </Button>
-            </Popconfirm>
+            {order.status === 0 ? (
+              <>
+                <RouteActionButton to={purchasingRoutes.orderEdit(id)}>
+                  {t("purchasing.edit")}
+                </RouteActionButton>
+                <Popconfirm
+                  cancelText={t("purchasing.cancel")}
+                  description={t("purchasing.orders.submitDescription")}
+                  okText={t("purchasing.orders.submit")}
+                  onConfirm={() => submit.mutateAsync(order.version)}
+                  title={t("purchasing.orders.submitTitle")}
+                >
+                  <Button loading={submit.isPending} type="primary">
+                    {t("purchasing.orders.submit")}
+                  </Button>
+                </Popconfirm>
+              </>
+            ) : null}
             <Popconfirm
               cancelText={t("purchasing.cancel")}
               okText={t("purchasing.orders.cancelOrder")}
@@ -114,13 +133,15 @@ export function PurchaseOrderDetailPage() {
       backTo={returnTo}
       title={order.number ?? t("purchasing.orders.detailTitle")}
     >
-      {submit.error ? (
+      {submit.error || cancel.error ? (
         <Alert
           className="page-alert"
           message={getErrorMessage(
             t,
-            submit.error,
-            "purchasing.orders.errors.submit",
+            submit.error ?? cancel.error,
+            submit.error
+              ? "purchasing.orders.errors.submit"
+              : "purchasing.orders.errors.cancel",
           )}
           showIcon
           type="error"
@@ -157,12 +178,8 @@ export function PurchaseOrderDetailPage() {
           {`${order.totalAmount} ${order.currencyCode ?? ""}`}
         </Descriptions.Item>
         <Descriptions.Item label={t("purchasing.orders.status")}>
-          <Tag color={order.status === 0 ? "gold" : "green"}>
-            {t(
-              order.status === 0
-                ? "purchasing.status.draft"
-                : "purchasing.status.submitted",
-            )}
+          <Tag color={purchaseOrderStatusColors[order.status]}>
+            {t(purchaseOrderStatusTranslationKeys[order.status])}
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label={t("purchasing.orders.created")}>
@@ -195,7 +212,7 @@ export function PurchaseOrderDetailPage() {
         </Typography.Title>
         <Timeline
           items={order.statusHistory.map((history) => ({
-            children: `${t(history.status === 0 ? "purchasing.status.draft" : "purchasing.status.submitted")} — ${formatDateTime(history.changedAtUtc, toAppLanguage(i18n.resolvedLanguage))}`,
+            children: `${t(purchaseOrderStatusTranslationKeys[history.status])} — ${formatDateTime(history.changedAtUtc, toAppLanguage(i18n.resolvedLanguage))}`,
           }))}
         />
       </div>

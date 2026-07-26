@@ -45,6 +45,10 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Purchase order was updated.", exception.Message, ApiErrorCodes.PurchaseOrderConcurrencyConflict);
         }
+        catch (PurchaseOrderInvalidTransitionException exception)
+        {
+            return Problem(StatusCodes.Status409Conflict, "Purchase order status transition is invalid.", exception.Message, ApiErrorCodes.PurchaseOrderInvalidTransition);
+        }
         catch (PurchaseOrderMinimumOrderQuantityException exception)
         {
             return ValidationProblem(
