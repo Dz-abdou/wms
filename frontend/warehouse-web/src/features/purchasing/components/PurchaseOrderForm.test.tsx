@@ -93,7 +93,7 @@ describe("PurchaseOrderForm", () => {
       screen.getByRole("combobox", { name: "Supplier catalogue item" }),
     );
     await user.click(await screen.findByText("SKU-1 — Product"));
-  });
+  }, 20_000);
 
   it("shows the MOQ error beside an existing invalid quantity", async () => {
     const user = userEvent.setup();

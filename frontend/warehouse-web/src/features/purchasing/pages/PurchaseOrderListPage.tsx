@@ -1,4 +1,4 @@
-import { Alert, Empty, Select, Spin, Table, Tag } from "antd";
+import { Alert, Empty, Input, Select, Spin, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,6 +6,7 @@ import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { useUrlListQuery } from "../../../shared/pagination/pagination";
 import { usePurchaseOrders } from "../api/usePurchasing";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
+import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import type { PurchaseOrder } from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
 import {
@@ -19,11 +20,20 @@ export function PurchaseOrderListPage() {
   const { t } = useTranslation();
   const listQuery = useUrlListQuery();
   const [supplierSearch, setSupplierSearch] = useState("");
+  const [warehouseSearch, setWarehouseSearch] = useState("");
   const status = listQuery.get("status");
   const orders = usePurchaseOrders({
     ...listQuery.request,
     supplierId: listQuery.get("supplierId"),
-    status: status === "0" ? 0 : status === "1" ? 1 : undefined,
+    status: status ? (Number(status) as PurchaseOrder["status"]) : undefined,
+    warehouseId: listQuery.get("warehouseId"),
+    fromOrderDate: listQuery.get("fromOrderDate"),
+    toOrderDate: listQuery.get("toOrderDate"),
+  });
+  const warehouses = useWarehouses({
+    page: 1,
+    pageSize: 20,
+    search: warehouseSearch,
   });
   const suppliers = useSuppliers({
     page: 1,
@@ -32,6 +42,29 @@ export function PurchaseOrderListPage() {
   });
   const columns = useMemo<ColumnsType<PurchaseOrder>>(
     () => [
+      {
+        title: t("purchasing.orders.number"),
+        dataIndex: "number",
+        key: "number",
+      },
+      {
+        title: t("purchasing.orders.warehouse"),
+        key: "warehouse",
+        render: (_, item) =>
+          item.destinationWarehouseCode
+            ? `${item.destinationWarehouseCode} — ${item.destinationWarehouseName}`
+            : "—",
+      },
+      {
+        title: t("purchasing.orders.orderDate"),
+        dataIndex: "orderDate",
+        key: "orderDate",
+      },
+      {
+        title: t("purchasing.orders.total"),
+        key: "total",
+        render: (_, item) => `${item.totalAmount} ${item.currencyCode ?? ""}`,
+      },
       {
         title: t("purchasing.orders.supplier"),
         key: "supplier",
@@ -96,6 +129,44 @@ export function PurchaseOrderListPage() {
               ]}
               placeholder={t("purchasing.orders.status")}
               value={status}
+            />
+          </ListFilter>
+          <ListFilter label={t("purchasing.orders.warehouse")} width="regular">
+            <Select
+              allowClear
+              aria-label={t("purchasing.orders.warehouse")}
+              filterOption={false}
+              onChange={(value) => listQuery.update({ warehouseId: value })}
+              onSearch={setWarehouseSearch}
+              options={(warehouses.data?.items ?? []).map((warehouse) => ({
+                value: warehouse.id,
+                label: `${warehouse.code} — ${warehouse.name}`,
+              }))}
+              placeholder={t("purchasing.orders.warehouse")}
+              showSearch
+              value={listQuery.get("warehouseId")}
+            />
+          </ListFilter>
+          <ListFilter label={t("inventory.filters.fromDate")} width="compact">
+            <Input
+              type="date"
+              value={listQuery.get("fromOrderDate")}
+              onChange={(event) =>
+                listQuery.update({
+                  fromOrderDate: event.target.value || undefined,
+                })
+              }
+            />
+          </ListFilter>
+          <ListFilter label={t("inventory.filters.toDate")} width="compact">
+            <Input
+              type="date"
+              value={listQuery.get("toOrderDate")}
+              onChange={(event) =>
+                listQuery.update({
+                  toOrderDate: event.target.value || undefined,
+                })
+              }
             />
           </ListFilter>
         </>

@@ -66,6 +66,11 @@ export function PurchaseOrderDetailPage() {
       key: "unitPrice",
       render: (_, line) => `${line.unitPrice} ${line.currencyCode}`,
     },
+    {
+      title: t("purchasing.orders.lineTotal"),
+      key: "lineTotal",
+      render: (_, line) => `${line.lineAmount} ${line.currencyCode}`,
+    },
   ];
   return (
     <DetailPageLayout
@@ -106,16 +111,34 @@ export function PurchaseOrderDetailPage() {
         />
       ) : null}
       <Descriptions bordered column={1}>
+        <Descriptions.Item label={t("purchasing.orders.number")}>
+          {order.number ?? "—"}
+        </Descriptions.Item>
         <Descriptions.Item label={t("purchasing.orders.supplier")}>
           {order.supplierCode} — {order.supplierName}
         </Descriptions.Item>
-        <Descriptions.Item label={t("inventory.form.warehouse")}>
+        <Descriptions.Item label={t("purchasing.orders.warehouse")}>
           {order.destinationWarehouseCode
             ? `${order.destinationWarehouseCode} — ${order.destinationWarehouseName}`
             : "—"}
         </Descriptions.Item>
-        <Descriptions.Item label={t("purchasing.catalogue.currencyCode")}>
+        <Descriptions.Item label={t("purchasing.orders.currency")}>
           {order.currencyCode ?? "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.orderDate")}>
+          {order.orderDate ?? "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.expectedDeliveryDate")}>
+          {order.expectedDeliveryDate ?? "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.supplierReference")}>
+          {order.supplierReference ?? "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.notes")}>
+          {order.notes ?? "—"}
+        </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.total")}>
+          {`${order.totalAmount} ${order.currencyCode ?? ""}`}
         </Descriptions.Item>
         <Descriptions.Item label={t("purchasing.orders.status")}>
           <Tag color={order.status === 0 ? "gold" : "green"}>

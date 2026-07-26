@@ -10,7 +10,10 @@ import { useSuppliers } from "../../suppliers/api/useSuppliers";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
-import { usePurchasingCurrencies, useSupplierProducts } from "../api/usePurchasing";
+import {
+  usePurchasingCurrencies,
+  useSupplierProducts,
+} from "../api/usePurchasing";
 import type {
   PurchaseOrderInput,
   SupplierProduct,
@@ -212,29 +215,48 @@ export function PurchaseOrderForm({
         />
       </Form.Item>
       <Form.Item
-        label={t("inventory.form.warehouse")}
+        label={t("purchasing.orders.warehouse")}
         name="destinationWarehouseId"
         rules={[{ required: true, message: t("errors.validationFailed") }]}
       >
         <Select
-          options={warehouses.data?.items.filter((warehouse) => warehouse.isActive).map((warehouse) => ({ value: warehouse.id, label: `${warehouse.code} — ${warehouse.name}` }))}
+          options={warehouses.data?.items
+            .filter((warehouse) => warehouse.isActive)
+            .map((warehouse) => ({
+              value: warehouse.id,
+              label: `${warehouse.code} — ${warehouse.name}`,
+            }))}
         />
       </Form.Item>
       <Form.Item
-        label={t("purchasing.catalogue.currencyCode")}
+        label={t("purchasing.orders.currency")}
         name="currencyCode"
         rules={[{ required: true, message: t("errors.validationFailed") }]}
       >
-        <Select options={currencies.data?.map((currency) => ({ value: currency.code, label: currency.code }))} />
+        <Select
+          options={currencies.data?.map((currency) => ({
+            value: currency.code,
+            label: currency.code,
+          }))}
+        />
       </Form.Item>
       <Form.Item
-        label={t("purchasing.orders.created")}
+        label={t("purchasing.orders.orderDate")}
         name="orderDate"
         rules={[{ required: true, message: t("errors.validationFailed") }]}
       >
         <Input type="date" />
       </Form.Item>
-      <Form.Item label={t("purchasing.orders.supplierSku")} name="supplierReference">
+      <Form.Item
+        label={t("purchasing.orders.expectedDeliveryDate")}
+        name="expectedDeliveryDate"
+      >
+        <Input type="date" />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.supplierReference")}
+        name="supplierReference"
+      >
         <Input />
       </Form.Item>
       <Form.Item label={t("purchasing.orders.notes")} name="notes">
