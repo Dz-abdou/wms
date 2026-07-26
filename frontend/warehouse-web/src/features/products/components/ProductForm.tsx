@@ -37,7 +37,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const [form] = Form.useForm<ProductFormValues>();
   const { t } = useTranslation();
-  const categories = useProductCategories();
+  const categories = useProductCategories({ page: 1, pageSize: 100 });
   const feedback = useApiFeedback();
   const conversionColumns = (
     remove: (fieldName: number) => void,

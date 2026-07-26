@@ -1,4 +1,4 @@
-@import 'antd/dist/reset.css';
+@import "antd/dist/reset.css";
 
 body {
   margin: 0;
@@ -71,9 +71,50 @@ body {
 }
 
 .page-filter-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: var(--section-space);
 }
 
+.list-filter-controls {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.list-filter {
+  display: grid;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.list-filter-search {
+  min-width: min(100%, 320px);
+  width: 320px;
+}
+
+.list-filter-compact {
+  min-width: 132px;
+  width: 132px;
+}
+
+.list-filter-regular {
+  width: 200px;
+}
+
+.list-filter-label {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.list-filter-actions {
+  flex: none;
+  padding-bottom: 3px;
+}
 
 .login-page {
   display: grid;
@@ -165,6 +206,26 @@ body {
   .page-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .page-filter-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .list-filter-controls {
+    flex-direction: column;
+  }
+
+  .list-filter,
+  .list-filter-compact,
+  .list-filter-regular,
+  .list-filter-search {
+    width: 100%;
+  }
+
+  .list-filter-actions {
+    align-self: flex-end;
   }
 
   .form-page-actions {

@@ -1,42 +1,43 @@
 import {
   Alert,
-  Button,
   Empty,
-  Form,
   Input,
-  Modal,
   Popconfirm,
+  Select,
   Space,
   Spin,
   Table,
   Tag,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
-import type {
-  AdministrationUser,
-  CreateUserValues,
-} from "../api/administrationTypes";
+import {
+  ListFilter,
+  NewPageAction,
+  ReturnAwareLink,
+  ListPageLayout,
+} from "../../../shared/components/PageLayouts";
+import { useUrlListQuery } from "../../../shared/pagination/pagination";
+import type { AdministrationUser } from "../api/administrationTypes";
 import {
   useAdministrationUsers,
-  useCreateAdministrationUser,
   useDeleteAdministrationUser,
-  useUpdateAdministrationUser,
 } from "../api/useAdministration";
-import { ListPageLayout } from "../../../shared/components/PageLayouts";
-import { ModalFormActions } from "../../../shared/components/ModalFormActions";
+import {
+  administrationRoles,
+  administrationRoutes,
+} from "../administrationConstants";
 
 export function UsersPage() {
   const { t } = useTranslation();
-  const { data: users, error, isLoading } = useAdministrationUsers();
-  const createUser = useCreateAdministrationUser();
-  const updateUser = useUpdateAdministrationUser();
+  const listQuery = useUrlListQuery();
+  const users = useAdministrationUsers({
+    ...listQuery.request,
+    email: listQuery.get("q"),
+    role: listQuery.get("role"),
+  });
   const deleteUser = useDeleteAdministrationUser();
-  const [editingUser, setEditingUser] = useState<AdministrationUser>();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const columns: ColumnsType<AdministrationUser> = [
     {
       title: t("administration.users.table.email"),
@@ -57,187 +58,87 @@ export function UsersPage() {
       key: "actions",
       render: (_, user) => (
         <Space>
-          <Button
-            onClick={() => {
-              setEditingUser(user);
-              setIsModalOpen(true);
-            }}
-            type="link"
-          >
+          <ReturnAwareLink to={administrationRoutes.userEdit(user.id)}>
             {t("administration.users.edit")}
-          </Button>
+          </ReturnAwareLink>
           <Popconfirm
-            cancelText={t("administration.users.cancel")}
+            cancelText={t("ui.cancel")}
             okText={t("administration.users.delete")}
             onConfirm={() => deleteUser.mutate(user.id)}
             title={t("administration.users.deleteConfirm")}
           >
-            <Button danger type="link">
-              {t("administration.users.delete")}
-            </Button>
+            <a>{t("administration.users.delete")}</a>
           </Popconfirm>
         </Space>
       ),
     },
   ];
 
-  function closeModal() {
-    setIsModalOpen(false);
-    setEditingUser(undefined);
-  }
-
-  async function saveUser(values: CreateUserValues) {
-    try {
-      if (editingUser) {
-        await updateUser.mutateAsync({
-          id: editingUser.id,
-          values: { email: values.email },
-        });
-      } else {
-        await createUser.mutateAsync(values);
-      }
-      closeModal();
-    } catch {
-      // Mutation state displays the localized error in the dialog.
-    }
-  }
-
   return (
     <ListPageLayout
-      actions={<Button
-          onClick={() => {
-            setEditingUser(undefined);
-            setIsModalOpen(true);
-          }}
-          type="primary"
-        >
-          {t("administration.users.new")}
-        </Button>}
+      actions={<NewPageAction to={administrationRoutes.userCreate} />}
+      hasActiveFilters={listQuery.hasFilters}
+      onClearFilters={listQuery.clearFilters}
+      filters={
+        <>
+          <ListFilter label={t("ui.search")} width="search">
+            <Input.Search
+              key={listQuery.get("q") ?? "q"}
+              allowClear
+              defaultValue={listQuery.get("q")}
+              onSearch={(value) => listQuery.update({ q: value })}
+              placeholder={t("administration.users.searchPlaceholder")}
+            />
+          </ListFilter>
+          <ListFilter
+            label={t("administration.users.table.roles")}
+            width="regular"
+          >
+            <Select
+              allowClear
+              aria-label={t("administration.users.table.roles")}
+              onChange={(value) => listQuery.update({ role: value })}
+              options={administrationRoles.map((role) => ({
+                value: role,
+                label: t(`administration.roles.names.${role}`),
+              }))}
+              placeholder={t("administration.users.table.roles")}
+              value={listQuery.get("role")}
+            />
+          </ListFilter>
+        </>
+      }
       subtitle={t("administration.users.subtitle")}
       title={t("administration.users.title")}
     >
-
-      {isLoading ? <Spin className="page-spinner" size="large" /> : null}
-      {error ? (
+      {users.isLoading ? <Spin className="page-spinner" size="large" /> : null}
+      {users.error ? (
         <Alert
           className="page-alert"
           message={getErrorMessage(
             t,
-            error,
+            users.error,
             "administration.users.errors.load",
           )}
           showIcon
           type="error"
         />
       ) : null}
-      {users && users.length === 0 ? (
+      {users.data?.items.length === 0 ? (
         <Empty
           className="page-empty"
           description={t("administration.users.empty")}
         />
       ) : null}
-      {users && users.length > 0 ? (
-        <Table columns={columns} dataSource={users} rowKey="id" />
+      {users.data && users.data.items.length > 0 ? (
+        <Table
+          columns={columns}
+          dataSource={users.data.items}
+          loading={users.isFetching}
+          pagination={listQuery.toTablePagination(users.data)}
+          rowKey="id"
+        />
       ) : null}
-
-      <UserModal
-        error={createUser.error ?? updateUser.error}
-        isEditing={Boolean(editingUser)}
-        isSubmitting={createUser.isPending || updateUser.isPending}
-        onCancel={closeModal}
-        onSubmit={saveUser}
-        open={isModalOpen}
-        user={editingUser}
-      />
     </ListPageLayout>
-  );
-}
-
-type UserModalProps = {
-  error: unknown;
-  isEditing: boolean;
-  isSubmitting: boolean;
-  onCancel: () => void;
-  onSubmit: (values: CreateUserValues) => Promise<void>;
-  open: boolean;
-  user: AdministrationUser | undefined;
-};
-
-function UserModal({
-  error,
-  isEditing,
-  isSubmitting,
-  onCancel,
-  onSubmit,
-  open,
-  user,
-}: UserModalProps) {
-  const { t } = useTranslation();
-  const [form] = Form.useForm<CreateUserValues>();
-
-  return (
-    <Modal
-      footer={null}
-      onCancel={onCancel}
-      open={open}
-      title={t(
-        isEditing
-          ? "administration.users.editTitle"
-          : "administration.users.createTitle",
-      )}
-    >
-      {error ? (
-        <Alert
-          className="page-alert"
-          message={getErrorMessage(
-            t,
-            error,
-            "administration.users.errors.save",
-          )}
-          showIcon
-          type="error"
-        />
-      ) : null}
-      <Form
-        form={form}
-        initialValues={{ email: user?.email }}
-        key={user?.id ?? "new-user"}
-        layout="vertical"
-        onFinish={(values) => void onSubmit(values)}
-      >
-        <Form.Item
-          label={t("administration.users.email")}
-          name="email"
-          rules={[
-            {
-              required: true,
-              message: t("administration.users.emailRequired"),
-            },
-          ]}
-        >
-          <Input type="email" />
-        </Form.Item>
-        {!isEditing ? (
-          <Form.Item
-            label={t("administration.users.password")}
-            name="password"
-            rules={[
-              {
-                required: true,
-                message: t("administration.users.passwordRequired"),
-              },
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
-        ) : null}
-        <ModalFormActions
-          cancelLabel={t("administration.users.cancel")}
-          isSubmitting={isSubmitting}
-          onCancel={onCancel}
-          submitLabel={t("administration.users.save")}
-        />
-      </Form>
-    </Modal>
   );
 }

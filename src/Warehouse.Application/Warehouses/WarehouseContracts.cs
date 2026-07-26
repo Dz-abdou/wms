@@ -4,7 +4,9 @@ namespace Warehouse.Application.Warehouses;
 
 public sealed record WarehouseListQuery(
     int Page = PaginationConstants.DefaultPage,
-    int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;
+    int PageSize = PaginationConstants.DefaultPageSize,
+    string? Search = null,
+    bool? IsActive = null) : IPagedRequest;
 
 public sealed record WarehouseInput(string? Code, string? Name, string? Description);
 

@@ -1,4 +1,5 @@
 import { Button } from "antd";
+import { useTranslation } from "react-i18next";
 
 type FormPageActionsProps = {
   cancelLabel?: string;
@@ -14,10 +15,25 @@ export function FormPageActions({
   onCancel,
   submitLabel,
 }: FormPageActionsProps) {
+  const { t } = useTranslation();
+  const confirmCancel = () => {
+    if (
+      window.confirm(
+        `${t("ui.discardChangesTitle")}\n\n${t("ui.discardChangesDescription")}`,
+      )
+    ) {
+      onCancel?.();
+    }
+  };
+
   return (
     <div className="form-page-actions">
       {cancelLabel && onCancel ? (
-        <Button disabled={isSubmitting} htmlType="button" onClick={onCancel}>
+        <Button
+          disabled={isSubmitting}
+          htmlType="button"
+          onClick={confirmCancel}
+        >
           {cancelLabel}
         </Button>
       ) : (

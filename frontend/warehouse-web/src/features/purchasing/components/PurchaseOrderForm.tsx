@@ -41,8 +41,8 @@ export function PurchaseOrderForm({
   const { t } = useTranslation();
   const feedback = useApiFeedback();
   const supplierId = Form.useWatch("supplierId", form);
-  const suppliers = useSuppliers(1, 100);
-  const catalogue = useSupplierProducts(1, 100, supplierId);
+  const suppliers = useSuppliers({ page: 1, pageSize: 100 });
+  const catalogue = useSupplierProducts({ page: 1, pageSize: 100, supplierId });
   const lines = Form.useWatch("lines", form);
 
   async function submit(values: PurchaseOrderInput) {

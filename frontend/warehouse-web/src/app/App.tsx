@@ -5,6 +5,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RolesPage } from "../features/administration/pages/RolesPage";
 import { UsersPage } from "../features/administration/pages/UsersPage";
+import { UserFormPage } from "../features/administration/pages/UserFormPage";
 import {
   administrationRoutes,
   administratorRole,
@@ -41,7 +42,9 @@ import { ProductDetailPage } from "../features/products/pages/ProductDetailPage"
 import { ProductEditPage } from "../features/products/pages/ProductEditPage";
 import { ProductListPage } from "../features/products/pages/ProductListPage";
 import { ProductCategoryListPage } from "../features/products/pages/ProductCategoryListPage";
+import { ProductCategoryFormPage } from "../features/products/pages/ProductCategoryFormPage";
 import { CurrencyListPage } from "../features/purchasing/pages/CurrencyListPage";
+import { CurrencyFormPage } from "../features/purchasing/pages/CurrencyFormPage";
 import { productRoutes } from "../features/products/productConstants";
 import { toAppLanguage } from "../shared/i18n/constants";
 import "../shared/i18n/i18n";
@@ -84,14 +87,30 @@ export function App() {
                       path={productRoutes.editPattern}
                       element={<ProductEditPage />}
                     />
-                    <Route path={productRoutes.categoriesPattern} element={<ProductCategoryListPage />} />
+                    <Route
+                      path={productRoutes.categoriesPattern}
+                      element={<ProductCategoryListPage />}
+                    />
+                    <Route
+                      path={productRoutes.categoryCreatePattern}
+                      element={<ProductCategoryFormPage editing={false} />}
+                    />
+                    <Route
+                      path={productRoutes.categoryEditPattern}
+                      element={<ProductCategoryFormPage editing />}
+                    />
                     <Route
                       path={warehouseRoutes.listPattern}
                       element={<WarehouseListPage />}
                     />
                     <Route
                       path={inventoryRoutes.rootPattern}
-                      element={<Navigate replace to={inventoryRoutes.movementHistory} />}
+                      element={
+                        <Navigate
+                          replace
+                          to={inventoryRoutes.movementHistory}
+                        />
+                      }
                     />
                     <Route
                       path={inventoryRoutes.movementHistoryPattern}
@@ -137,20 +156,60 @@ export function App() {
                       path={supplierRoutes.editPattern}
                       element={<SupplierEditPage />}
                     />
-                    <Route path={purchasingRoutes.cataloguePattern} element={<SupplierCatalogueListPage />} />
-                    <Route path={purchasingRoutes.currenciesPattern} element={<CurrencyListPage />} />
-                    <Route path={purchasingRoutes.catalogueCreatePattern} element={<SupplierCatalogueCreatePage />} />
-                    <Route path={purchasingRoutes.catalogueEditPattern} element={<SupplierCatalogueEditPage />} />
-                    <Route path={purchasingRoutes.ordersPattern} element={<PurchaseOrderListPage />} />
-                    <Route path={purchasingRoutes.orderCreate} element={<PurchaseOrderCreatePage />} />
-                    <Route path={purchasingRoutes.orderDetailPattern} element={<PurchaseOrderDetailPage />} />
-                    <Route path={purchasingRoutes.orderEditPattern} element={<PurchaseOrderEditPage />} />
+                    <Route
+                      path={purchasingRoutes.cataloguePattern}
+                      element={<SupplierCatalogueListPage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.currenciesPattern}
+                      element={<CurrencyListPage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.currencyCreatePattern}
+                      element={<CurrencyFormPage editing={false} />}
+                    />
+                    <Route
+                      path={purchasingRoutes.currencyEditPattern}
+                      element={<CurrencyFormPage editing />}
+                    />
+                    <Route
+                      path={purchasingRoutes.catalogueCreatePattern}
+                      element={<SupplierCatalogueCreatePage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.catalogueEditPattern}
+                      element={<SupplierCatalogueEditPage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.ordersPattern}
+                      element={<PurchaseOrderListPage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.orderCreate}
+                      element={<PurchaseOrderCreatePage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.orderDetailPattern}
+                      element={<PurchaseOrderDetailPage />}
+                    />
+                    <Route
+                      path={purchasingRoutes.orderEditPattern}
+                      element={<PurchaseOrderEditPage />}
+                    />
                     <Route
                       element={<ProtectedRoute roles={[administratorRole]} />}
                     >
                       <Route
                         path={administrationRoutes.usersPattern}
                         element={<UsersPage />}
+                      />
+                      <Route
+                        path={administrationRoutes.userCreatePattern}
+                        element={<UserFormPage editing={false} />}
+                      />
+                      <Route
+                        path={administrationRoutes.userEditPattern}
+                        element={<UserFormPage editing />}
                       />
                       <Route
                         path={administrationRoutes.rolesPattern}

@@ -5,7 +5,14 @@ using Warehouse.Domain.Currencies;
 
 namespace Warehouse.Application.Currencies;
 
-public sealed class CurrencyListQueryValidator : PagedRequestValidator<CurrencyListQuery> { }
+public sealed class CurrencyListQueryValidator : PagedRequestValidator<CurrencyListQuery>
+{
+    public CurrencyListQueryValidator()
+    {
+        RuleFor(query => query.Search).MaximumLength(200)
+            .WithErrorCode(ApiErrorCodes.ValidationMaxLength);
+    }
+}
 
 public sealed class CurrencyInputValidator : AbstractValidator<CurrencyInput>
 {

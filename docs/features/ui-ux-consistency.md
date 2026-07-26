@@ -12,8 +12,9 @@ Make every completed authenticated screen feel like one predictable WMS applicat
 
 - Shared list, form, detail, back-link, and action-area primitives for React/Ant Design pages.
 - Explicit, safe `Back to …` behaviour that preserves list path/query context and has a feature-list fallback.
-- Standard action hierarchy, including confirmation for destructive/irreversible actions and no nested links inside buttons.
+- Standard action hierarchy, including one shared `New` list action, dedicated create/edit routes for every object, confirmation for destructive/irreversible actions, and no nested links inside buttons.
 - Consistent loading, empty, error, filter, table, and pagination layouts.
+- Reusable URL-backed search/filter controls that always request server-filtered, paginated list data.
 - Apply the shared system to existing Products, Warehouses, Suppliers, Product Categories, Currencies, Supplier Catalogue, Purchase Orders, Inventory Movements, and Inventory Adjustments screens.
 - Group Administration navigation and make the growing grouped navigation responsive.
 - Document the standard in the roadmap and operational plan so later screens implement it from the start.
@@ -26,12 +27,13 @@ Make every completed authenticated screen feel like one predictable WMS applicat
 
 ## Business Rules
 
-1. List, create/edit, detail, configuration-dialog, and ledger pages use the documented page type and its shared layout.
+1. List, create/edit, detail, and ledger pages use the documented page type and its shared layout. Create/edit pages always use their own route.
 2. A Back action has an explicit safe route; it does not rely on browser history. It returns to a preserved list URL when available and otherwise to the owning feature list.
 3. A dirty create/edit form warns before navigation away through its Back/Cancel action.
 4. Only one action is visually primary on a page. Destructive/irreversible operations require confirmation.
 5. Operational ledgers are read-only; related document shortcuts are clearly named and do not imply direct movement creation.
 6. All user-visible UI and accessible labels remain translated in English and French.
+7. List search and filtering is server-side, applied before pagination, and limited to operationally meaningful fields.
 
 ## Data Model Changes
 
@@ -49,6 +51,7 @@ None. Existing frontend routes and API contracts remain unchanged.
 - Shared link/button primitives with accessible Ant Design semantics.
 - A centralized route-return helper that preserves `pathname + search` from originating list pages.
 - Shared CSS/theme tokens and responsive navigation behaviour.
+- Each list declares its search fields and allowed server filters; the shared layout serializes them to URL query state and never filters a loaded page in memory.
 - Existing screens migrate to the appropriate layout without duplicating headings, action placement, or generic states.
 
 ## Acceptance Criteria
@@ -58,7 +61,7 @@ None. Existing frontend routes and API contracts remain unchanged.
 3. Every existing detail screen displays a visible Back action, consistent contextual actions, and a summary followed by related content.
 4. A user following a detail/form link from a filtered list returns to the same list URL; a direct page visit falls back safely to the feature list.
 5. Leaving a dirty form through Back or Cancel asks for confirmation before discarding edits.
-6. Currencies and Categories retain their short modal workflow but adopt full parent-list states and consistent modal actions.
+6. Currencies, Categories, and Users open dedicated create/edit pages from their lists; none use a configuration modal.
 7. The main navigation groups Administration and stays usable at the supported narrow layout.
 8. English and French remain structurally complete for all new text.
 
@@ -66,7 +69,7 @@ None. Existing frontend routes and API contracts remain unchanged.
 
 - Shared return helper: preserved route, direct-route fallback, and dirty-form confirmation.
 - Shared list/form/detail layouts render their required areas and accessible controls.
-- Representative list, form, detail, modal configuration, and ledger pages use the new primitives.
+- Representative list, form, detail, master-data/admin create/edit, and ledger pages use the new primitives.
 - English/French translation coverage for new shared UI copy.
 
 ## Manual Test Checklist

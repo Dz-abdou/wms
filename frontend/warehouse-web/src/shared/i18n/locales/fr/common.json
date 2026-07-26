@@ -3,6 +3,9 @@
     "brand": "Système de gestion d’entrepôt"
   },
   "ui": {
+    "new": "Nouveau",
+    "search": "Rechercher",
+    "clearFilters": "Effacer les filtres",
     "backTo": "Retour à {{destination}}",
     "cancel": "Annuler",
     "save": "Enregistrer",
@@ -163,6 +166,7 @@
     "confirmStatusTitle": "{{action}} l’entrepôt",
     "confirmStatusDescription": "Voulez-vous vraiment {{action}} cet entrepôt ?",
     "loadingList": "Chargement des entrepôts…",
+    "searchPlaceholder": "Rechercher par code ou nom",
     "loadingOne": "Chargement de l’entrepôt…",
     "empty": "Aucun entrepôt n’existe encore.",
     "missingDescription": "—",
@@ -211,6 +215,7 @@
     "confirmStatusTitle": "{{action}} le fournisseur",
     "confirmStatusDescription": "Voulez-vous vraiment {{action}} ce fournisseur ?",
     "loadingList": "Chargement des fournisseurs…",
+    "searchPlaceholder": "Rechercher par code ou nom",
     "loadingOne": "Chargement du fournisseur…",
     "empty": "Aucun fournisseur n’existe encore.",
     "missingValue": "—",
@@ -359,6 +364,7 @@
       "title": "Devises",
       "subtitle": "Configurez les devises utilisées pour les achats.",
       "new": "Nouvelle devise",
+      "searchPlaceholder": "Rechercher par code ou nom",
       "loading": "Chargement des devises…",
       "empty": "Aucune devise n’existe encore.",
       "errors": { "save": "La devise n’a pas pu être enregistrée." }
@@ -367,6 +373,7 @@
       "title": "Catégories de produits",
       "subtitle": "Configurez la hiérarchie du catalogue produits.",
       "new": "Nouvelle catégorie",
+      "searchPlaceholder": "Rechercher par code ou nom",
       "loading": "Chargement des catégories de produits…",
       "empty": "Aucune catégorie de produit n’existe encore.",
       "edit": "Modifier la catégorie",
@@ -386,6 +393,7 @@
       "editTitle": "Modifier l’utilisateur",
       "email": "E-mail",
       "password": "Mot de passe",
+      "searchPlaceholder": "Rechercher par e-mail",
       "emailRequired": "L’e-mail est obligatoire.",
       "passwordRequired": "Le mot de passe est obligatoire.",
       "save": "Enregistrer",
@@ -463,6 +471,10 @@
     "emptyHistory": "Aucun mouvement de stock n’existe pour cette sélection.",
     "emptyAdjustments": "Aucun ajustement de stock n’existe encore.",
     "applyFilters": "Appliquer les filtres",
+    "filters": {
+      "fromDate": "Date de début",
+      "toDate": "Date de fin"
+    },
     "lines": "Lignes",
     "types": {
       "increase": "Entrée",

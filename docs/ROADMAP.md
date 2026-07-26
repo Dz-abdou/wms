@@ -27,18 +27,20 @@ Every authenticated screen must use the shared application layout and one of the
 
 | Screen type | Required structure |
 |---|---|
-| List | Page heading with title/subtitle, contextual primary `New …` action when creation is permitted, optional filter toolbar, then loading/empty/error/populated table states. |
+| List | Page heading with title/subtitle, contextual primary `New` action when creation is permitted, optional filter toolbar, then loading/empty/error/populated table states. |
 | Create/edit | A visible `Back to …` link above the heading, title and optional context, grouped form content, then the shared end-of-form Cancel/Create or Save action bar. |
 | Read-only detail | A visible `Back to …` link, title with status where applicable, a right-aligned contextual action area, summary content, then related read-only tables/timeline sections. |
-| Short configuration dialog | The containing list retains full loading/empty/error states. The dialog uses a shared Cancel/Save footer; use it only for small reference-data forms, not operational documents. |
 | Ledger/history | Read-only list/filter/detail links. It never presents a primary action that implies a ledger row can be created directly. |
 
 - Return controls use an explicit safe route, not `navigate(-1)`. When a user enters a detail or form from a list, preserve the list path and query string as the return destination; a direct URL or refresh falls back to the feature list. Warn before abandoning a dirty form.
-- Use exactly one primary page action. Secondary actions are neutral; destructive or irreversible actions require confirmation and must not visually compete with the primary action.
+- Use exactly one primary page action. On a list it is always the shared `New` action; the page title supplies the object context. Secondary actions are neutral; destructive or irreversible actions require confirmation and must not visually compete with the primary action.
 - Use shared page-layout/action components rather than a `<Link>` nested inside a `<Button>`. All navigation targets and visible copy remain centralized and localized.
 - Lists with filters must keep filter state in URL query parameters where practical, so return links, refresh, and sharing preserve the user context. Every list and selector needs clear loading, empty, error, and populated states.
+- List search and filters are always server-side and applied before pagination. The shared list layout owns the URL-backed query state and presentation; feature APIs own allowed filter names and request serialization. Do not use Ant Design's in-memory table filtering for paged operational data.
+- Every list must deliberately name only manager-relevant searchable fields and filters: search covers its primary identifiers, while columns expose compact filters only for meaningful status, relationship, type, currency, or date decisions. Do not add a filter merely because a column exists.
 - Keep navigation grouped by business area. It must remain usable at narrower widths; future items extend the group rather than adding a new ungrouped top-level action.
 - Shared theme tokens own common colour, spacing, typography, border, and responsive layout decisions. Feature CSS may only cover behaviour that is genuinely feature-specific.
+- Every create and edit operation opens its own route-level page, including master data and administration records. Do not use a modal as a substitute for a create/edit page.
 - A feature specification must name the page type, return target, action hierarchy, table/filter states, and any responsive behaviour before UI implementation begins. Frontend tests cover the shared behaviour when a new page type or interaction is introduced.
 
 ## Current Planning State

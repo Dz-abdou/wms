@@ -110,6 +110,49 @@ public sealed class ProductEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task List_composes_search_status_and_category_before_pagination()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
+        var categoryResponse = await fixture.Client.PostAsJsonAsync("/api/product-categories", new
+        {
+            code = $"CAT-{suffix}",
+            name = "Filtered category"
+        });
+        categoryResponse.EnsureSuccessStatusCode();
+        var category = await categoryResponse.Content.ReadFromJsonAsync<ProductCategoryResponse>();
+        Assert.NotNull(category);
+
+        var matchingResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"MATCH-{suffix}",
+            name = "Matching product",
+            categoryId = category.Id
+        });
+        matchingResponse.EnsureSuccessStatusCode();
+        var matching = await matchingResponse.Content.ReadFromJsonAsync<ProductResponse>();
+        Assert.NotNull(matching);
+
+        var inactiveResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"INACTIVE-{suffix}",
+            name = "Inactive matching product",
+            categoryId = category.Id
+        });
+        inactiveResponse.EnsureSuccessStatusCode();
+        var inactive = await inactiveResponse.Content.ReadFromJsonAsync<ProductResponse>();
+        Assert.NotNull(inactive);
+        (await fixture.Client.PatchAsJsonAsync($"/api/products/{inactive.Id}/status", new { isActive = false })).EnsureSuccessStatusCode();
+
+        var result = await fixture.Client.GetFromJsonAsync<PagedResult<ProductResponse>>(
+            $"/api/products?search={suffix.ToLowerInvariant()}&isActive=true&categoryId={category.Id}&page=1&pageSize=1");
+
+        Assert.NotNull(result);
+        Assert.Equal(1, result.TotalCount);
+        Assert.Single(result.Items);
+        Assert.Equal(matching.Id, result.Items.Single().Id);
+    }
+
+    [Fact]
     public async Task Unknown_product_returns_not_found_and_status_change_is_persisted()
     {
         var missingId = Guid.NewGuid();

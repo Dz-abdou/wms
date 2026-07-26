@@ -43,10 +43,12 @@ export function InventoryAdjustmentPage() {
   const navigate = useNavigate();
   const [form] = Form.useForm<InventoryAdjustmentInput>();
   const products = useProducts({ page: 1, pageSize: inventoryPageSize });
-  const warehouses = useWarehouses(1, inventoryPageSize);
+  const warehouses = useWarehouses({ page: 1, pageSize: inventoryPageSize });
   const feedback = useApiFeedback();
   const adjustment = useAdjustInventory();
-  const { goBack, returnTo } = useReturnDestination(inventoryRoutes.adjustments);
+  const { goBack, returnTo } = useReturnDestination(
+    inventoryRoutes.adjustments,
+  );
   const lines = Form.useWatch("lines", form) ?? [];
   const productOptions = products.data?.items
     .filter((product) => product.isActive)
@@ -234,8 +236,7 @@ export function InventoryAdjustmentPage() {
           onFinish={submit}
           onValuesChange={(changedValues) => {
             const changedLines = changedValues.lines as
-              | Array<Partial<InventoryAdjustmentLineInput>>
-              | undefined;
+              Array<Partial<InventoryAdjustmentLineInput>> | undefined;
             changedLines?.forEach((line, index) => {
               if (!line?.productId) return;
               const product = products.data?.items.find(

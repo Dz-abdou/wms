@@ -1,7 +1,10 @@
 using System.Security.Claims;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Api.Auth;
+using Warehouse.Api.Endpoints;
+using Warehouse.Application.Administration;
 using Warehouse.Infrastructure.Identity;
 
 namespace Warehouse.Api.Endpoints.Administration;
@@ -17,6 +20,7 @@ public static class AdministrationEndpoints
             .RequireAuthorization(AuthorizationPolicies.ManageAdministration);
 
         group.MapGet("/users", GetUsersAsync);
+        group.MapGet("/users/{id:guid}", GetUserByIdAsync);
         group.MapPost("/users", CreateUserAsync);
         group.MapPut("/users/{id:guid}", UpdateUserAsync);
         group.MapDelete("/users/{id:guid}", DeleteUserAsync);
@@ -27,21 +31,22 @@ public static class AdministrationEndpoints
     }
 
     private static async Task<IResult> GetUsersAsync(
-        UserManager<ApplicationUser> users,
+        [AsParameters] AdministrationUserListQuery query,
+        IValidator<AdministrationUserListQuery> validator,
+        IAdministrationUserQueryService users,
         CancellationToken cancellationToken)
     {
-        var userEntities = await users.Users
-            .OrderBy(user => user.Email)
-            .ToListAsync(cancellationToken);
-
-        var result = new List<UserResponse>(userEntities.Count);
-        foreach (var user in userEntities)
-        {
-            result.Add(ToResponse(user, await users.GetRolesAsync(user)));
-        }
-
-        return Results.Ok(result);
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await users.GetListAsync(query, cancellationToken));
     }
+
+    private static async Task<IResult> GetUserByIdAsync(
+        Guid id,
+        IAdministrationUserQueryService users,
+        CancellationToken cancellationToken) =>
+        (await users.GetByIdAsync(id, cancellationToken)) is { } user
+            ? Results.Ok(user)
+            : NotFound();
 
     private static async Task<IResult> CreateUserAsync(
         CreateUserRequest request,

@@ -3,6 +3,9 @@
     "brand": "Warehouse Management System"
   },
   "ui": {
+    "new": "New",
+    "search": "Search",
+    "clearFilters": "Clear filters",
     "backTo": "Back to {{destination}}",
     "cancel": "Cancel",
     "save": "Save",
@@ -163,6 +166,7 @@
     "confirmStatusTitle": "{{action}} warehouse",
     "confirmStatusDescription": "Are you sure you want to {{action}} this warehouse?",
     "loadingList": "Loading warehouses…",
+    "searchPlaceholder": "Search by code or name",
     "loadingOne": "Loading warehouse…",
     "empty": "No warehouses exist yet.",
     "missingDescription": "—",
@@ -211,6 +215,7 @@
     "confirmStatusTitle": "{{action}} supplier",
     "confirmStatusDescription": "Are you sure you want to {{action}} this supplier?",
     "loadingList": "Loading suppliers…",
+    "searchPlaceholder": "Search by code or name",
     "loadingOne": "Loading supplier…",
     "empty": "No suppliers exist yet.",
     "missingValue": "—",
@@ -359,6 +364,7 @@
       "title": "Currencies",
       "subtitle": "Configure currencies used by purchasing.",
       "new": "New currency",
+      "searchPlaceholder": "Search by code or name",
       "loading": "Loading currencies…",
       "empty": "No currencies exist yet.",
       "errors": { "save": "The currency could not be saved." }
@@ -367,6 +373,7 @@
       "title": "Product categories",
       "subtitle": "Configure the product catalogue hierarchy.",
       "new": "New category",
+      "searchPlaceholder": "Search by code or name",
       "loading": "Loading product categories…",
       "empty": "No product categories exist yet.",
       "edit": "Edit category",
@@ -384,6 +391,7 @@
       "editTitle": "Edit user",
       "email": "Email",
       "password": "Password",
+      "searchPlaceholder": "Search by email",
       "emailRequired": "Email is required.",
       "passwordRequired": "Password is required.",
       "save": "Save",
@@ -461,6 +469,10 @@
     "emptyHistory": "No inventory movements exist for this selection.",
     "emptyAdjustments": "No inventory adjustments exist yet.",
     "applyFilters": "Apply filters",
+    "filters": {
+      "fromDate": "From date",
+      "toDate": "To date"
+    },
     "lines": "Lines",
     "types": {
       "increase": "Increase",

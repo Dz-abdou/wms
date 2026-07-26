@@ -47,11 +47,11 @@ The application must feel like one operational system rather than a collection o
 
 ### Page layouts and return behaviour
 
-- A list page has a consistent title/subtitle area, one contextual primary action, an optional filter toolbar, and explicit loading, empty, error, and populated states.
+- A list page has a consistent title/subtitle area, one shared primary `New` action when creation is available, an optional filter toolbar, and explicit loading, empty, error, and populated states. The title provides the object context; do not repeat it in the button.
 - A create/edit page has a visible `Back to …` link above its heading, grouped form sections where the form is long, and the standard Cancel/Create or Save action bar at the bottom. The top return link and bottom Cancel action target the same safe route.
 - A detail page has `Back to …`, title/status, contextual actions, a summary area, and related tables/timeline sections. A detail action must preserve the document's read-only/status rules.
 - Back must be an explicit known route, never blind browser history. Links from a list preserve that list's current path and URL query; direct navigation or a refreshed page uses the safe feature-list fallback. A dirty form warns before leaving.
-- A modal is reserved for short master-data configuration. It uses a shared Cancel/Save footer and does not excuse the parent list from providing loading, empty, error, and populated states.
+- Every create and edit workflow has a dedicated route-level page, including master data and administration. Do not use a modal as a substitute for a create/edit page.
 
 ### Actions, tables, and feedback
 
@@ -59,6 +59,8 @@ The application must feel like one operational system rather than a collection o
 - Do not nest a router link inside a button. Shared navigation/action primitives own the accessible semantics.
 - Operational ledgers are read-only. A shortcut to a related document action must be named as that action (for example `Record adjustment`), never `New movement`.
 - Lists retain filters in URL query parameters where practical. Filter toolbars, pagination, empty states, and retryable error states use the shared layout instead of bespoke cards.
+- Every list search/filter is executed by the backend before pagination. The frontend must not filter only the current loaded page or use Ant Design's default in-memory table filters. Shared list controls synchronize an explicit query string (`q`, `status`, `supplierId`, date range, and so on) with feature-owned API request parameters.
+- Choose filters from the operational decision, not from every visible field. Initial guidance: Products—SKU/name and active/category; Warehouses—code/name and active; Suppliers—code/name and active; Categories/Currencies—code/name and active where applicable; Supplier Catalogue—supplier/product/status/currency; Purchase Orders—supplier/status and, after hardening, warehouse/date; Adjustments—reason/date/reference; Movement History—product/warehouse/type/reference/date; Users—email/role.
 - All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
 
 ### Navigation and visual foundations

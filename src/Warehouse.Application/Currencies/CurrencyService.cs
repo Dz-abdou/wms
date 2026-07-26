@@ -13,6 +13,8 @@ public sealed class CurrencyService(IWarehouseDbContext dbContext, TimeProvider 
     {
         var currencies = dbContext.Currencies.AsNoTracking();
         if (query.ActiveOnly) currencies = currencies.Where(currency => currency.IsActive);
+        if (!string.IsNullOrWhiteSpace(query.Search)) { var search = query.Search.Trim().ToUpper(); currencies = currencies.Where(x => x.Code.ToUpper().Contains(search) || x.Name.ToUpper().Contains(search)); }
+        if (query.IsActive is { } isActive) currencies = currencies.Where(x => x.IsActive == isActive);
         var total = await currencies.CountAsync(cancellationToken);
         var items = await currencies.OrderBy(currency => currency.Code).Skip((query.Page - 1) * query.PageSize).Take(query.PageSize).Select(currency => ToResponse(currency)).ToListAsync(cancellationToken);
         return new PagedResult<CurrencyResponse>(items, query.Page, query.PageSize, total);

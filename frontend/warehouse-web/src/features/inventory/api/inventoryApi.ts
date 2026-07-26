@@ -4,6 +4,7 @@ import type {
   InventoryAdjustment,
   InventoryAdjustmentDetail,
   InventoryAdjustmentInput,
+  InventoryAdjustmentListQuery,
   InventoryMovementFilter,
   PagedInventoryAdjustments,
   PagedInventoryMovements,
@@ -31,9 +32,16 @@ export function getMovementHistory(
   );
 }
 
-export function getAdjustments(page: number, pageSize: number, signal?: AbortSignal) {
+export function getAdjustments(
+  query: InventoryAdjustmentListQuery,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") parameters.set(key, String(value));
+  });
   return requestJson<PagedInventoryAdjustments>(
-    `${inventoryApiPaths.adjustments}?${new URLSearchParams({ page: String(page), pageSize: String(pageSize) })}`,
+    `${inventoryApiPaths.adjustments}?${parameters}`,
     { signal },
   );
 }

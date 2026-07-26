@@ -41,4 +41,13 @@ public sealed class InventoryMovementListQueryValidator : PagedRequestValidator<
     }
 }
 
-public sealed class InventoryAdjustmentListQueryValidator : PagedRequestValidator<InventoryAdjustmentListQuery>;
+public sealed class InventoryAdjustmentListQueryValidator : PagedRequestValidator<InventoryAdjustmentListQuery>
+{
+    public InventoryAdjustmentListQueryValidator()
+    {
+        RuleFor(query => query.Reason).IsInEnum().When(query => query.Reason.HasValue);
+        RuleFor(query => query.Reference).MaximumLength(InventoryAdjustmentRules.MaxReferenceLength);
+        RuleFor(query => query.ToUtc).GreaterThanOrEqualTo(query => query.FromUtc)
+            .When(query => query.FromUtc.HasValue && query.ToUtc.HasValue);
+    }
+}

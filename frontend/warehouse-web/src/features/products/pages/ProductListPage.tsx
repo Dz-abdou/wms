@@ -1,26 +1,36 @@
-import { Alert, Empty, Input, Spin, Table } from "antd";
+import { Alert, Empty, Input, Select, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { Product } from "../api/productTypes";
 import { useProducts } from "../api/useProducts";
+import { useProductCategories } from "../api/useProductCategories";
 import { ProductStatusTag } from "../components/ProductStatusTag";
 import { productRoutes } from "../productConstants";
-import { useListPagination } from "../../../shared/pagination/pagination";
+import { useUrlListQuery } from "../../../shared/pagination/pagination";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import {
   ListPageLayout,
+  ListFilter,
   ReturnAwareLink,
-  RouteActionButton,
+  NewPageAction,
 } from "../../../shared/components/PageLayouts";
 
 export function ProductListPage() {
-  const pagination = useListPagination();
-  const [search, setSearch] = useState("");
+  const listQuery = useUrlListQuery();
   const { t } = useTranslation();
+  const activeValue = listQuery.get("active");
+  const categories = useProductCategories({ page: 1, pageSize: 100 });
   const { data, error, isLoading, isFetching } = useProducts({
-    ...pagination.request,
-    search,
+    ...listQuery.request,
+    search: listQuery.get("q"),
+    isActive:
+      activeValue === "true"
+        ? true
+        : activeValue === "false"
+          ? false
+          : undefined,
+    categoryId: listQuery.get("categoryId"),
   });
 
   const columns = useMemo<ColumnsType<Product>>(
@@ -48,27 +58,51 @@ export function ProductListPage() {
 
   return (
     <ListPageLayout
-      actions={
-        <RouteActionButton to={productRoutes.create} type="primary">
-          {t("products.new")}
-        </RouteActionButton>
+      actions={<NewPageAction to={productRoutes.create} />}
+      hasActiveFilters={listQuery.hasFilters}
+      onClearFilters={listQuery.clearFilters}
+      filters={
+        <>
+          <ListFilter label={t("ui.search")} width="search">
+            <Input.Search
+              key={listQuery.get("q") ?? "q"}
+              allowClear
+              defaultValue={listQuery.get("q")}
+              onSearch={(value) => listQuery.update({ q: value })}
+              placeholder={t("products.searchPlaceholder")}
+            />
+          </ListFilter>
+          <ListFilter label={t("products.table.status")} width="compact">
+            <Select
+              allowClear
+              aria-label={t("products.table.status")}
+              onChange={(value) => listQuery.update({ active: value })}
+              options={[
+                { value: "true", label: t("products.status.active") },
+                { value: "false", label: t("products.status.inactive") },
+              ]}
+              placeholder={t("products.table.status")}
+              value={activeValue}
+            />
+          </ListFilter>
+          <ListFilter label={t("products.form.category")}>
+            <Select
+              allowClear
+              aria-label={t("products.form.category")}
+              onChange={(value) => listQuery.update({ categoryId: value })}
+              options={(categories.data?.items ?? []).map((category) => ({
+                value: category.id,
+                label: `${category.code} — ${category.name}`,
+              }))}
+              placeholder={t("products.form.category")}
+              value={listQuery.get("categoryId")}
+            />
+          </ListFilter>
+        </>
       }
       subtitle={t("products.subtitle")}
       title={t("products.title")}
     >
-
-      <div className="page-filter-toolbar">
-        <Input.Search
-          allowClear
-          className="product-search"
-          onSearch={(value) => {
-            pagination.resetPage();
-            setSearch(value);
-          }}
-          placeholder={t("products.searchPlaceholder")}
-        />
-      </div>
-
       {isLoading ? (
         <Spin
           className="page-spinner"
@@ -92,7 +126,7 @@ export function ProductListPage() {
           columns={columns}
           dataSource={data.items}
           loading={isFetching}
-          pagination={pagination.toTablePagination(data)}
+          pagination={listQuery.toTablePagination(data)}
           rowKey="id"
         />
       ) : null}

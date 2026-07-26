@@ -28,7 +28,17 @@ export type Currency = {
   updatedAtUtc: string;
 };
 
-export type CurrencyInput = Pick<Currency, "code" | "name" | "symbol" | "decimalPlaces">;
+export type CurrencyInput = Pick<
+  Currency,
+  "code" | "name" | "symbol" | "decimalPlaces"
+>;
+
+export type CurrencyListQuery = {
+  page: number;
+  pageSize: number;
+  search?: string;
+  isActive?: boolean;
+};
 
 export type SupplierProductInput = {
   supplierId: string;
@@ -40,13 +50,25 @@ export type SupplierProductInput = {
   currencyCode: string;
 };
 
-export type UpdateSupplierProductInput = Omit<SupplierProductInput, "supplierId" | "productId">;
+export type UpdateSupplierProductInput = Omit<
+  SupplierProductInput,
+  "supplierId" | "productId"
+>;
 
 export type SupplierProductListResult = {
   items: SupplierProduct[];
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type SupplierProductListQuery = {
+  page: number;
+  pageSize: number;
+  supplierId?: string;
+  productId?: string;
+  isActive?: boolean;
+  currencyCode?: string;
 };
 
 export type PurchaseOrderStatus = 0 | 1;
@@ -88,4 +110,11 @@ export type PurchaseOrderListResult = {
   page: number;
   pageSize: number;
   totalCount: number;
+};
+
+export type PurchaseOrderListQuery = {
+  page: number;
+  pageSize: number;
+  supplierId?: string;
+  status?: PurchaseOrderStatus;
 };

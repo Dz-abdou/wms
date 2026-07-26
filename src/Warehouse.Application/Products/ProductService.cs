@@ -14,6 +14,8 @@ public sealed class ProductService(IWarehouseDbContext dbContext, TimeProvider t
         CancellationToken cancellationToken)
     {
         var products = ApplySearch(dbContext.Products.Include(product => product.UnitConversions).AsNoTracking(), query.Search);
+        if (query.IsActive is { } isActive) products = products.Where(x => x.IsActive == isActive);
+        if (query.CategoryId is { } categoryId) products = products.Where(x => x.CategoryId == categoryId);
         var totalCount = await products.CountAsync(cancellationToken);
         var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
 

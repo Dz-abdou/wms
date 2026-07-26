@@ -15,6 +15,8 @@ public sealed class WarehouseService(IWarehouseDbContext dbContext, TimeProvider
         CancellationToken cancellationToken)
     {
         var warehouses = dbContext.Warehouses.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query.Search)) { var search = query.Search.Trim().ToUpper(); warehouses = warehouses.Where(x => x.Code.ToUpper().Contains(search) || x.Name.ToUpper().Contains(search)); }
+        if (query.IsActive is { } isActive) warehouses = warehouses.Where(x => x.IsActive == isActive);
         var totalCount = await warehouses.CountAsync(cancellationToken);
         var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
 

@@ -6,19 +6,23 @@ import {
   setSupplierStatus,
   updateSupplier,
 } from "./suppliersApi";
-import type { Supplier, SupplierInput } from "./supplierTypes";
+import type {
+  Supplier,
+  SupplierInput,
+  SupplierListQuery,
+} from "./supplierTypes";
 
 export const supplierKeys = {
   all: ["suppliers"] as const,
-  list: (page: number, pageSize: number) =>
-    [...supplierKeys.all, "list", page, pageSize] as const,
+  list: (query: SupplierListQuery) =>
+    [...supplierKeys.all, "list", query] as const,
   detail: (id: string) => [...supplierKeys.all, "detail", id] as const,
 };
 
-export function useSuppliers(page: number, pageSize: number) {
+export function useSuppliers(query: SupplierListQuery) {
   return useQuery({
-    queryKey: supplierKeys.list(page, pageSize),
-    queryFn: ({ signal }) => getSuppliers(page, pageSize, signal),
+    queryKey: supplierKeys.list(query),
+    queryFn: ({ signal }) => getSuppliers(query, signal),
   });
 }
 
@@ -34,7 +38,8 @@ export function useCreateSupplier() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createSupplier,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: supplierKeys.all }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: supplierKeys.all }),
   });
 }
 
@@ -54,7 +59,10 @@ export function useSetSupplierStatus(id: string) {
   });
 }
 
-function refresh(queryClient: ReturnType<typeof useQueryClient>, supplier: Supplier) {
+function refresh(
+  queryClient: ReturnType<typeof useQueryClient>,
+  supplier: Supplier,
+) {
   queryClient.setQueryData(supplierKeys.detail(supplier.id), supplier);
   return queryClient.invalidateQueries({ queryKey: supplierKeys.all });
 }

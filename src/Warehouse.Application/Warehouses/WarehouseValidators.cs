@@ -7,6 +7,11 @@ namespace Warehouse.Application.Warehouses;
 
 public sealed class WarehouseListQueryValidator : PagedRequestValidator<WarehouseListQuery>
 {
+    public WarehouseListQueryValidator()
+    {
+        RuleFor(query => query.Search).MaximumLength(200)
+            .WithErrorCode(ApiErrorCodes.ValidationMaxLength);
+    }
 }
 
 public sealed class WarehouseInputValidator : AbstractValidator<WarehouseInput>

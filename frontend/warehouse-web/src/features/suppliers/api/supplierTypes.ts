@@ -24,3 +24,10 @@ export type SupplierListResult = {
   pageSize: number;
   totalCount: number;
 };
+
+export type SupplierListQuery = {
+  page: number;
+  pageSize: number;
+  search?: string;
+  isActive?: boolean;
+};

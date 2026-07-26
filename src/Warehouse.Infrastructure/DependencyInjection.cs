@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Application.Administration;
 using Warehouse.Infrastructure.Auditing;
 using Warehouse.Infrastructure.Identity;
 using Warehouse.Infrastructure.Persistence;
@@ -33,6 +34,7 @@ public static class DependencyInjection
         .AddSignInManager();
         services.Configure<DevelopmentAdminOptions>(configuration.GetSection(DevelopmentAdminOptions.SectionName));
         services.AddScoped<IdentityBootstrapper>();
+        services.AddScoped<IAdministrationUserQueryService, AdministrationUserQueryService>();
         services.AddScoped<IWarehouseDbContext>(provider => provider.GetRequiredService<WarehouseDbContext>());
 
         return services;

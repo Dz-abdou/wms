@@ -2,12 +2,32 @@ import { requestJson } from "../../../shared/api/apiClient";
 import { administrationApiPaths } from "../administrationConstants";
 import type {
   AdministrationUser,
+  AdministrationUserListQuery,
+  AdministrationUserListResult,
   CreateUserValues,
   UpdateUserValues,
 } from "./administrationTypes";
 
-export function getUsers(signal?: AbortSignal) {
-  return requestJson<AdministrationUser[]>(administrationApiPaths.users, {
+export function getUsers(
+  query: AdministrationUserListQuery,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.email?.trim()) parameters.set("email", query.email.trim());
+  if (query.role) parameters.set("role", query.role);
+  return requestJson<AdministrationUserListResult>(
+    `${administrationApiPaths.users}?${parameters}`,
+    {
+      signal,
+    },
+  );
+}
+
+export function getUser(id: string, signal?: AbortSignal) {
+  return requestJson<AdministrationUser>(administrationApiPaths.user(id), {
     signal,
   });
 }

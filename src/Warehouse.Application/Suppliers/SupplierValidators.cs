@@ -5,7 +5,14 @@ using Warehouse.Domain.Suppliers;
 
 namespace Warehouse.Application.Suppliers;
 
-public sealed class SupplierListQueryValidator : PagedRequestValidator<SupplierListQuery> { }
+public sealed class SupplierListQueryValidator : PagedRequestValidator<SupplierListQuery>
+{
+    public SupplierListQueryValidator()
+    {
+        RuleFor(query => query.Search).MaximumLength(200)
+            .WithErrorCode(ApiErrorCodes.ValidationMaxLength);
+    }
+}
 
 public sealed class SupplierInputValidator : AbstractValidator<SupplierInput>
 {
