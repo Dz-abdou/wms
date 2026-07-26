@@ -145,7 +145,6 @@ public sealed class PurchaseOrder : PersistentEntity
         {
             statusHistory.Add(PurchaseOrderStatusHistory.Create(PurchaseOrderStatus.Draft, Status, updatedAtUtc, userId, null));
         }
-        Version++;
         UpdatedAtUtc = updatedAtUtc;
         SetUpdatedByUser(actorUserId);
     }
@@ -164,7 +163,6 @@ public sealed class PurchaseOrder : PersistentEntity
             updatedAtUtc,
             actorUserId,
             NormalizeOptional(reason, PurchaseOrderRules.MaxStatusReasonLength, nameof(reason))));
-        Version++;
         UpdatedAtUtc = updatedAtUtc;
         SetUpdatedByUser(actorUserId);
     }

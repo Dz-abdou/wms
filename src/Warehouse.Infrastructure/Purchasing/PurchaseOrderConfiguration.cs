@@ -68,6 +68,7 @@ public sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<Purcha
             history.ToTable("PurchaseOrderStatusHistory");
             history.WithOwner().HasForeignKey("PurchaseOrderId");
             history.HasKey(item => item.Id);
+            history.Property(item => item.Id).ValueGeneratedNever();
             history.Property(item => item.PreviousStatus).HasConversion<int?>();
             history.Property(item => item.Status).HasConversion<int>().IsRequired();
             history.Property(item => item.ChangedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
