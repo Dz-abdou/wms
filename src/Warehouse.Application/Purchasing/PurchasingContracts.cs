@@ -57,6 +57,8 @@ public sealed record PurchaseOrderListQuery(
 
 public sealed record PurchaseOrderLineInput(Guid SupplierProductId, decimal Quantity);
 
+public sealed record PurchaseOrderVersionInput(int Version);
+
 public sealed record PurchaseOrderInput(
     Guid SupplierId,
     Guid DestinationWarehouseId,

@@ -78,6 +78,7 @@ public sealed class PurchaseOrderService(
     {
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         EnsureDraft(purchaseOrder);
+        if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
         await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
         await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
         var lines = await ResolveLinesAsync(input.SupplierId, input.CurrencyCode, input.Lines ?? [], cancellationToken);
@@ -88,10 +89,11 @@ public sealed class PurchaseOrderService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<PurchaseOrderResponse> SubmitAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<PurchaseOrderResponse> SubmitAsync(Guid id, PurchaseOrderVersionInput input, CancellationToken cancellationToken)
     {
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         EnsureDraft(purchaseOrder);
+        if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
         if (purchaseOrder.Lines.Count == 0)
         {
             throw new PurchaseOrderSubmissionInvalidException("A purchase order requires at least one line before submission.");

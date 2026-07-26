@@ -34,4 +34,5 @@ public static class ApiErrorCodes
     public const string PurchaseOrderCatalogueInvalid = "purchase_order.catalogue_invalid";
     public const string PurchaseOrderMinimumOrderQuantity = "purchase_order.minimum_order_quantity";
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
+    public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
 }

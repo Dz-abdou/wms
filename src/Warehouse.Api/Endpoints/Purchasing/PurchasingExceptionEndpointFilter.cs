@@ -41,6 +41,10 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Purchase order cannot be changed.", exception.Message, ApiErrorCodes.PurchaseOrderImmutable);
         }
+        catch (PurchaseOrderConcurrencyException exception)
+        {
+            return Problem(StatusCodes.Status409Conflict, "Purchase order was updated.", exception.Message, ApiErrorCodes.PurchaseOrderConcurrencyConflict);
+        }
         catch (PurchaseOrderMinimumOrderQuantityException exception)
         {
             return ValidationProblem(

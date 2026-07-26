@@ -180,7 +180,7 @@ export function useUpdatePurchaseOrder(id: string) {
 export function useSubmitPurchaseOrder(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => submitPurchaseOrder(id),
+    mutationFn: (version: number) => submitPurchaseOrder(id, version),
     onSuccess: (order) => refreshOrder(queryClient, order),
   });
 }

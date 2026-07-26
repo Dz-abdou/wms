@@ -40,5 +40,9 @@ public static class PurchaseOrderEndpoints
         return problem ?? Results.Ok(await service.UpdateAsync(id, input, cancellationToken));
     }
 
-    private static async Task<IResult> SubmitAsync(Guid id, PurchaseOrderService service, CancellationToken cancellationToken) => Results.Ok(await service.SubmitAsync(id, cancellationToken));
+    private static async Task<IResult> SubmitAsync(Guid id, PurchaseOrderVersionInput input, IValidator<PurchaseOrderVersionInput> validator, PurchaseOrderService service, CancellationToken cancellationToken)
+    {
+        var problem = await validator.ValidateRequestAsync(input, cancellationToken);
+        return problem ?? Results.Ok(await service.SubmitAsync(id, input, cancellationToken));
+    }
 }

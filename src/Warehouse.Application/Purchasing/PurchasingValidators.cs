@@ -73,3 +73,9 @@ public sealed class PurchaseOrderLineInputValidator : AbstractValidator<Purchase
         RuleFor(input => input.Quantity).GreaterThan(0m).WithErrorCode(ApiErrorCodes.ValidationInvalid);
     }
 }
+
+public sealed class PurchaseOrderVersionInputValidator : AbstractValidator<PurchaseOrderVersionInput>
+{
+    public PurchaseOrderVersionInputValidator() =>
+        RuleFor(input => input.Version).GreaterThanOrEqualTo(0).WithErrorCode(ApiErrorCodes.ValidationInvalid);
+}

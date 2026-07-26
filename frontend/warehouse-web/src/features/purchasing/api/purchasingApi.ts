@@ -158,10 +158,10 @@ export function updatePurchaseOrder(id: string, input: PurchaseOrderInput) {
   );
 }
 
-export function submitPurchaseOrder(id: string) {
+export function submitPurchaseOrder(id: string, version: number) {
   return requestJson<PurchaseOrder>(
     purchasingApiPaths.purchaseOrderSubmit(id),
-    jsonRequest("PATCH", {}),
+    jsonRequest("PATCH", { version }),
   );
 }
 
