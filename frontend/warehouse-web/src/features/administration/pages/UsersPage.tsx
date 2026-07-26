@@ -10,7 +10,6 @@ import {
   Spin,
   Table,
   Tag,
-  Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
@@ -26,6 +25,8 @@ import {
   useDeleteAdministrationUser,
   useUpdateAdministrationUser,
 } from "../api/useAdministration";
+import { ListPageLayout } from "../../../shared/components/PageLayouts";
+import { ModalFormActions } from "../../../shared/components/ModalFormActions";
 
 export function UsersPage() {
   const { t } = useTranslation();
@@ -102,17 +103,8 @@ export function UsersPage() {
   }
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>
-            {t("administration.users.title")}
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("administration.users.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button
+    <ListPageLayout
+      actions={<Button
           onClick={() => {
             setEditingUser(undefined);
             setIsModalOpen(true);
@@ -120,8 +112,10 @@ export function UsersPage() {
           type="primary"
         >
           {t("administration.users.new")}
-        </Button>
-      </div>
+        </Button>}
+      subtitle={t("administration.users.subtitle")}
+      title={t("administration.users.title")}
+    >
 
       {isLoading ? <Spin className="page-spinner" size="large" /> : null}
       {error ? (
@@ -149,18 +143,20 @@ export function UsersPage() {
       <UserModal
         error={createUser.error ?? updateUser.error}
         isEditing={Boolean(editingUser)}
+        isSubmitting={createUser.isPending || updateUser.isPending}
         onCancel={closeModal}
         onSubmit={saveUser}
         open={isModalOpen}
         user={editingUser}
       />
-    </section>
+    </ListPageLayout>
   );
 }
 
 type UserModalProps = {
   error: unknown;
   isEditing: boolean;
+  isSubmitting: boolean;
   onCancel: () => void;
   onSubmit: (values: CreateUserValues) => Promise<void>;
   open: boolean;
@@ -170,6 +166,7 @@ type UserModalProps = {
 function UserModal({
   error,
   isEditing,
+  isSubmitting,
   onCancel,
   onSubmit,
   open,
@@ -234,12 +231,12 @@ function UserModal({
             <Input.Password />
           </Form.Item>
         ) : null}
-        <Space>
-          <Button htmlType="submit" type="primary">
-            {t("administration.users.save")}
-          </Button>
-          <Button onClick={onCancel}>{t("administration.users.cancel")}</Button>
-        </Space>
+        <ModalFormActions
+          cancelLabel={t("administration.users.cancel")}
+          isSubmitting={isSubmitting}
+          onCancel={onCancel}
+          submitLabel={t("administration.users.save")}
+        />
       </Form>
     </Modal>
   );

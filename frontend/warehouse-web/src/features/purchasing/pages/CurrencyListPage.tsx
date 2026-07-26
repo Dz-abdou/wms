@@ -1,12 +1,13 @@
 import {
+  Alert,
   Button,
+  Empty,
   Form,
   Input,
   InputNumber,
   Modal,
   Table,
   Tag,
-  Typography,
 } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,6 +21,9 @@ import {
   useUpdateCurrency,
 } from "../api/usePurchasing";
 import type { Currency, CurrencyInput } from "../api/purchasingTypes";
+import { getErrorMessage } from "../../../shared/errors/problemDetails";
+import { ListPageLayout } from "../../../shared/components/PageLayouts";
+import { ModalFormActions } from "../../../shared/components/ModalFormActions";
 
 export function CurrencyListPage() {
   const { t } = useTranslation();
@@ -51,24 +55,20 @@ export function CurrencyListPage() {
     }
   }
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>
-            {t("masterData.currencies.title")}
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("masterData.currencies.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary" onClick={() => setEditing({} as Currency)}>
+    <ListPageLayout
+      actions={<Button type="primary" onClick={() => setEditing({} as Currency)}>
           {t("masterData.new")}
-        </Button>
-      </div>
-      <Table
+        </Button>}
+      subtitle={t("masterData.currencies.subtitle")}
+      title={t("masterData.currencies.title")}
+    >
+      {currencies.error ? <Alert className="page-alert" message={getErrorMessage(t, currencies.error, "masterData.currencies.errors.save")} showIcon type="error" /> : null}
+      {currencies.isLoading ? <Empty className="page-empty" description={t("masterData.currencies.loading")} /> : null}
+      {!currencies.isLoading && currencies.data?.items.length === 0 ? <Empty className="page-empty" description={t("masterData.currencies.empty")} /> : null}
+      {currencies.data && currencies.data.items.length > 0 ? <Table
         rowKey="id"
         loading={currencies.isLoading}
-        dataSource={currencies.data?.items}
+        dataSource={currencies.data.items}
         pagination={false}
         columns={[
           { title: t("masterData.code"), dataIndex: "code" },
@@ -120,7 +120,7 @@ export function CurrencyListPage() {
             ),
           },
         ]}
-      />
+      /> : null}
       <Modal
         open={editing !== undefined}
         footer={null}
@@ -131,19 +131,22 @@ export function CurrencyListPage() {
       >
         <CurrencyForm
           initial={editing?.id ? editing : undefined}
+          onCancel={() => setEditing(undefined)}
           onSubmit={submit}
           loading={create.isPending || update.isPending}
         />
       </Modal>
-    </section>
+    </ListPageLayout>
   );
 }
 function CurrencyForm({
   initial,
+  onCancel,
   onSubmit,
   loading,
 }: {
   initial?: Currency;
+  onCancel: () => void;
   onSubmit: (values: CurrencyInput) => Promise<void>;
   loading: boolean;
 }) {
@@ -189,9 +192,12 @@ function CurrencyForm({
       >
         <InputNumber min={0} max={4} />
       </Form.Item>
-      <Button htmlType="submit" loading={loading} type="primary">
-        {t("masterData.save")}
-      </Button>
+      <ModalFormActions
+        cancelLabel={t("ui.cancel")}
+        isSubmitting={loading}
+        onCancel={onCancel}
+        submitLabel={t("masterData.save")}
+      />
     </Form>
   );
 }

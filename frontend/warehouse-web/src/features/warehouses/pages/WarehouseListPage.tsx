@@ -1,7 +1,6 @@
-import { Alert, Button, Empty, Spin, Table, Typography } from "antd";
+import { Alert, Empty, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { useListPagination } from "../../../shared/pagination/pagination";
@@ -9,6 +8,11 @@ import { ProductStatusTag } from "../../products/components/ProductStatusTag";
 import { useWarehouses } from "../api/useWarehouses";
 import type { Warehouse } from "../api/warehouseTypes";
 import { warehouseRoutes } from "../warehouseConstants";
+import {
+  ListPageLayout,
+  ReturnAwareLink,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
 
 export function WarehouseListPage() {
   const pagination = useListPagination();
@@ -32,9 +36,9 @@ export function WarehouseListPage() {
         title: t("warehouses.table.actions"),
         key: "actions",
         render: (_, warehouse) => (
-          <Link to={warehouseRoutes.detail(warehouse.id)}>
+          <ReturnAwareLink to={warehouseRoutes.detail(warehouse.id)}>
             {t("warehouses.view")}
-          </Link>
+          </ReturnAwareLink>
         ),
       },
     ],
@@ -42,18 +46,15 @@ export function WarehouseListPage() {
   );
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>{t("warehouses.title")}</Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("warehouses.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary">
-          <Link to={warehouseRoutes.create}>{t("warehouses.new")}</Link>
-        </Button>
-      </div>
+    <ListPageLayout
+      actions={
+        <RouteActionButton to={warehouseRoutes.create} type="primary">
+          {t("warehouses.new")}
+        </RouteActionButton>
+      }
+      subtitle={t("warehouses.subtitle")}
+      title={t("warehouses.title")}
+    >
 
       {isLoading ? (
         <Spin
@@ -82,6 +83,6 @@ export function WarehouseListPage() {
           rowKey="id"
         />
       ) : null}
-    </section>
+    </ListPageLayout>
   );
 }

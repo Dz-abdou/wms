@@ -1,6 +1,6 @@
-import { Alert, Button, Descriptions, Popconfirm, Space, Spin, Table, Tag, Typography } from "antd";
+import { Alert, Button, Descriptions, Popconfirm, Spin, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { formatDateTime } from "../../../shared/formatting/dateTime";
@@ -8,9 +8,15 @@ import { toAppLanguage } from "../../../shared/i18n/constants";
 import { usePurchaseOrder, useSubmitPurchaseOrder } from "../api/usePurchasing";
 import type { PurchaseOrderLine } from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
+import {
+  DetailPageLayout,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 
 export function PurchaseOrderDetailPage() {
   const { id } = useParams(); const { i18n, t } = useTranslation(); const orderQuery = usePurchaseOrder(id); const submit = useSubmitPurchaseOrder(id ?? "");
+  const { returnTo } = useReturnDestination(purchasingRoutes.orders);
   if (orderQuery.isLoading) return <Spin className="page-spinner" size="large" tip={t("purchasing.orders.loadingOne")} />;
   if (orderQuery.error || !orderQuery.data || !id) return <Alert message={getErrorMessage(t, orderQuery.error, "purchasing.orders.errors.load")} showIcon type="error" />;
   const order = orderQuery.data;
@@ -19,5 +25,5 @@ export function PurchaseOrderDetailPage() {
     { title: t("purchasing.orders.quantity"), key: "quantity", render: (_, line) => `${line.quantity} ${line.purchaseUnitOfMeasure}` },
     { title: t("purchasing.orders.unitPrice"), key: "unitPrice", render: (_, line) => `${line.unitPrice} ${line.currencyCode}` },
   ];
-  return <section><div className="page-heading"><Typography.Title level={2}>{t("purchasing.orders.detailTitle")}</Typography.Title><Space>{order.status === 0 ? <><Button><Link to={purchasingRoutes.orderEdit(id)}>{t("purchasing.edit")}</Link></Button><Popconfirm cancelText={t("purchasing.cancel")} description={t("purchasing.orders.submitDescription")} okText={t("purchasing.orders.submit")} onConfirm={() => submit.mutateAsync()} title={t("purchasing.orders.submitTitle")}><Button loading={submit.isPending} type="primary">{t("purchasing.orders.submit")}</Button></Popconfirm></> : null}</Space></div>{submit.error ? <Alert className="page-alert" message={getErrorMessage(t, submit.error, "purchasing.orders.errors.submit")} showIcon type="error" /> : null}<Descriptions bordered column={1}><Descriptions.Item label={t("purchasing.orders.supplier")}>{order.supplierCode} — {order.supplierName}</Descriptions.Item><Descriptions.Item label={t("purchasing.orders.status")}><Tag color={order.status === 0 ? "gold" : "green"}>{t(order.status === 0 ? "purchasing.status.draft" : "purchasing.status.submitted")}</Tag></Descriptions.Item><Descriptions.Item label={t("purchasing.orders.created")}>{formatDateTime(order.createdAtUtc, toAppLanguage(i18n.resolvedLanguage))}</Descriptions.Item><Descriptions.Item label={t("purchasing.orders.updated")}>{formatDateTime(order.updatedAtUtc, toAppLanguage(i18n.resolvedLanguage))}</Descriptions.Item></Descriptions><Typography.Title level={3}>{t("purchasing.orders.lines")}</Typography.Title><Table columns={columns} dataSource={order.lines} pagination={false} rowKey="id" /></section>;
+  return <DetailPageLayout actions={order.status === 0 ? <><RouteActionButton to={purchasingRoutes.orderEdit(id)}>{t("purchasing.edit")}</RouteActionButton><Popconfirm cancelText={t("purchasing.cancel")} description={t("purchasing.orders.submitDescription")} okText={t("purchasing.orders.submit")} onConfirm={() => submit.mutateAsync()} title={t("purchasing.orders.submitTitle")}><Button loading={submit.isPending} type="primary">{t("purchasing.orders.submit")}</Button></Popconfirm></> : undefined} backLabel={t("purchasing.orders.title")} backTo={returnTo} title={t("purchasing.orders.detailTitle")}>{submit.error ? <Alert className="page-alert" message={getErrorMessage(t, submit.error, "purchasing.orders.errors.submit")} showIcon type="error" /> : null}<Descriptions bordered column={1}><Descriptions.Item label={t("purchasing.orders.supplier")}>{order.supplierCode} — {order.supplierName}</Descriptions.Item><Descriptions.Item label={t("purchasing.orders.status")}><Tag color={order.status === 0 ? "gold" : "green"}>{t(order.status === 0 ? "purchasing.status.draft" : "purchasing.status.submitted")}</Tag></Descriptions.Item><Descriptions.Item label={t("purchasing.orders.created")}>{formatDateTime(order.createdAtUtc, toAppLanguage(i18n.resolvedLanguage))}</Descriptions.Item><Descriptions.Item label={t("purchasing.orders.updated")}>{formatDateTime(order.updatedAtUtc, toAppLanguage(i18n.resolvedLanguage))}</Descriptions.Item></Descriptions><div className="page-section"><Typography.Title level={3}>{t("purchasing.orders.lines")}</Typography.Title><Table columns={columns} dataSource={order.lines} pagination={false} rowKey="id" /></div></DetailPageLayout>;
 }

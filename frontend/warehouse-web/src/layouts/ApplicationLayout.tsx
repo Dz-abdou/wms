@@ -91,20 +91,26 @@ export function ApplicationLayout() {
             ...(isAdministrator
               ? [
                   {
-                    key: "users",
-                    label: (
-                      <Link to={administrationRoutes.users}>
-                        {t("navigation.users")}
-                      </Link>
-                    ),
-                  },
-                  {
-                    key: "roles",
-                    label: (
-                      <Link to={administrationRoutes.roles}>
-                        {t("navigation.roles")}
-                      </Link>
-                    ),
+                    key: "administration",
+                    label: t("navigation.administration"),
+                    children: [
+                      {
+                        key: "users",
+                        label: (
+                          <Link to={administrationRoutes.users}>
+                            {t("navigation.users")}
+                          </Link>
+                        ),
+                      },
+                      {
+                        key: "roles",
+                        label: (
+                          <Link to={administrationRoutes.roles}>
+                            {t("navigation.roles")}
+                          </Link>
+                        ),
+                      },
+                    ],
                   },
                 ]
               : []),

@@ -5,6 +5,13 @@ body {
   background: #f5f7fa;
 }
 
+:root {
+  --page-content-width: 1200px;
+  --page-space: 24px;
+  --section-space: 24px;
+  --border-subtle: #f0f0f0;
+}
+
 .application-layout {
   min-height: 100vh;
 }
@@ -31,7 +38,7 @@ body {
 }
 
 .application-content {
-  max-width: 1200px;
+  max-width: var(--page-content-width);
   width: 100%;
   margin: 0 auto;
   padding: 32px 24px;
@@ -47,6 +54,24 @@ body {
 
 .page-heading h2 {
   margin-bottom: 4px;
+}
+
+.page-back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.page-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.page-section {
+  margin-top: var(--section-space);
+}
+
+.page-filter-toolbar {
+  margin-bottom: var(--section-space);
 }
 
 
@@ -88,6 +113,12 @@ body {
   margin-top: 32px;
   padding-top: 16px;
   border-top: 1px solid #f0f0f0;
+}
+
+.modal-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
 }
 
 .editable-table-add-row .ant-table-cell {

@@ -1,5 +1,5 @@
-import { Alert, Button, Descriptions, Popconfirm, Space, Spin, Typography } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { Alert, Button, Descriptions, Popconfirm, Spin } from "antd";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ProductStatusTag } from "../../products/components/ProductStatusTag";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
@@ -7,12 +7,18 @@ import { formatDateTime } from "../../../shared/formatting/dateTime";
 import { toAppLanguage } from "../../../shared/i18n/constants";
 import { useSetSupplierStatus, useSupplier } from "../api/useSuppliers";
 import { supplierRoutes } from "../supplierConstants";
+import {
+  DetailPageLayout,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 
 export function SupplierDetailPage() {
   const { id } = useParams();
   const { i18n, t } = useTranslation();
   const supplierQuery = useSupplier(id);
   const setStatus = useSetSupplierStatus(id ?? "");
+  const { returnTo } = useReturnDestination(supplierRoutes.list);
 
   if (supplierQuery.isLoading) {
     return <Spin className="page-spinner" size="large" tip={t("suppliers.loadingOne")} />;
@@ -27,13 +33,12 @@ export function SupplierDetailPage() {
   const missingValue = t("suppliers.missingValue");
 
   return (
-    <section>
-      <div className="page-heading">
-        <Typography.Title level={2}>{supplier.name}</Typography.Title>
-        <Space>
-          <Button>
-            <Link to={supplierRoutes.edit(id)}>{t("suppliers.edit")}</Link>
-          </Button>
+    <DetailPageLayout
+      actions={
+        <>
+          <RouteActionButton to={supplierRoutes.edit(id)}>
+            {t("suppliers.edit")}
+          </RouteActionButton>
           <Popconfirm
             cancelText={t("suppliers.cancel")}
             description={t("suppliers.confirmStatusDescription", {
@@ -47,8 +52,12 @@ export function SupplierDetailPage() {
               {action}
             </Button>
           </Popconfirm>
-        </Space>
-      </div>
+        </>
+      }
+      backLabel={t("suppliers.title")}
+      backTo={returnTo}
+      title={supplier.name}
+    >
       {setStatus.error ? (
         <Alert
           className="page-alert"
@@ -71,6 +80,6 @@ export function SupplierDetailPage() {
           {formatDateTime(supplier.updatedAtUtc, toAppLanguage(i18n.resolvedLanguage))}
         </Descriptions.Item>
       </Descriptions>
-    </section>
+    </DetailPageLayout>
   );
 }

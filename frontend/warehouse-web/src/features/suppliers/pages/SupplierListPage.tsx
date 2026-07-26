@@ -1,7 +1,6 @@
-import { Alert, Button, Empty, Spin, Table, Typography } from "antd";
+import { Alert, Empty, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ProductStatusTag } from "../../products/components/ProductStatusTag";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
@@ -9,6 +8,11 @@ import { useListPagination } from "../../../shared/pagination/pagination";
 import { useSuppliers } from "../api/useSuppliers";
 import type { Supplier } from "../api/supplierTypes";
 import { supplierRoutes } from "../supplierConstants";
+import {
+  ListPageLayout,
+  ReturnAwareLink,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
 
 export function SupplierListPage() {
   const pagination = useListPagination();
@@ -32,9 +36,9 @@ export function SupplierListPage() {
         title: t("suppliers.table.actions"),
         key: "actions",
         render: (_, supplier) => (
-          <Link to={supplierRoutes.detail(supplier.id)}>
+          <ReturnAwareLink to={supplierRoutes.detail(supplier.id)}>
             {t("suppliers.view")}
-          </Link>
+          </ReturnAwareLink>
         ),
       },
     ],
@@ -42,18 +46,15 @@ export function SupplierListPage() {
   );
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>{t("suppliers.title")}</Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("suppliers.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary">
-          <Link to={supplierRoutes.create}>{t("suppliers.new")}</Link>
-        </Button>
-      </div>
+    <ListPageLayout
+      actions={
+        <RouteActionButton to={supplierRoutes.create} type="primary">
+          {t("suppliers.new")}
+        </RouteActionButton>
+      }
+      subtitle={t("suppliers.subtitle")}
+      title={t("suppliers.title")}
+    >
 
       {isLoading ? (
         <Spin
@@ -82,6 +83,6 @@ export function SupplierListPage() {
           rowKey="id"
         />
       ) : null}
-    </section>
+    </ListPageLayout>
   );
 }

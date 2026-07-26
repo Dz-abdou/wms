@@ -1,4 +1,4 @@
-import { Alert, Card, Spin, Typography } from "antd";
+import { Alert, Card, Spin } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
@@ -6,6 +6,8 @@ import type { ProductFormValues } from "../api/productTypes";
 import { useProduct, useUpdateProduct } from "../api/useProducts";
 import { ProductForm } from "../components/ProductForm";
 import { productRoutes } from "../productConstants";
+import { FormPageLayout } from "../../../shared/components/PageLayouts";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 
 export function ProductEditPage() {
   const { id } = useParams();
@@ -13,6 +15,7 @@ export function ProductEditPage() {
   const { t } = useTranslation();
   const productQuery = useProduct(id);
   const updateProduct = useUpdateProduct(id ?? "");
+  const { goBack, returnTo } = useReturnDestination(productRoutes.detail(id ?? ""));
 
   if (productQuery.isLoading) {
     return (
@@ -42,8 +45,11 @@ export function ProductEditPage() {
   }
 
   return (
-    <section>
-      <Typography.Title level={2}>{t("products.editTitle")}</Typography.Title>
+    <FormPageLayout
+      backLabel={productQuery.data.name}
+      backTo={returnTo}
+      title={t("products.editTitle")}
+    >
       <Card>
         <ProductForm
           cancelLabel={t("products.cancel")}
@@ -57,11 +63,11 @@ export function ProductEditPage() {
             measurements: productQuery.data.measurements ?? undefined,
           }}
           isSubmitting={updateProduct.isPending}
-          onCancel={() => navigate(productRoutes.detail(productId))}
+          onCancel={goBack}
           onSubmit={handleSubmit}
           submitLabel={t("products.save")}
         />
       </Card>
-    </section>
+    </FormPageLayout>
   );
 }

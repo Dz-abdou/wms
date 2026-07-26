@@ -2,6 +2,15 @@
   "app": {
     "brand": "Warehouse Management System"
   },
+  "ui": {
+    "backTo": "Back to {{destination}}",
+    "cancel": "Cancel",
+    "save": "Save",
+    "discardChangesTitle": "Discard unsaved changes?",
+    "discardChangesDescription": "Your unsaved changes will be lost.",
+    "discard": "Discard changes",
+    "stay": "Keep editing"
+  },
   "navigation": {
     "home": "Home",
     "products": "Products",
@@ -17,7 +26,8 @@
     "masterData": "Master data",
     "categories": "Product categories",
     "currencies": "Currencies",
-    "inbound": "Inbound"
+    "inbound": "Inbound",
+    "administration": "Administration"
   },
   "language": {
     "label": "Language",
@@ -349,12 +359,16 @@
       "title": "Currencies",
       "subtitle": "Configure currencies used by purchasing.",
       "new": "New currency",
+      "loading": "Loading currencies…",
+      "empty": "No currencies exist yet.",
       "errors": { "save": "The currency could not be saved." }
     },
     "categories": {
       "title": "Product categories",
       "subtitle": "Configure the product catalogue hierarchy.",
       "new": "New category",
+      "loading": "Loading product categories…",
+      "empty": "No product categories exist yet.",
       "edit": "Edit category",
       "parent": "Parent category",
       "parentHelp": "Optional. Use it only to place this category under a broader category.",
@@ -431,6 +445,7 @@
     "historyTitle": "Movement history",
     "historySubtitle": "Investigate stock changes for a product at a warehouse.",
     "newAdjustment": "New adjustment",
+    "recordAdjustment": "Record adjustment",
     "view": "View",
     "viewHistory": "View history",
     "cancel": "Cancel",

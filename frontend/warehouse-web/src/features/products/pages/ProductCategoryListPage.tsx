@@ -1,12 +1,12 @@
 import {
   Alert,
   Button,
+  Empty,
   Form,
   Input,
   Modal,
   Select,
   Table,
-  Typography,
 } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,6 +19,8 @@ import {
   useUpdateProductCategory,
 } from "../api/useProductCategories";
 import type { ProductCategory } from "../api/productTypes";
+import { ListPageLayout } from "../../../shared/components/PageLayouts";
+import { ModalFormActions } from "../../../shared/components/ModalFormActions";
 
 type Values = Pick<ProductCategory, "code" | "name" | "parentCategoryId">;
 export function ProductCategoryListPage() {
@@ -42,23 +44,18 @@ export function ProductCategoryListPage() {
   }
   const error = categories.error ?? create.error ?? update.error;
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>
-            {t("masterData.categories.title")}
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("masterData.categories.subtitle")}
-          </Typography.Paragraph>
-        </div>
+    <ListPageLayout
+      actions={
         <Button
           type="primary"
           onClick={() => setEditing({} as ProductCategory)}
         >
           {t("masterData.new")}
         </Button>
-      </div>
+      }
+      subtitle={t("masterData.categories.subtitle")}
+      title={t("masterData.categories.title")}
+    >
       {error ? (
         <Alert
           className="page-alert"
@@ -71,10 +68,12 @@ export function ProductCategoryListPage() {
           type="error"
         />
       ) : null}
-      <Table
+      {categories.isLoading ? <Empty className="page-empty" description={t("masterData.categories.loading")} /> : null}
+      {!categories.isLoading && categories.data?.items.length === 0 ? <Empty className="page-empty" description={t("masterData.categories.empty")} /> : null}
+      {categories.data && categories.data.items.length > 0 ? <Table
         rowKey="id"
         loading={categories.isLoading}
-        dataSource={categories.data?.items}
+        dataSource={categories.data.items}
         pagination={false}
         columns={[
           { title: t("masterData.code"), dataIndex: "code" },
@@ -88,7 +87,7 @@ export function ProductCategoryListPage() {
             ),
           },
         ]}
-      />
+      /> : null}
       <Modal
         destroyOnHidden
         open={editing !== undefined}
@@ -145,15 +144,14 @@ export function ProductCategoryListPage() {
                 }))}
             />
           </Form.Item>
-          <Button
-            htmlType="submit"
-            loading={create.isPending || update.isPending}
-            type="primary"
-          >
-            {t("masterData.save")}
-          </Button>
+          <ModalFormActions
+            cancelLabel={t("ui.cancel")}
+            isSubmitting={create.isPending || update.isPending}
+            onCancel={() => setEditing(undefined)}
+            submitLabel={t("masterData.save")}
+          />
         </Form>
       </Modal>
-    </section>
+    </ListPageLayout>
   );
 }

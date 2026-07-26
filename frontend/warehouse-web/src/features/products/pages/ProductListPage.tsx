@@ -1,7 +1,6 @@
-import { Alert, Button, Empty, Input, Spin, Table, Typography } from "antd";
+import { Alert, Empty, Input, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { Product } from "../api/productTypes";
 import { useProducts } from "../api/useProducts";
@@ -9,6 +8,11 @@ import { ProductStatusTag } from "../components/ProductStatusTag";
 import { productRoutes } from "../productConstants";
 import { useListPagination } from "../../../shared/pagination/pagination";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
+import {
+  ListPageLayout,
+  ReturnAwareLink,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
 
 export function ProductListPage() {
   const pagination = useListPagination();
@@ -33,9 +37,9 @@ export function ProductListPage() {
         title: t("products.table.actions"),
         key: "actions",
         render: (_, product) => (
-          <Link to={productRoutes.detail(product.id)}>
+          <ReturnAwareLink to={productRoutes.detail(product.id)}>
             {t("products.view")}
-          </Link>
+          </ReturnAwareLink>
         ),
       },
     ],
@@ -43,28 +47,27 @@ export function ProductListPage() {
   );
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>{t("products.title")}</Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("products.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary">
-          <Link to={productRoutes.create}>{t("products.new")}</Link>
-        </Button>
-      </div>
+    <ListPageLayout
+      actions={
+        <RouteActionButton to={productRoutes.create} type="primary">
+          {t("products.new")}
+        </RouteActionButton>
+      }
+      subtitle={t("products.subtitle")}
+      title={t("products.title")}
+    >
 
-      <Input.Search
-        allowClear
-        className="product-search"
-        onSearch={(value) => {
-          pagination.resetPage();
-          setSearch(value);
-        }}
-        placeholder={t("products.searchPlaceholder")}
-      />
+      <div className="page-filter-toolbar">
+        <Input.Search
+          allowClear
+          className="product-search"
+          onSearch={(value) => {
+            pagination.resetPage();
+            setSearch(value);
+          }}
+          placeholder={t("products.searchPlaceholder")}
+        />
+      </div>
 
       {isLoading ? (
         <Spin
@@ -93,6 +96,6 @@ export function ProductListPage() {
           rowKey="id"
         />
       ) : null}
-    </section>
+    </ListPageLayout>
   );
 }

@@ -2,6 +2,15 @@
   "app": {
     "brand": "Système de gestion d’entrepôt"
   },
+  "ui": {
+    "backTo": "Retour à {{destination}}",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "discardChangesTitle": "Annuler les modifications non enregistrées ?",
+    "discardChangesDescription": "Vos modifications non enregistrées seront perdues.",
+    "discard": "Annuler les modifications",
+    "stay": "Continuer la modification"
+  },
   "navigation": {
     "home": "Accueil",
     "products": "Produits",
@@ -17,7 +26,8 @@
     "masterData": "Données de base",
     "categories": "Catégories de produits",
     "currencies": "Devises",
-    "inbound": "Réception"
+    "inbound": "Réception",
+    "administration": "Administration"
   },
   "language": {
     "label": "Langue",
@@ -349,12 +359,16 @@
       "title": "Devises",
       "subtitle": "Configurez les devises utilisées pour les achats.",
       "new": "Nouvelle devise",
+      "loading": "Chargement des devises…",
+      "empty": "Aucune devise n’existe encore.",
       "errors": { "save": "La devise n’a pas pu être enregistrée." }
     },
     "categories": {
       "title": "Catégories de produits",
       "subtitle": "Configurez la hiérarchie du catalogue produits.",
       "new": "Nouvelle catégorie",
+      "loading": "Chargement des catégories de produits…",
+      "empty": "Aucune catégorie de produit n’existe encore.",
       "edit": "Modifier la catégorie",
       "parent": "Catégorie parente",
       "parentHelp": "Facultatif. Utilisez-le seulement pour placer cette catégorie sous une catégorie plus large.",
@@ -433,6 +447,7 @@
     "historyTitle": "Historique des mouvements",
     "historySubtitle": "Analysez les changements de stock pour un produit dans un entrepôt.",
     "newAdjustment": "Nouvel ajustement",
+    "recordAdjustment": "Enregistrer un ajustement",
     "view": "Voir",
     "viewHistory": "Voir l’historique",
     "cancel": "Annuler",
