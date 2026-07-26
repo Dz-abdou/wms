@@ -17,8 +17,13 @@ Before an agent implements a phase, it must compare the relevant priority below 
 1. A submitted purchase order is an operational record: its commercial and quantity terms must remain historically correct even when catalogue data changes later.
 2. One purchase order has one destination warehouse and one currency in the first version.
 3. Supplier catalogue data is current purchasing guidance; purchase-order lines snapshot the terms actually ordered.
-4. Inventory movements are an append-only operational ledger. Each movement carries a source document and reason.
-5. Product master data stays pragmatic. Lot, expiry, serial, and bin controls are opt-in business capabilities rather than defaults.
+4. Mutable operational documents use optimistic concurrency by default. A
+   version token prevents stale draft writes from silently overwriting a newer
+   edit; the API returns a stable conflict code and the UI guides the user to
+   refresh and review. Pessimistic locking requires a documented operational
+   reason and a bounded lock lifecycle.
+5. Inventory movements are an append-only operational ledger. Each movement carries a source document and reason.
+6. Product master data stays pragmatic. Lot, expiry, serial, and bin controls are opt-in business capabilities rather than defaults.
 6. A business document is entered as a header plus a line table, not as a stack of repeated cards or form rows. The header owns shared fields; each line exposes only the inputs and operational context needed for that line.
 7. A multi-line inventory action is all-or-nothing. Its API validates all lines and writes all balances/movements in one database transaction; the frontend must never emulate a batch operation with sequential single-line requests.
 

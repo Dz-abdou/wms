@@ -15,6 +15,11 @@ The specification must include:
 - Acceptance criteria
 - Required tests
 - Expected database changes
+- Concurrency policy for every mutable transactional business object. Unless a
+  documented workflow genuinely requires a short-lived lock, use optimistic
+  concurrency: persist a version token, require it on mutation requests, return
+  a stable conflict code for stale writes, preserve the user's unsaved values in
+  the UI, and cover the conflict path with integration and frontend tests.
 
 ## 2. Ask Codex to Inspect
 
