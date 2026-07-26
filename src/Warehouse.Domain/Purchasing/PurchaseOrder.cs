@@ -5,6 +5,7 @@ namespace Warehouse.Domain.Purchasing;
 public sealed class PurchaseOrder : PersistentEntity
 {
     private readonly List<PurchaseOrderLine> lines = [];
+    private readonly List<PurchaseOrderStatusHistory> statusHistory = [];
 
     private PurchaseOrder(
         Guid id,
@@ -21,8 +22,19 @@ public sealed class PurchaseOrder : PersistentEntity
     }
 
     public Guid SupplierId { get; private set; }
+    public string? Number { get; private set; }
+    public Guid? DestinationWarehouseId { get; private set; }
+    public string? CurrencyCode { get; private set; }
+    public DateOnly? OrderDate { get; private set; }
+    public DateOnly? ExpectedDeliveryDate { get; private set; }
+    public Guid? BuyerUserId { get; private set; }
+    public string? SupplierReference { get; private set; }
+    public string? Notes { get; private set; }
     public PurchaseOrderStatus Status { get; private set; }
+    public DateTime? SubmittedAtUtc { get; private set; }
+    public int Version { get; private set; }
     public IReadOnlyCollection<PurchaseOrderLine> Lines => lines;
+    public IReadOnlyCollection<PurchaseOrderStatusHistory> StatusHistory => statusHistory;
 
     public static PurchaseOrder Create(Guid supplierId, DateTime createdAtUtc, Guid? actorUserId = null)
     {
@@ -35,6 +47,55 @@ public sealed class PurchaseOrder : PersistentEntity
             createdAtUtc,
             actorUserId,
             actorUserId);
+    }
+
+    public static PurchaseOrder Create(
+        string number,
+        Guid supplierId,
+        Guid destinationWarehouseId,
+        string currencyCode,
+        DateOnly orderDate,
+        DateOnly? expectedDeliveryDate,
+        Guid buyerUserId,
+        string? supplierReference,
+        string? notes,
+        DateTime createdAtUtc)
+    {
+        var order = Create(supplierId, createdAtUtc, buyerUserId);
+        order.Number = NormalizeRequired(number, PurchaseOrderRules.MaxNumberLength, nameof(number)).ToUpperInvariant();
+        order.DestinationWarehouseId = RequireId(destinationWarehouseId, nameof(destinationWarehouseId));
+        order.CurrencyCode = NormalizeCurrencyCode(currencyCode);
+        order.OrderDate = orderDate;
+        order.ExpectedDeliveryDate = ValidateExpectedDeliveryDate(orderDate, expectedDeliveryDate);
+        order.BuyerUserId = RequireId(buyerUserId, nameof(buyerUserId));
+        order.SupplierReference = NormalizeOptional(supplierReference, PurchaseOrderRules.MaxSupplierReferenceLength, nameof(supplierReference));
+        order.Notes = NormalizeOptional(notes, PurchaseOrderRules.MaxNotesLength, nameof(notes));
+        order.statusHistory.Add(PurchaseOrderStatusHistory.Create(null, PurchaseOrderStatus.Draft, createdAtUtc, buyerUserId, null));
+        return order;
+    }
+
+    public void UpdateOperationalDetails(
+        Guid supplierId,
+        Guid destinationWarehouseId,
+        string currencyCode,
+        DateOnly orderDate,
+        DateOnly? expectedDeliveryDate,
+        string? supplierReference,
+        string? notes,
+        int version,
+        DateTime updatedAtUtc,
+        Guid actorUserId)
+    {
+        EnsureDraft();
+        if (Version != version) throw new InvalidOperationException("The purchase order was changed by another user.");
+        UpdateSupplier(supplierId, updatedAtUtc, actorUserId);
+        DestinationWarehouseId = RequireId(destinationWarehouseId, nameof(destinationWarehouseId));
+        CurrencyCode = NormalizeCurrencyCode(currencyCode);
+        OrderDate = orderDate;
+        ExpectedDeliveryDate = ValidateExpectedDeliveryDate(orderDate, expectedDeliveryDate);
+        SupplierReference = NormalizeOptional(supplierReference, PurchaseOrderRules.MaxSupplierReferenceLength, nameof(supplierReference));
+        Notes = NormalizeOptional(notes, PurchaseOrderRules.MaxNotesLength, nameof(notes));
+        Version++;
     }
 
     public void ReplaceLines(IEnumerable<PurchaseOrderLine> replacementLines, DateTime updatedAtUtc, Guid? actorUserId = null)
@@ -79,6 +140,12 @@ public sealed class PurchaseOrder : PersistentEntity
         }
 
         Status = PurchaseOrderStatus.Submitted;
+        SubmittedAtUtc = updatedAtUtc;
+        if (actorUserId is { } userId)
+        {
+            statusHistory.Add(PurchaseOrderStatusHistory.Create(PurchaseOrderStatus.Draft, Status, updatedAtUtc, userId, null));
+        }
+        Version++;
         UpdatedAtUtc = updatedAtUtc;
         SetUpdatedByUser(actorUserId);
     }
@@ -102,6 +169,52 @@ public sealed class PurchaseOrder : PersistentEntity
             throw new ArgumentException("Timestamps must be UTC.");
         }
     }
+
+    private static string NormalizeRequired(string? value, int maximumLength, string parameterName)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length > maximumLength)
+            throw new ArgumentException("A valid value is required.", parameterName);
+        return normalized;
+    }
+
+    private static string NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = NormalizeRequired(currencyCode, SupplierProductRules.CurrencyCodeLength, nameof(currencyCode));
+        if (normalized.Length != SupplierProductRules.CurrencyCodeLength || !normalized.All(char.IsAsciiLetter))
+            throw new ArgumentException("A valid currency code is required.", nameof(currencyCode));
+        return normalized.ToUpperInvariant();
+    }
+
+    private static DateOnly? ValidateExpectedDeliveryDate(DateOnly orderDate, DateOnly? expectedDeliveryDate) =>
+        expectedDeliveryDate is null || expectedDeliveryDate >= orderDate
+            ? expectedDeliveryDate
+            : throw new ArgumentOutOfRangeException(nameof(expectedDeliveryDate));
+
+    private static string? NormalizeOptional(string? value, int maximumLength, string parameterName)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized)) return null;
+        if (normalized.Length > maximumLength) throw new ArgumentOutOfRangeException(parameterName);
+        return normalized;
+    }
+}
+
+public sealed class PurchaseOrderStatusHistory
+{
+    private PurchaseOrderStatusHistory(Guid id, PurchaseOrderStatus? previousStatus, PurchaseOrderStatus status, DateTime changedAtUtc, Guid actorUserId, string? reason)
+    {
+        Id = id; PreviousStatus = previousStatus; Status = status; ChangedAtUtc = changedAtUtc; ActorUserId = actorUserId; Reason = reason;
+    }
+    public Guid Id { get; private set; }
+    public PurchaseOrderStatus? PreviousStatus { get; private set; }
+    public PurchaseOrderStatus Status { get; private set; }
+    public DateTime ChangedAtUtc { get; private set; }
+    public Guid ActorUserId { get; private set; }
+    public string? Reason { get; private set; }
+    public static PurchaseOrderStatusHistory Create(PurchaseOrderStatus? previousStatus, PurchaseOrderStatus status, DateTime changedAtUtc, Guid actorUserId, string? reason) =>
+        new(Guid.NewGuid(), previousStatus, status, changedAtUtc, RequireActor(actorUserId), reason);
+    private static Guid RequireActor(Guid actorUserId) => actorUserId != Guid.Empty ? actorUserId : throw new ArgumentException("An actor is required.", nameof(actorUserId));
 }
 
 public sealed class PurchaseOrderLine
