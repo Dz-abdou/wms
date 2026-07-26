@@ -290,7 +290,10 @@ export function PurchaseOrderForm({
         rules={[{ required: true, message: t("errors.validationFailed") }]}
         extra={t("purchasing.orders.currencyFromCatalogue")}
       >
-        <Input readOnly />
+        <Input
+          disabled
+          placeholder={t("purchasing.orders.currencyFromCatalogue")}
+        />
       </Form.Item>
       <Form.Item
         label={t("purchasing.orders.orderDate")}

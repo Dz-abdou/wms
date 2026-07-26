@@ -92,9 +92,9 @@ describe("PurchaseOrderForm", () => {
     );
     await user.click(await screen.findByText("SKU-1 — Product"));
 
-    expect(screen.getByRole("textbox", { name: "Currency" })).toHaveValue(
-      "DZD",
-    );
+    const currency = screen.getByRole("textbox", { name: "Currency" });
+    expect(currency).toHaveValue("DZD");
+    expect(currency).toBeDisabled();
   }, 20_000);
 
   it("only offers catalogue items in the first selected line currency", async () => {
