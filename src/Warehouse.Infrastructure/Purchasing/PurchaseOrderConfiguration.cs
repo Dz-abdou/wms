@@ -48,6 +48,7 @@ public sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<Purcha
             });
             line.WithOwner().HasForeignKey("PurchaseOrderId");
             line.HasKey(purchaseOrderLine => purchaseOrderLine.Id);
+            line.Property(purchaseOrderLine => purchaseOrderLine.Id).ValueGeneratedNever();
             line.Property(purchaseOrderLine => purchaseOrderLine.SupplierProductId).HasColumnType("uuid").IsRequired();
             line.Property(purchaseOrderLine => purchaseOrderLine.LineNumber).IsRequired();
             line.Property(purchaseOrderLine => purchaseOrderLine.ProductId).HasColumnType("uuid").IsRequired();

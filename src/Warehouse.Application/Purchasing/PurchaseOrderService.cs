@@ -70,7 +70,7 @@ public sealed class PurchaseOrderService(
         var purchaseOrder = PurchaseOrder.Create(sequence.ToNumber(), input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
         purchaseOrder.ReplaceLines(lines, UtcNow(), currentUser.UserId);
         dbContext.PurchaseOrders.Add(purchaseOrder);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveWithConcurrencyHandlingAsync(purchaseOrder.Id, cancellationToken);
         return await GetByIdAsync(purchaseOrder.Id, cancellationToken);
     }
 
@@ -85,7 +85,7 @@ public sealed class PurchaseOrderService(
         var updatedAtUtc = UtcNow();
         purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, input.Version ?? -1, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
         purchaseOrder.ReplaceLines(lines, updatedAtUtc, currentUser.UserId);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveWithConcurrencyHandlingAsync(id, cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
 
@@ -102,7 +102,7 @@ public sealed class PurchaseOrderService(
         await EnsureSupplierIsActiveAsync(purchaseOrder.SupplierId, cancellationToken);
         await ValidateDraftLinesAsync(purchaseOrder.SupplierId, purchaseOrder.CurrencyCode, purchaseOrder.Lines, cancellationToken);
         purchaseOrder.Submit(UtcNow(), currentUser.UserId);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveWithConcurrencyHandlingAsync(id, cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
 
@@ -114,7 +114,7 @@ public sealed class PurchaseOrderService(
             throw new PurchaseOrderInvalidTransitionException(id);
         var actorUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
         purchaseOrder.Cancel(input.Reason, UtcNow(), actorUserId);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveWithConcurrencyHandlingAsync(id, cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
     }
 
@@ -189,6 +189,18 @@ public sealed class PurchaseOrderService(
         if (purchaseOrder.Status != PurchaseOrderStatus.Draft)
         {
             throw new PurchaseOrderImmutableException(purchaseOrder.Id);
+        }
+    }
+
+    private async Task SaveWithConcurrencyHandlingAsync(Guid purchaseOrderId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new PurchaseOrderConcurrencyException(purchaseOrderId, exception);
         }
     }
 

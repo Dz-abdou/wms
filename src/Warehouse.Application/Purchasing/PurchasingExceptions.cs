@@ -25,8 +25,8 @@ public sealed class PurchaseOrderMinimumOrderQuantityException(int lineIndex, de
 
 public sealed class PurchaseOrderSubmissionInvalidException(string message) : Exception(message);
 
-public sealed class PurchaseOrderConcurrencyException(Guid purchaseOrderId)
-    : Exception($"Purchase order '{purchaseOrderId}' was changed by another user.");
+public sealed class PurchaseOrderConcurrencyException(Guid purchaseOrderId, Exception? innerException = null)
+    : Exception($"Purchase order '{purchaseOrderId}' was changed by another user.", innerException);
 
 public sealed class PurchaseOrderInvalidTransitionException(Guid purchaseOrderId)
     : Exception($"Purchase order '{purchaseOrderId}' cannot make that status transition.");
