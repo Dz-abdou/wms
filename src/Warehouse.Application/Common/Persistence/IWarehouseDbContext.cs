@@ -25,6 +25,8 @@ public interface IWarehouseDbContext
 
     DbSet<PurchaseOrder> PurchaseOrders { get; }
 
+    DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences { get; }
+
     DbSet<Currency> Currencies { get; }
 
 
