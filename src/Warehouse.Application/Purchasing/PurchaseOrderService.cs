@@ -170,7 +170,7 @@ public sealed class PurchaseOrderService(
                 throw new PurchaseOrderCatalogueInvalidException("Every line must use the purchase-order currency.");
             }
 
-            lines.Add(PurchaseOrderLine.Create(catalogueItem, product.Sku, product.Name, input.Quantity));
+            lines.Add(PurchaseOrderLine.Create(lineIndex + 1, catalogueItem, product, input.Quantity));
         }
 
         return lines;
@@ -217,8 +217,8 @@ public sealed class PurchaseOrderService(
             line.Quantity,
             line.UnitPrice,
             line.CurrencyCode,
-            decimal.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero))).ToList(),
-        purchaseOrder.Lines.Sum(line => decimal.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero)),
+            line.LineAmount)).ToList(),
+        purchaseOrder.Lines.Sum(line => line.LineAmount),
         purchaseOrder.Version,
         purchaseOrder.SubmittedAtUtc,
         purchaseOrder.StatusHistory.Select(history => new PurchaseOrderStatusHistoryResponse(

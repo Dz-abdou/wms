@@ -1,4 +1,5 @@
 using Warehouse.Domain.Common;
+using Warehouse.Domain.Products;
 
 namespace Warehouse.Domain.Purchasing;
 
@@ -224,6 +225,7 @@ public sealed class PurchaseOrderStatusHistory
         Id = id; PreviousStatus = previousStatus; Status = status; ChangedAtUtc = changedAtUtc; ActorUserId = actorUserId; Reason = reason;
     }
     public Guid Id { get; private set; }
+    public int LineNumber { get; private set; }
     public PurchaseOrderStatus? PreviousStatus { get; private set; }
     public PurchaseOrderStatus Status { get; private set; }
     public DateTime ChangedAtUtc { get; private set; }
@@ -268,8 +270,11 @@ public sealed class PurchaseOrderLine
     public string? SupplierSku { get; private set; }
     public string PurchaseUnitOfMeasure { get; private set; } = null!;
     public decimal Quantity { get; private set; }
+    public decimal QuantityInBaseUnit { get; private set; }
+    public decimal ConversionFactorToBaseUnit { get; private set; }
     public decimal UnitPrice { get; private set; }
     public string CurrencyCode { get; private set; } = null!;
+    public decimal LineAmount { get; private set; }
 
     public static PurchaseOrderLine Create(
         SupplierProduct supplierProduct,
@@ -294,6 +299,25 @@ public sealed class PurchaseOrderLine
             quantity,
             supplierProduct.UnitPrice,
             supplierProduct.CurrencyCode);
+    }
+
+    public static PurchaseOrderLine Create(
+        int lineNumber,
+        SupplierProduct supplierProduct,
+        Product product,
+        decimal quantity)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+        if (lineNumber <= 0) throw new ArgumentOutOfRangeException(nameof(lineNumber));
+        if (!product.TryConvertToBaseQuantity(supplierProduct.PurchaseUnitOfMeasure, quantity, out var quantityInBaseUnit))
+            throw new ArgumentException("The purchase quantity cannot be converted to the product base unit.", nameof(quantity));
+
+        var line = Create(supplierProduct, product.Sku, product.Name, quantity);
+        line.LineNumber = lineNumber;
+        line.QuantityInBaseUnit = quantityInBaseUnit;
+        line.ConversionFactorToBaseUnit = quantityInBaseUnit / quantity;
+        line.LineAmount = decimal.Round(quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero);
+        return line;
     }
 
     private static string NormalizeRequired(string value, int maximumLength, string parameterName)
