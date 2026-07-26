@@ -4,11 +4,12 @@ import { MemoryRouter } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
 import { PurchaseOrderListPage } from "./PurchaseOrderListPage";
 
-const { usePurchaseOrdersMock, useSuppliersMock, useWarehousesMock } = vi.hoisted(() => ({
-  usePurchaseOrdersMock: vi.fn(),
-  useSuppliersMock: vi.fn(),
-  useWarehousesMock: vi.fn(),
-}));
+const { usePurchaseOrdersMock, useSuppliersMock, useWarehousesMock } =
+  vi.hoisted(() => ({
+    usePurchaseOrdersMock: vi.fn(),
+    useSuppliersMock: vi.fn(),
+    useWarehousesMock: vi.fn(),
+  }));
 
 vi.mock("../api/usePurchasing", () => ({
   usePurchaseOrders: usePurchaseOrdersMock,

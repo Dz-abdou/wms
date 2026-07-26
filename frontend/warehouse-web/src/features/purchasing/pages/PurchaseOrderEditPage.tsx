@@ -79,10 +79,7 @@ export function PurchaseOrderEditPage() {
           }
           className="page-alert"
           description={
-            hasProblemCode(
-              update.error,
-              "purchase_order.concurrency_conflict",
-            )
+            hasProblemCode(update.error, "purchase_order.concurrency_conflict")
               ? t("purchasing.orders.concurrencyHint")
               : undefined
           }
