@@ -67,6 +67,9 @@ The application must feel like one operational system rather than a collection o
 - Every list search/filter is executed by the backend before pagination. The frontend must not filter only the current loaded page or use Ant Design's default in-memory table filters. Shared list controls synchronize an explicit query string (`q`, `status`, `supplierId`, date range, and so on) with feature-owned API request parameters.
 - Choose filters from the operational decision, not from every visible field. Initial guidance: Products—SKU/name and active/category; Warehouses—code/name and active; Suppliers—code/name and active; Categories/Currencies—code/name and active where applicable; Supplier Catalogue—supplier/product/status/currency; Purchase Orders—supplier/status and, after hardening, warehouse/date; Adjustments—reason/date/reference; Movement History—product/warehouse/type/reference/date; Users—email/role.
 - All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
+- Every changed frontend file is formatted with the repository formatter before
+  review; linting is an additional verification step, not a substitute for
+  formatting.
 
 ### Navigation and visual foundations
 

@@ -49,6 +49,7 @@ Include:
 - database changes
 - backend changes
 - frontend changes
+- frontend formatting for every changed frontend file
 - validation
 - unit tests
 - integration tests
@@ -70,6 +71,9 @@ Every approved roadmap or implementation-plan step is completed on its own branc
 - Keep the branch and pull request limited to that one approved step. Do not start the next step until its pull request is merged.
 - Commit continuously at meaningful, reviewable boundaries (for example: backend contract, frontend UI, tests, documentation). Do not put the whole step into one final catch-all commit.
 - Each commit must be focused, buildable when practical, and use the repository commit convention.
+- Every frontend file changed by the step must be formatted with the repository
+  formatter before it is committed. Do not leave formatting cleanup for a later
+  branch or rely on linting alone to detect it.
 - Before opening the pull request, run the relevant checks and describe its scope, decisions, tests, and known risks.
 
 ## 4. Implement One Slice
