@@ -164,6 +164,17 @@ export function submitPurchaseOrder(id: string, version: number) {
   );
 }
 
+export function cancelPurchaseOrder(
+  id: string,
+  version: number,
+  reason?: string,
+) {
+  return requestJson<PurchaseOrder>(
+    purchasingApiPaths.purchaseOrderCancel(id),
+    jsonRequest("PATCH", { version, reason }),
+  );
+}
+
 function jsonRequest(
   method: "PATCH" | "POST" | "PUT",
   body: object,

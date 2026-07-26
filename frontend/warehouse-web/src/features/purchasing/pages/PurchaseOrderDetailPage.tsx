@@ -15,7 +15,11 @@ import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { formatDateTime } from "../../../shared/formatting/dateTime";
 import { toAppLanguage } from "../../../shared/i18n/constants";
-import { usePurchaseOrder, useSubmitPurchaseOrder } from "../api/usePurchasing";
+import {
+  useCancelPurchaseOrder,
+  usePurchaseOrder,
+  useSubmitPurchaseOrder,
+} from "../api/usePurchasing";
 import type { PurchaseOrderLine } from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
 import {
@@ -29,6 +33,7 @@ export function PurchaseOrderDetailPage() {
   const { i18n, t } = useTranslation();
   const orderQuery = usePurchaseOrder(id);
   const submit = useSubmitPurchaseOrder(id ?? "");
+  const cancel = useCancelPurchaseOrder(id ?? "");
   const { returnTo } = useReturnDestination(purchasingRoutes.orders);
   if (orderQuery.isLoading)
     return (
@@ -90,6 +95,16 @@ export function PurchaseOrderDetailPage() {
             >
               <Button loading={submit.isPending} type="primary">
                 {t("purchasing.orders.submit")}
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+              cancelText={t("purchasing.cancel")}
+              okText={t("purchasing.orders.cancelOrder")}
+              onConfirm={() => cancel.mutateAsync({ version: order.version })}
+              title={t("purchasing.orders.cancelOrder")}
+            >
+              <Button danger loading={cancel.isPending} type="text">
+                {t("purchasing.orders.cancelOrder")}
               </Button>
             </Popconfirm>
           </>
@@ -175,7 +190,9 @@ export function PurchaseOrderDetailPage() {
         />
       </div>
       <div className="page-section">
-        <Typography.Title level={3}>{t("purchasing.orders.status")}</Typography.Title>
+        <Typography.Title level={3}>
+          {t("purchasing.orders.status")}
+        </Typography.Title>
         <Timeline
           items={order.statusHistory.map((history) => ({
             children: `${t(history.status === 0 ? "purchasing.status.draft" : "purchasing.status.submitted")} — ${formatDateTime(history.changedAtUtc, toAppLanguage(i18n.resolvedLanguage))}`,

@@ -320,6 +320,7 @@
       "detailTitle": "Commande d’achat",
       "create": "Créer le brouillon",
       "submit": "Soumettre la commande",
+      "cancelOrder": "Annuler la commande",
       "submitTitle": "Soumettre la commande d’achat",
       "submitDescription": "Les commandes soumises ne peuvent pas être modifiées. Continuer ?",
       "supplier": "Fournisseur",
