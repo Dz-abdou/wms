@@ -122,6 +122,7 @@ export type PurchaseOrder = {
   totalAmount: number;
   version: number;
   submittedAtUtc?: string;
+  statusHistory: PurchaseOrderStatusHistory[];
   createdAtUtc: string;
   updatedAtUtc: string;
 };
@@ -141,4 +142,13 @@ export type PurchaseOrderListQuery = {
   warehouseId?: string;
   fromOrderDate?: string;
   toOrderDate?: string;
+};
+
+export type PurchaseOrderStatusHistory = {
+  id: string;
+  previousStatus: PurchaseOrderStatus | null;
+  status: PurchaseOrderStatus;
+  changedAtUtc: string;
+  actorUserId: string;
+  reason: string | null;
 };

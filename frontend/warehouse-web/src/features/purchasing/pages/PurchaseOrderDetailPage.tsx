@@ -6,6 +6,7 @@ import {
   Spin,
   Table,
   Tag,
+  Timeline,
   Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -171,6 +172,14 @@ export function PurchaseOrderDetailPage() {
           dataSource={order.lines}
           pagination={false}
           rowKey="id"
+        />
+      </div>
+      <div className="page-section">
+        <Typography.Title level={3}>{t("purchasing.orders.status")}</Typography.Title>
+        <Timeline
+          items={order.statusHistory.map((history) => ({
+            children: `${t(history.status === 0 ? "purchasing.status.draft" : "purchasing.status.submitted")} — ${formatDateTime(history.changedAtUtc, toAppLanguage(i18n.resolvedLanguage))}`,
+          }))}
         />
       </div>
     </DetailPageLayout>

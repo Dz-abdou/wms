@@ -83,6 +83,14 @@ public sealed record PurchaseOrderLineResponse(
     string CurrencyCode,
     decimal LineAmount);
 
+public sealed record PurchaseOrderStatusHistoryResponse(
+    Guid Id,
+    PurchaseOrderStatus? PreviousStatus,
+    PurchaseOrderStatus Status,
+    DateTime ChangedAtUtc,
+    Guid ActorUserId,
+    string? Reason);
+
 public sealed record PurchaseOrderResponse(
     Guid Id,
     Guid SupplierId,
@@ -103,5 +111,6 @@ public sealed record PurchaseOrderResponse(
     decimal TotalAmount,
     int Version,
     DateTime? SubmittedAtUtc,
+    IReadOnlyCollection<PurchaseOrderStatusHistoryResponse> StatusHistory,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);

@@ -211,6 +211,13 @@ public sealed class PurchaseOrderService(
         purchaseOrder.Lines.Sum(line => decimal.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero)),
         purchaseOrder.Version,
         purchaseOrder.SubmittedAtUtc,
+        purchaseOrder.StatusHistory.Select(history => new PurchaseOrderStatusHistoryResponse(
+            history.Id,
+            history.PreviousStatus,
+            history.Status,
+            history.ChangedAtUtc,
+            history.ActorUserId,
+            history.Reason)).ToList(),
         purchaseOrder.CreatedAtUtc,
         purchaseOrder.UpdatedAtUtc);
 
