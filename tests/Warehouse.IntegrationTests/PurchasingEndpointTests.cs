@@ -267,6 +267,47 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Purchase_order_marks_the_currency_field_when_it_does_not_match_the_catalogue_item()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "USD",
+            orderDate = "2026-07-26",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+
+        await AssertFieldErrorAsync(response, "CurrencyCode", ApiErrorCodes.PurchaseOrderCurrencyMismatch);
+    }
+
+    [Fact]
+    public async Task Purchase_order_marks_a_catalogue_line_that_belongs_to_another_supplier()
+    {
+        var orderSupplier = await CreateSupplierAsync();
+        var catalogueSupplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(catalogueSupplier.Id, product.Id, "EA", 1m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId = orderSupplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+
+        await AssertFieldErrorAsync(response, "Lines[0].SupplierProductId", ApiErrorCodes.PurchaseOrderCatalogueItemUnavailable);
+    }
+
+    [Fact]
     public async Task PostgreSql_rejects_a_duplicate_supplier_product_unit()
     {
         var supplier = await CreateSupplierAsync();
@@ -335,6 +376,16 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         var problem = await response.Content.ReadFromJsonAsync<Problem>();
         Assert.NotNull(problem);
         Assert.Equal(expectedCode, problem.Code);
+    }
+
+    private static async Task AssertFieldErrorAsync(HttpResponseMessage response, string propertyName, string expectedCode)
+    {
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>();
+        Assert.NotNull(problem);
+        Assert.Equal(expectedCode, problem.Code);
+        Assert.Equal(expectedCode, Assert.Single(problem.ErrorCodes[propertyName]));
+        Assert.NotEmpty(problem.Errors[propertyName]);
     }
 
     private sealed record Problem(string? Code);

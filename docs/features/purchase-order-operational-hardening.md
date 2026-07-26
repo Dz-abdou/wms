@@ -90,9 +90,21 @@ commercial terms changing underneath it.
 | PATCH | `/api/purchase-orders/{id}/cancel` | Cancel an allowed order state with an optional reason and current version. |
 
 All validation errors use existing Problem Details field/error-code conventions.
-New stable purchase-order codes include `purchase_order.concurrency_conflict`,
-`purchase_order.currency_mismatch`, `purchase_order.invalid_transition`, and
-`purchase_order.warehouse_not_found` where applicable.
+Business-rule failures must identify the editable field that resolves them, not
+only the broader feature. Purchase-order validation uses `SupplierId` for an
+unavailable supplier, `DestinationWarehouseId` for an unavailable destination,
+`CurrencyCode` for a catalogue-currency mismatch, and
+`Lines[n].SupplierProductId` for unavailable or duplicate catalogue selections.
+The API returns those property names in both `errors` and `errorCodes`; the
+frontend maps them to the corresponding Ant Design form control or line-table
+cell and shows a translated inline message. A generic notification is only for
+errors that cannot be resolved by editing a form field.
+
+Stable purchase-order codes include `purchase_order.concurrency_conflict`,
+`purchase_order.currency_mismatch`, `purchase_order.supplier_unavailable`,
+`purchase_order.warehouse_unavailable`,
+`purchase_order.catalogue_item_unavailable`, and
+`purchase_order.duplicate_catalogue_item`.
 
 ## Frontend Requirements
 

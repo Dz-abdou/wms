@@ -32,6 +32,11 @@ public static class ApiErrorCodes
     public const string PurchaseOrderNotFound = "purchase_order.not_found";
     public const string PurchaseOrderImmutable = "purchase_order.immutable";
     public const string PurchaseOrderCatalogueInvalid = "purchase_order.catalogue_invalid";
+    public const string PurchaseOrderSupplierUnavailable = "purchase_order.supplier_unavailable";
+    public const string PurchaseOrderWarehouseUnavailable = "purchase_order.warehouse_unavailable";
+    public const string PurchaseOrderCatalogueItemUnavailable = "purchase_order.catalogue_item_unavailable";
+    public const string PurchaseOrderDuplicateCatalogueItem = "purchase_order.duplicate_catalogue_item";
+    public const string PurchaseOrderCurrencyMismatch = "purchase_order.currency_mismatch";
     public const string PurchaseOrderMinimumOrderQuantity = "purchase_order.minimum_order_quantity";
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";

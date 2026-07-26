@@ -17,6 +17,14 @@ public sealed class PurchaseOrderImmutableException(Guid purchaseOrderId)
 
 public sealed class PurchaseOrderCatalogueInvalidException(string message) : Exception(message);
 
+public sealed class PurchaseOrderFieldValidationException(string propertyName, string errorCode, string message)
+    : Exception(message)
+{
+    public string PropertyName => propertyName;
+
+    public string ErrorCode => errorCode;
+}
+
 public sealed class PurchaseOrderMinimumOrderQuantityException(int lineIndex, decimal minimumOrderQuantity)
     : Exception($"Purchase-order line {lineIndex + 1} must have a quantity of at least {minimumOrderQuantity}.")
 {

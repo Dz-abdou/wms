@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Identity;
+using Warehouse.Application.Common.Errors;
 using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
@@ -125,42 +126,63 @@ public sealed class PurchaseOrderService(
     private async Task EnsureSupplierIsActiveAsync(Guid supplierId, CancellationToken cancellationToken)
     {
         var supplier = await dbContext.Suppliers.SingleOrDefaultAsync(candidate => candidate.Id == supplierId, cancellationToken)
-            ?? throw new SupplierNotFoundException(supplierId);
+            ?? throw new PurchaseOrderFieldValidationException(
+                "SupplierId",
+                ApiErrorCodes.PurchaseOrderSupplierUnavailable,
+                "The selected supplier no longer exists.");
         if (!supplier.IsActive)
         {
-            throw new PurchaseOrderCatalogueInvalidException("An inactive supplier cannot be used for purchasing.");
+            throw new PurchaseOrderFieldValidationException(
+                "SupplierId",
+                ApiErrorCodes.PurchaseOrderSupplierUnavailable,
+                "The selected supplier is inactive.");
         }
     }
 
     private async Task EnsureWarehouseIsActiveAsync(Guid warehouseId, CancellationToken cancellationToken)
     {
         var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(candidate => candidate.Id == warehouseId, cancellationToken);
-        if (warehouse is null || !warehouse.IsActive) throw new PurchaseOrderCatalogueInvalidException("An active destination warehouse is required.");
+        if (warehouse is null || !warehouse.IsActive)
+        {
+            throw new PurchaseOrderFieldValidationException(
+                "DestinationWarehouseId",
+                ApiErrorCodes.PurchaseOrderWarehouseUnavailable,
+                "The selected destination warehouse is unavailable.");
+        }
     }
 
     private async Task<IReadOnlyCollection<PurchaseOrderLine>> ResolveLinesAsync(Guid supplierId, string? currencyCode, IReadOnlyCollection<PurchaseOrderLineInput> inputs, CancellationToken cancellationToken)
     {
-        if (inputs.Select(input => input.SupplierProductId).Distinct().Count() != inputs.Count)
+        var duplicateLine = inputs
+            .Select((input, index) => (input, index))
+            .GroupBy(item => item.input.SupplierProductId)
+            .SelectMany(group => group.Skip(1))
+            .FirstOrDefault();
+        if (duplicateLine.input is not null)
         {
-            throw new PurchaseOrderCatalogueInvalidException("A purchase order can contain each supplier catalogue item only once.");
+            throw new PurchaseOrderFieldValidationException(
+                $"Lines[{duplicateLine.index}].SupplierProductId",
+                ApiErrorCodes.PurchaseOrderDuplicateCatalogueItem,
+                "Each supplier catalogue item can be selected only once.");
         }
 
         var catalogueIds = inputs.Select(input => input.SupplierProductId).ToArray();
         var catalogueItems = await dbContext.SupplierProducts.Where(item => catalogueIds.Contains(item.Id)).ToDictionaryAsync(item => item.Id, cancellationToken);
-        if (catalogueItems.Count != catalogueIds.Length)
-        {
-            throw new PurchaseOrderCatalogueInvalidException("One or more supplier catalogue items do not exist.");
-        }
-
         var products = await dbContext.Products.Where(product => catalogueItems.Values.Select(item => item.ProductId).Contains(product.Id)).ToDictionaryAsync(product => product.Id, cancellationToken);
         var lines = new List<PurchaseOrderLine>(inputs.Count);
         foreach (var (input, lineIndex) in inputs.Select((input, index) => (input, index)))
         {
-            var catalogueItem = catalogueItems[input.SupplierProductId];
-            if (catalogueItem.SupplierId != supplierId || !catalogueItem.IsActive || !products.TryGetValue(catalogueItem.ProductId, out var product) || !product.IsActive ||
-                !product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _))
+            if (!catalogueItems.TryGetValue(input.SupplierProductId, out var catalogueItem)
+                || catalogueItem.SupplierId != supplierId
+                || !catalogueItem.IsActive
+                || !products.TryGetValue(catalogueItem.ProductId, out var product)
+                || !product.IsActive
+                || !product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _))
             {
-                throw new PurchaseOrderCatalogueInvalidException("A purchase-order line does not match an active supplier catalogue item or its minimum order quantity.");
+                throw new PurchaseOrderFieldValidationException(
+                    $"Lines[{lineIndex}].SupplierProductId",
+                    ApiErrorCodes.PurchaseOrderCatalogueItemUnavailable,
+                    "The selected supplier catalogue item is unavailable. Choose an active item for the selected supplier.");
             }
 
             if (input.Quantity < catalogueItem.MinimumOrderQuantity)
@@ -169,7 +191,10 @@ public sealed class PurchaseOrderService(
             }
             if (!string.Equals(catalogueItem.CurrencyCode, currencyCode, StringComparison.OrdinalIgnoreCase))
             {
-                throw new PurchaseOrderCatalogueInvalidException("Every line must use the purchase-order currency.");
+                throw new PurchaseOrderFieldValidationException(
+                    "CurrencyCode",
+                    ApiErrorCodes.PurchaseOrderCurrencyMismatch,
+                    "The purchase-order currency must match the selected catalogue item currency.");
             }
 
             lines.Add(PurchaseOrderLine.Create(lineIndex + 1, catalogueItem, product, input.Quantity));
