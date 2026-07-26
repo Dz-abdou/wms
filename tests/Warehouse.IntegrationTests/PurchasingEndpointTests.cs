@@ -191,6 +191,55 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Concurrent_draft_creation_allocates_unique_purchase_order_numbers()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+
+        var drafts = await Task.WhenAll(Enumerable.Range(0, 4).Select(async _ =>
+        {
+            var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+            {
+                supplierId = supplier.Id,
+                destinationWarehouseId = warehouse.Id,
+                currencyCode = "DZD",
+                orderDate = "2026-07-26",
+                lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+            });
+            response.EnsureSuccessStatusCode();
+            return (await response.Content.ReadFromJsonAsync<PurchaseOrderResponse>())!;
+        }));
+
+        Assert.All(drafts, draft => Assert.Matches("^PO-2026-\\d{6}$", draft.Number));
+        Assert.Equal(drafts.Length, drafts.Select(draft => draft.Number).Distinct().Count());
+    }
+
+    [Fact]
+    public async Task Purchase_order_list_filters_before_pagination()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var firstWarehouse = await CreateWarehouseAsync();
+        var secondWarehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+
+        await CreatePurchaseOrderAsync(supplier.Id, firstWarehouse.Id, catalogueItem.Id, "2026-07-11");
+        await CreatePurchaseOrderAsync(supplier.Id, firstWarehouse.Id, catalogueItem.Id, "2026-07-11");
+        await CreatePurchaseOrderAsync(supplier.Id, secondWarehouse.Id, catalogueItem.Id, "2026-07-12");
+
+        var list = await fixture.Client.GetFromJsonAsync<PagedResult<PurchaseOrderResponse>>(
+            $"/api/purchase-orders?supplierId={supplier.Id}&warehouseId={firstWarehouse.Id}&fromOrderDate=2026-07-11&toOrderDate=2026-07-11&page=1&pageSize=1");
+
+        Assert.NotNull(list);
+        Assert.Equal(2, list.TotalCount);
+        var item = Assert.Single(list.Items);
+        Assert.Equal(firstWarehouse.Id, item.DestinationWarehouseId);
+        Assert.Equal(new DateOnly(2026, 7, 11), item.OrderDate);
+    }
+
+    [Fact]
     public async Task Purchase_order_rejects_quantities_below_the_catalogue_minimum()
     {
         var supplier = await CreateSupplierAsync();
@@ -265,6 +314,20 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<SupplierProductResponse>())!;
+    }
+
+    private async Task<PurchaseOrderResponse> CreatePurchaseOrderAsync(Guid supplierId, Guid warehouseId, Guid supplierProductId, string orderDate)
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId,
+            destinationWarehouseId = warehouseId,
+            currencyCode = "DZD",
+            orderDate,
+            lines = new[] { new { supplierProductId, quantity = 1m } }
+        });
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PurchaseOrderResponse>())!;
     }
 
     private static async Task AssertCodeAsync(HttpResponseMessage response, string expectedCode)

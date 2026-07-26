@@ -65,6 +65,17 @@ export function PurchaseOrderListPage() {
         key: "orderDate",
       },
       {
+        title: t("purchasing.orders.expectedDeliveryDate"),
+        dataIndex: "expectedDeliveryDate",
+        key: "expectedDeliveryDate",
+        render: (value: string | undefined) => value ?? "—",
+      },
+      {
+        title: t("purchasing.orders.lineCount"),
+        key: "lineCount",
+        render: (_, item) => item.lines.length,
+      },
+      {
         title: t("purchasing.orders.total"),
         key: "total",
         render: (_, item) => `${item.totalAmount} ${item.currencyCode ?? ""}`,

@@ -165,6 +165,9 @@ export function PurchaseOrderDetailPage() {
         <Descriptions.Item label={t("purchasing.orders.orderDate")}>
           {order.orderDate ?? "—"}
         </Descriptions.Item>
+        <Descriptions.Item label={t("purchasing.orders.buyer")}>
+          {order.buyerUserId ?? "—"}
+        </Descriptions.Item>
         <Descriptions.Item label={t("purchasing.orders.expectedDeliveryDate")}>
           {order.expectedDeliveryDate ?? "—"}
         </Descriptions.Item>
