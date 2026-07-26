@@ -8,6 +8,7 @@ using Warehouse.Application.Currencies;
 using Warehouse.Application.Products;
 using Warehouse.Application.Purchasing;
 using Warehouse.Application.Suppliers;
+using Warehouse.Application.Warehouses;
 using Warehouse.Domain.Purchasing;
 using Warehouse.Infrastructure.Persistence;
 
@@ -70,11 +71,15 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     {
         var supplier = await CreateSupplierAsync();
         var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
         var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 2m);
 
         var create = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
         {
             supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
             lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 3m } }
         });
         Assert.Equal(HttpStatusCode.Created, create.StatusCode);
@@ -85,7 +90,7 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         Assert.Equal(product.Sku, line.ProductSku);
         Assert.Equal(catalogueItem.UnitPrice, line.UnitPrice);
 
-        var submitted = await fixture.Client.PatchAsync($"/api/purchase-orders/{draft.Id}/submit", null);
+        var submitted = await fixture.Client.PatchAsJsonAsync($"/api/purchase-orders/{draft.Id}/submit", new { version = draft.Version });
         submitted.EnsureSuccessStatusCode();
         var submittedOrder = await submitted.Content.ReadFromJsonAsync<PurchaseOrderResponse>();
         Assert.NotNull(submittedOrder);
@@ -94,6 +99,10 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         var update = await fixture.Client.PutAsJsonAsync($"/api/purchase-orders/{draft.Id}", new
         {
             supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            version = submittedOrder.Version,
             lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 4m } }
         });
         Assert.Equal(HttpStatusCode.Conflict, update.StatusCode);
@@ -105,11 +114,15 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     {
         var supplier = await CreateSupplierAsync();
         var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
         var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 5m);
 
         var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
         {
             supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
             lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 4m } }
         });
 
@@ -148,6 +161,13 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         var response = await fixture.Client.PostAsJsonAsync("/api/products", new { sku = $"PUR-{Guid.NewGuid():N}"[..16], name = "Purchase product" });
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<ProductResponse>())!;
+    }
+
+    private async Task<WarehouseResponse> CreateWarehouseAsync()
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/warehouses", new { code = $"PO-{Guid.NewGuid():N}"[..16], name = "Purchase warehouse" });
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<WarehouseResponse>())!;
     }
 
     private async Task<SupplierProductResponse> CreateCatalogueItemAsync(Guid supplierId, Guid productId, string unitOfMeasure, decimal minimumOrderQuantity)
