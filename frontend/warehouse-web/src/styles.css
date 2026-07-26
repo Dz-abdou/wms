@@ -133,6 +133,21 @@ body {
   margin-top: 24px;
 }
 
+@media (max-width: 960px) {
+  .application-header {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    padding-block: 8px;
+  }
+
+  .application-menu {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
 @media (max-width: 640px) {
   .application-header {
     gap: 12px;
