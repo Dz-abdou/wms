@@ -1,22 +1,34 @@
-import { Alert, Button, Empty, Spin, Table, Typography } from "antd";
+import { Alert, Empty, Input, Select, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
-import { useListPagination } from "../../../shared/pagination/pagination";
+import { useUrlListQuery } from "../../../shared/pagination/pagination";
 import { ProductStatusTag } from "../../products/components/ProductStatusTag";
 import { useWarehouses } from "../api/useWarehouses";
 import type { Warehouse } from "../api/warehouseTypes";
 import { warehouseRoutes } from "../warehouseConstants";
+import {
+  ListPageLayout,
+  ListFilter,
+  ReturnAwareLink,
+  NewPageAction,
+} from "../../../shared/components/PageLayouts";
 
 export function WarehouseListPage() {
-  const pagination = useListPagination();
+  const listQuery = useUrlListQuery();
   const { t } = useTranslation();
-  const { data, error, isLoading, isFetching } = useWarehouses(
-    pagination.page,
-    pagination.pageSize,
-  );
+  const activeValue = listQuery.get("active");
+  const { data, error, isLoading, isFetching } = useWarehouses({
+    ...listQuery.request,
+    search: listQuery.get("q"),
+    isActive:
+      activeValue === "true"
+        ? true
+        : activeValue === "false"
+          ? false
+          : undefined,
+  });
 
   const columns = useMemo<ColumnsType<Warehouse>>(
     () => [
@@ -32,9 +44,9 @@ export function WarehouseListPage() {
         title: t("warehouses.table.actions"),
         key: "actions",
         render: (_, warehouse) => (
-          <Link to={warehouseRoutes.detail(warehouse.id)}>
+          <ReturnAwareLink to={warehouseRoutes.detail(warehouse.id)}>
             {t("warehouses.view")}
-          </Link>
+          </ReturnAwareLink>
         ),
       },
     ],
@@ -42,19 +54,39 @@ export function WarehouseListPage() {
   );
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>{t("warehouses.title")}</Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("warehouses.subtitle")}
-          </Typography.Paragraph>
-        </div>
-        <Button type="primary">
-          <Link to={warehouseRoutes.create}>{t("warehouses.new")}</Link>
-        </Button>
-      </div>
-
+    <ListPageLayout
+      actions={<NewPageAction to={warehouseRoutes.create} />}
+      hasActiveFilters={listQuery.hasFilters}
+      onClearFilters={listQuery.clearFilters}
+      filters={
+        <>
+          <ListFilter label={t("ui.search")} width="search">
+            <Input.Search
+              key={listQuery.get("q") ?? "q"}
+              allowClear
+              defaultValue={listQuery.get("q")}
+              onSearch={(value) => listQuery.update({ q: value })}
+              placeholder={t("warehouses.searchPlaceholder")}
+            />
+          </ListFilter>
+          <ListFilter label={t("warehouses.table.status")} width="compact">
+            <Select
+              allowClear
+              aria-label={t("warehouses.table.status")}
+              onChange={(value) => listQuery.update({ active: value })}
+              options={[
+                { value: "true", label: t("products.status.active") },
+                { value: "false", label: t("products.status.inactive") },
+              ]}
+              placeholder={t("warehouses.table.status")}
+              value={activeValue}
+            />
+          </ListFilter>
+        </>
+      }
+      subtitle={t("warehouses.subtitle")}
+      title={t("warehouses.title")}
+    >
       {isLoading ? (
         <Spin
           className="page-spinner"
@@ -78,10 +110,10 @@ export function WarehouseListPage() {
           columns={columns}
           dataSource={data.items}
           loading={isFetching}
-          pagination={pagination.toTablePagination(data)}
+          pagination={listQuery.toTablePagination(data)}
           rowKey="id"
         />
       ) : null}
-    </section>
+    </ListPageLayout>
   );
 }

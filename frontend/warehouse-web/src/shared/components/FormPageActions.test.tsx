@@ -10,6 +10,7 @@ describe("FormPageActions", () => {
     const user = userEvent.setup();
     const onCancel = vi.fn();
     const onSubmit = vi.fn((event: FormEvent) => event.preventDefault());
+    vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(
       <Form onSubmitCapture={onSubmit}>

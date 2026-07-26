@@ -3,11 +3,9 @@ import {
   Button,
   Descriptions,
   Popconfirm,
-  Space,
   Spin,
-  Typography,
 } from "antd";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
@@ -16,6 +14,11 @@ import { toAppLanguage } from "../../../shared/i18n/constants";
 import { useProduct, useSetProductStatus } from "../api/useProducts";
 import { ProductStatusTag } from "../components/ProductStatusTag";
 import { productRoutes } from "../productConstants";
+import {
+  DetailPageLayout,
+  RouteActionButton,
+} from "../../../shared/components/PageLayouts";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 
 export function ProductDetailPage() {
   const { id } = useParams();
@@ -23,6 +26,7 @@ export function ProductDetailPage() {
   const feedback = useApiFeedback();
   const productQuery = useProduct(id);
   const setStatus = useSetProductStatus(id ?? "");
+  const { returnTo } = useReturnDestination(productRoutes.list);
 
   if (productQuery.isLoading)
     return (
@@ -58,13 +62,12 @@ export function ProductDetailPage() {
   }
 
   return (
-    <section>
-      <div className="page-heading">
-        <Typography.Title level={2}>{product.name}</Typography.Title>
-        <Space>
-          <Button>
-            <Link to={productRoutes.edit(id)}>{t("products.edit")}</Link>
-          </Button>
+    <DetailPageLayout
+      actions={
+        <>
+          <RouteActionButton to={productRoutes.edit(id)}>
+            {t("products.edit")}
+          </RouteActionButton>
           <Popconfirm
             cancelText={t("products.cancel")}
             description={t("products.confirmStatusDescription", {
@@ -78,8 +81,12 @@ export function ProductDetailPage() {
               {actionLabel}
             </Button>
           </Popconfirm>
-        </Space>
-      </div>
+        </>
+      }
+      backLabel={t("products.title")}
+      backTo={returnTo}
+      title={product.name}
+    >
       <Descriptions bordered column={1}>
         <Descriptions.Item label={t("products.table.sku")}>
           {product.sku}
@@ -100,6 +107,6 @@ export function ProductDetailPage() {
           {formatDateTime(product.updatedAtUtc, language)}
         </Descriptions.Item>
       </Descriptions>
-    </section>
+    </DetailPageLayout>
   );
 }

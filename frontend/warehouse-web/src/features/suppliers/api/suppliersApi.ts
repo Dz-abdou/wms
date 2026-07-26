@@ -1,10 +1,22 @@
 import { requestJson } from "../../../shared/api/apiClient";
 import { supplierApiPaths } from "../supplierConstants";
-import type { Supplier, SupplierInput, SupplierListResult } from "./supplierTypes";
+import type {
+  Supplier,
+  SupplierInput,
+  SupplierListQuery,
+  SupplierListResult,
+} from "./supplierTypes";
 
-export function getSuppliers(page: number, pageSize: number, signal?: AbortSignal) {
+export function getSuppliers(query: SupplierListQuery, signal?: AbortSignal) {
+  const parameters = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+  });
+  if (query.search?.trim()) parameters.set("search", query.search.trim());
+  if (query.isActive !== undefined)
+    parameters.set("isActive", String(query.isActive));
   return requestJson<SupplierListResult>(
-    `${supplierApiPaths.base}?page=${page}&pageSize=${pageSize}`,
+    `${supplierApiPaths.base}?${parameters}`,
     { signal },
   );
 }
@@ -18,7 +30,10 @@ export function createSupplier(input: SupplierInput) {
 }
 
 export function updateSupplier(id: string, input: SupplierInput) {
-  return requestJson<Supplier>(supplierApiPaths.byId(id), request("PUT", input));
+  return requestJson<Supplier>(
+    supplierApiPaths.byId(id),
+    request("PUT", input),
+  );
 }
 
 export function setSupplierStatus(id: string, isActive: boolean) {

@@ -54,7 +54,7 @@ describe("InventoryMovementHistoryPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("No inventory movements exist for this selection.")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "New adjustment" }),
+      screen.getByRole("button", { name: "Record adjustment" }),
     ).toBeInTheDocument();
   });
 });

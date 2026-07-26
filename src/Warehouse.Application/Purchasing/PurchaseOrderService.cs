@@ -24,6 +24,10 @@ public sealed class PurchaseOrderService(
         {
             orders = orders.Where(item => item.purchaseOrder.Status == status);
         }
+        if (query.SupplierId is { } supplierId)
+        {
+            orders = orders.Where(item => item.purchaseOrder.SupplierId == supplierId);
+        }
 
         var totalCount = await orders.CountAsync(cancellationToken);
         var page = await orders

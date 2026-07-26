@@ -17,7 +17,7 @@ public sealed class SupplierProductService(
 {
     public async Task<PagedResult<SupplierProductResponse>> GetListAsync(SupplierProductListQuery query, CancellationToken cancellationToken)
     {
-        var catalogue = BuildCatalogueQuery(query.SupplierId, query.ProductId);
+        var catalogue = BuildCatalogueQuery(query.SupplierId, query.ProductId, query.IsActive, query.CurrencyCode);
 
         var totalCount = await catalogue.CountAsync(cancellationToken);
         var page = from catalogueItem in catalogue
@@ -94,7 +94,12 @@ public sealed class SupplierProductService(
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    private IQueryable<SupplierProduct> BuildCatalogueQuery(Guid? supplierId = null, Guid? productId = null, Guid? id = null)
+    private IQueryable<SupplierProduct> BuildCatalogueQuery(
+        Guid? supplierId = null,
+        Guid? productId = null,
+        bool? isActive = null,
+        string? currencyCode = null,
+        Guid? id = null)
     {
         var catalogue = dbContext.SupplierProducts.AsNoTracking();
         if (supplierId is { } supplierFilter)
@@ -105,6 +110,17 @@ public sealed class SupplierProductService(
         if (productId is { } productFilter)
         {
             catalogue = catalogue.Where(item => item.ProductId == productFilter);
+        }
+
+        if (isActive is { } activeFilter)
+        {
+            catalogue = catalogue.Where(item => item.IsActive == activeFilter);
+        }
+
+        if (!string.IsNullOrWhiteSpace(currencyCode))
+        {
+            var normalizedCurrencyCode = currencyCode.Trim().ToUpperInvariant();
+            catalogue = catalogue.Where(item => item.CurrencyCode == normalizedCurrencyCode);
         }
 
         if (id is { } itemId)

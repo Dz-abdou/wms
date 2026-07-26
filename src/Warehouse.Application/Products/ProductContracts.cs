@@ -5,7 +5,9 @@ namespace Warehouse.Application.Products;
 public sealed record ProductListQuery(
     int Page = PaginationConstants.DefaultPage,
     int PageSize = PaginationConstants.DefaultPageSize,
-    string? Search = null) : IPagedRequest;
+    string? Search = null,
+    bool? IsActive = null,
+    Guid? CategoryId = null) : IPagedRequest;
 
 public sealed record ProductUnitConversionInput(
     string? UnitOfMeasure,

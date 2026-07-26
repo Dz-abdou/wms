@@ -17,6 +17,7 @@ public sealed class ProductCategoryService(
         CancellationToken cancellationToken)
     {
         var categories = dbContext.ProductCategories.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query.Search)) { var search = query.Search.Trim().ToUpper(); categories = categories.Where(x => x.Code.ToUpper().Contains(search) || x.Name.ToUpper().Contains(search)); }
         var totalCount = await categories.CountAsync(cancellationToken);
         var skip = (query.Page - PaginationConstants.DefaultPage) * query.PageSize;
         var items = await categories

@@ -1,28 +1,32 @@
 export const productApiPaths = {
-  base: '/api/products',
+  base: "/api/products",
   byId: (id: string) => `/api/products/${id}`,
-  status: (id: string) => `/api/products/${id}/status`
-} as const
+  status: (id: string) => `/api/products/${id}/status`,
+} as const;
 
 export const productRoutes = {
-  create: '/products/new',
+  create: "/products/new",
   detail: (id: string) => `/products/${id}`,
-  detailPattern: 'products/:id',
+  detailPattern: "products/:id",
   edit: (id: string) => `/products/${id}/edit`,
-  editPattern: 'products/:id/edit',
-  list: '/products',
-  listPattern: 'products',
-  categories: '/product-categories',
-  categoriesPattern: 'product-categories'
-} as const
+  editPattern: "products/:id/edit",
+  list: "/products",
+  listPattern: "products",
+  categories: "/product-categories",
+  categoriesPattern: "product-categories",
+  categoryCreate: "/product-categories/new",
+  categoryCreatePattern: "product-categories/new",
+  categoryEdit: (id: string) => `/product-categories/${id}/edit`,
+  categoryEditPattern: "product-categories/:id/edit",
+} as const;
 
 export const productPagination = {
   defaultPage: 1,
-  defaultPageSize: 20
-} as const
+  defaultPageSize: 20,
+} as const;
 
 export const productValidation = {
   maxDescriptionLength: 1000,
   maxNameLength: 200,
-  maxSkuLength: 64
-} as const
+  maxSkuLength: 64,
+} as const;

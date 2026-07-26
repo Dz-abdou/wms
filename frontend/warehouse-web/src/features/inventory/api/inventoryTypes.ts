@@ -86,6 +86,17 @@ export type InventoryMovementFilter = {
   warehouseId?: string;
   type?: InventoryMovement["type"];
   reference?: string;
+  fromUtc?: string;
+  toUtc?: string;
+};
+
+export type InventoryAdjustmentListQuery = {
+  page: number;
+  pageSize: number;
+  reason?: InventoryAdjustmentInput["reason"];
+  reference?: string;
+  fromUtc?: string;
+  toUtc?: string;
 };
 
 export type PagedInventoryMovements = {

@@ -1,4 +1,4 @@
-import { Alert, Card, Spin, Typography } from "antd";
+import { Alert, Card, Spin } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
@@ -6,6 +6,8 @@ import { useSupplier, useUpdateSupplier } from "../api/useSuppliers";
 import type { SupplierInput } from "../api/supplierTypes";
 import { SupplierForm } from "../components/SupplierForm";
 import { supplierRoutes } from "../supplierConstants";
+import { FormPageLayout } from "../../../shared/components/PageLayouts";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 
 export function SupplierEditPage() {
   const { id } = useParams();
@@ -13,6 +15,7 @@ export function SupplierEditPage() {
   const { t } = useTranslation();
   const supplierQuery = useSupplier(id);
   const update = useUpdateSupplier(id ?? "");
+  const { goBack, returnTo } = useReturnDestination(supplierRoutes.detail(id ?? ""));
 
   if (supplierQuery.isLoading) {
     return <Spin className="page-spinner" size="large" tip={t("suppliers.loadingOne")} />;
@@ -29,8 +32,11 @@ export function SupplierEditPage() {
 
   const supplier = supplierQuery.data;
   return (
-    <section>
-      <Typography.Title level={2}>{t("suppliers.editTitle")}</Typography.Title>
+    <FormPageLayout
+      backLabel={supplier.name}
+      backTo={returnTo}
+      title={t("suppliers.editTitle")}
+    >
       {update.error ? (
         <Alert
           className="page-alert"
@@ -51,11 +57,11 @@ export function SupplierEditPage() {
             address: supplier.address ?? undefined,
           }}
           isSubmitting={update.isPending}
-          onCancel={() => navigate(supplierRoutes.detail(id!))}
+          onCancel={goBack}
           onSubmit={submit}
           submitLabel={t("suppliers.save")}
         />
       </Card>
-    </section>
+    </FormPageLayout>
   );
 }

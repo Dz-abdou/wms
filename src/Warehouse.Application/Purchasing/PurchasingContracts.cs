@@ -7,7 +7,9 @@ public sealed record SupplierProductListQuery(
     int Page = PaginationConstants.DefaultPage,
     int PageSize = PaginationConstants.DefaultPageSize,
     Guid? SupplierId = null,
-    Guid? ProductId = null) : IPagedRequest;
+    Guid? ProductId = null,
+    bool? IsActive = null,
+    string? CurrencyCode = null) : IPagedRequest;
 
 public sealed record SupplierProductInput(
     Guid SupplierId,
@@ -47,7 +49,8 @@ public sealed record SupplierProductResponse(
 public sealed record PurchaseOrderListQuery(
     int Page = PaginationConstants.DefaultPage,
     int PageSize = PaginationConstants.DefaultPageSize,
-    PurchaseOrderStatus? Status = null) : IPagedRequest;
+    PurchaseOrderStatus? Status = null,
+    Guid? SupplierId = null) : IPagedRequest;
 
 public sealed record PurchaseOrderLineInput(Guid SupplierProductId, decimal Quantity);
 

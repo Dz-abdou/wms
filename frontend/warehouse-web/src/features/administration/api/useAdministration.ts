@@ -2,23 +2,38 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createUser,
   deleteUser,
+  getUser,
   getRoles,
   getUsers,
   setUserRoles,
   updateUser,
 } from "./administrationApi";
-import type { CreateUserValues, UpdateUserValues } from "./administrationTypes";
+import type {
+  AdministrationUserListQuery,
+  CreateUserValues,
+  UpdateUserValues,
+} from "./administrationTypes";
 
 export const administrationKeys = {
   all: ["administration"] as const,
   roles: () => [...administrationKeys.all, "roles"] as const,
-  users: () => [...administrationKeys.all, "users"] as const,
+  users: (query: AdministrationUserListQuery) =>
+    [...administrationKeys.all, "users", query] as const,
+  user: (id: string) => [...administrationKeys.all, "user", id] as const,
 };
 
-export function useAdministrationUsers() {
+export function useAdministrationUsers(query: AdministrationUserListQuery) {
   return useQuery({
-    queryKey: administrationKeys.users(),
-    queryFn: ({ signal }) => getUsers(signal),
+    queryKey: administrationKeys.users(query),
+    queryFn: ({ signal }) => getUsers(query, signal),
+  });
+}
+
+export function useAdministrationUser(id: string | undefined) {
+  return useQuery({
+    queryKey: administrationKeys.user(id ?? ""),
+    queryFn: ({ signal }) => getUser(id ?? "", signal),
+    enabled: Boolean(id),
   });
 }
 

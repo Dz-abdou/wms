@@ -8,7 +8,6 @@ import {
   Radio,
   Select,
   Spin,
-  Typography,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
@@ -18,9 +17,11 @@ import {
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
 import { FormPageActions } from "../../../shared/components/FormPageActions";
+import { FormPageLayout } from "../../../shared/components/PageLayouts";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
+import { useReturnDestination } from "../../../shared/navigation/returnNavigation";
 import { useProducts } from "../../products/api/useProducts";
 import type { Product } from "../../products/api/productTypes";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
@@ -42,9 +43,12 @@ export function InventoryAdjustmentPage() {
   const navigate = useNavigate();
   const [form] = Form.useForm<InventoryAdjustmentInput>();
   const products = useProducts({ page: 1, pageSize: inventoryPageSize });
-  const warehouses = useWarehouses(1, inventoryPageSize);
+  const warehouses = useWarehouses({ page: 1, pageSize: inventoryPageSize });
   const feedback = useApiFeedback();
   const adjustment = useAdjustInventory();
+  const { goBack, returnTo } = useReturnDestination(
+    inventoryRoutes.adjustments,
+  );
   const lines = Form.useWatch("lines", form) ?? [];
   const productOptions = products.data?.items
     .filter((product) => product.isActive)
@@ -218,17 +222,12 @@ export function InventoryAdjustmentPage() {
   }
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>
-            {t("inventory.adjustTitle")}
-          </Typography.Title>
-          <Typography.Paragraph>
-            {t("inventory.adjustSubtitle")}
-          </Typography.Paragraph>
-        </div>
-      </div>
+    <FormPageLayout
+      backLabel={t("inventory.adjustmentsTitle")}
+      backTo={returnTo}
+      subtitle={t("inventory.adjustSubtitle")}
+      title={t("inventory.adjustTitle")}
+    >
       <Card>
         <Form
           form={form}
@@ -237,8 +236,7 @@ export function InventoryAdjustmentPage() {
           onFinish={submit}
           onValuesChange={(changedValues) => {
             const changedLines = changedValues.lines as
-              | Array<Partial<InventoryAdjustmentLineInput>>
-              | undefined;
+              Array<Partial<InventoryAdjustmentLineInput>> | undefined;
             changedLines?.forEach((line, index) => {
               if (!line?.productId) return;
               const product = products.data?.items.find(
@@ -288,12 +286,12 @@ export function InventoryAdjustmentPage() {
           <FormPageActions
             cancelLabel={t("inventory.cancel")}
             isSubmitting={adjustment.isPending}
-            onCancel={() => navigate(inventoryRoutes.adjustments)}
+            onCancel={goBack}
             submitLabel={t("inventory.adjust")}
           />
         </Form>
       </Card>
-    </section>
+    </FormPageLayout>
   );
 }
 

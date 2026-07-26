@@ -12,6 +12,8 @@ public sealed class SupplierService(IWarehouseDbContext dbContext, TimeProvider 
     public async Task<PagedResult<SupplierResponse>> GetListAsync(SupplierListQuery query, CancellationToken cancellationToken)
     {
         var suppliers = dbContext.Suppliers.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(query.Search)) { var search = query.Search.Trim().ToUpper(); suppliers = suppliers.Where(x => x.Code.ToUpper().Contains(search) || x.Name.ToUpper().Contains(search)); }
+        if (query.IsActive is { } isActive) suppliers = suppliers.Where(x => x.IsActive == isActive);
         var totalCount = await suppliers.CountAsync(cancellationToken);
         var items = await suppliers.OrderBy(supplier => supplier.Code).ThenBy(supplier => supplier.Name)
             .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize).Take(query.PageSize)

@@ -1,4 +1,4 @@
-import { Alert, Empty, Select, Spin, Table, Tag, Typography } from "antd";
+import { Alert, Empty, Select, Spin, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,9 +9,12 @@ import {
   useAdministrationUsers,
   useSetAdministrationUserRoles,
 } from "../api/useAdministration";
+import { ListPageLayout } from "../../../shared/components/PageLayouts";
+import { useUrlListQuery } from "../../../shared/pagination/pagination";
 
 export function RolesPage() {
   const { t } = useTranslation();
+  const listQuery = useUrlListQuery();
   const {
     data: roles,
     error: rolesError,
@@ -21,7 +24,7 @@ export function RolesPage() {
     data: users,
     error: usersError,
     isLoading: isLoadingUsers,
-  } = useAdministrationUsers();
+  } = useAdministrationUsers(listQuery.request);
   const setRoles = useSetAdministrationUserRoles();
 
   const columns = useMemo<ColumnsType<AdministrationUser>>(
@@ -55,18 +58,10 @@ export function RolesPage() {
   const error = rolesError ?? usersError ?? setRoles.error;
 
   return (
-    <section>
-      <div className="page-heading">
-        <div>
-          <Typography.Title level={2}>
-            {t("administration.roles.title")}
-          </Typography.Title>
-          <Typography.Paragraph type="secondary">
-            {t("administration.roles.subtitle")}
-          </Typography.Paragraph>
-        </div>
-      </div>
-
+    <ListPageLayout
+      subtitle={t("administration.roles.subtitle")}
+      title={t("administration.roles.title")}
+    >
       {isLoadingRoles || isLoadingUsers ? (
         <Spin className="page-spinner" size="large" />
       ) : null}
@@ -89,20 +84,20 @@ export function RolesPage() {
           ))}
         </div>
       ) : null}
-      {users && users.length === 0 ? (
+      {users && users.items.length === 0 ? (
         <Empty
           className="page-empty"
           description={t("administration.roles.empty")}
         />
       ) : null}
-      {users && users.length > 0 ? (
+      {users && users.items.length > 0 ? (
         <Table
           columns={columns}
-          dataSource={users}
-          pagination={false}
+          dataSource={users.items}
+          pagination={listQuery.toTablePagination(users)}
           rowKey="id"
         />
       ) : null}
-    </section>
+    </ListPageLayout>
   );
 }

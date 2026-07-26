@@ -4,7 +4,8 @@ namespace Warehouse.Application.Products;
 
 public sealed record ProductCategoryListQuery(
     int Page = PaginationConstants.DefaultPage,
-    int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;
+    int PageSize = PaginationConstants.DefaultPageSize,
+    string? Search = null) : IPagedRequest;
 
 public sealed record ProductCategoryInput(string? Code, string? Name, Guid? ParentCategoryId);
 

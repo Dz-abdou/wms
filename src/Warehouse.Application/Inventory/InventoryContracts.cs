@@ -98,4 +98,8 @@ public sealed record InventoryMovementListQuery(
 
 public sealed record InventoryAdjustmentListQuery(
     int Page = PaginationConstants.DefaultPage,
-    int PageSize = PaginationConstants.DefaultPageSize) : IPagedRequest;
+    int PageSize = PaginationConstants.DefaultPageSize,
+    InventoryAdjustmentReason? Reason = null,
+    string? Reference = null,
+    DateTime? FromUtc = null,
+    DateTime? ToUtc = null) : IPagedRequest;

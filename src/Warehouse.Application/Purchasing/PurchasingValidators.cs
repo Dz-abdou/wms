@@ -5,7 +5,17 @@ using Warehouse.Domain.Purchasing;
 
 namespace Warehouse.Application.Purchasing;
 
-public sealed class SupplierProductListQueryValidator : PagedRequestValidator<SupplierProductListQuery> { }
+public sealed class SupplierProductListQueryValidator : PagedRequestValidator<SupplierProductListQuery>
+{
+    public SupplierProductListQueryValidator()
+    {
+        RuleFor(query => query.CurrencyCode)
+            .MaximumLength(SupplierProductRules.CurrencyCodeLength)
+            .WithErrorCode(ApiErrorCodes.ValidationMaxLength)
+            .Must(code => string.IsNullOrWhiteSpace(code) || code.Trim().All(char.IsAsciiLetter))
+            .WithErrorCode(ApiErrorCodes.ValidationInvalid);
+    }
+}
 
 public sealed class SupplierProductInputValidator : AbstractValidator<SupplierProductInput>
 {
@@ -33,7 +43,13 @@ public sealed class UpdateSupplierProductInputValidator : AbstractValidator<Upda
     }
 }
 
-public sealed class PurchaseOrderListQueryValidator : PagedRequestValidator<PurchaseOrderListQuery> { }
+public sealed class PurchaseOrderListQueryValidator : PagedRequestValidator<PurchaseOrderListQuery>
+{
+    public PurchaseOrderListQueryValidator()
+    {
+        RuleFor(query => query.Status).IsInEnum().When(query => query.Status.HasValue);
+    }
+}
 
 public sealed class PurchaseOrderInputValidator : AbstractValidator<PurchaseOrderInput>
 {

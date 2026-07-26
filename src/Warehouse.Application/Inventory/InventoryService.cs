@@ -49,6 +49,14 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
     public async Task<PagedResult<InventoryAdjustmentListItemResponse>> GetAdjustmentsAsync(InventoryAdjustmentListQuery query, CancellationToken cancellationToken)
     {
         var adjustments = dbContext.InventoryAdjustments.AsNoTracking();
+        if (query.Reason is { } reason) adjustments = adjustments.Where(adjustment => adjustment.Reason == reason);
+        if (!string.IsNullOrWhiteSpace(query.Reference))
+        {
+            var reference = query.Reference.Trim();
+            adjustments = adjustments.Where(adjustment => adjustment.Reference != null && adjustment.Reference.Contains(reference));
+        }
+        if (query.FromUtc is { } fromUtc) adjustments = adjustments.Where(adjustment => adjustment.CreatedAtUtc >= fromUtc);
+        if (query.ToUtc is { } toUtc) adjustments = adjustments.Where(adjustment => adjustment.CreatedAtUtc <= toUtc);
         var totalCount = await adjustments.CountAsync(cancellationToken);
         var items = await adjustments
             .OrderByDescending(adjustment => adjustment.CreatedAtUtc)

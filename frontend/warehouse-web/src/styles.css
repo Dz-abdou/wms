@@ -1,8 +1,15 @@
-@import 'antd/dist/reset.css';
+@import "antd/dist/reset.css";
 
 body {
   margin: 0;
   background: #f5f7fa;
+}
+
+:root {
+  --page-content-width: 1200px;
+  --page-space: 24px;
+  --section-space: 24px;
+  --border-subtle: #f0f0f0;
 }
 
 .application-layout {
@@ -31,7 +38,7 @@ body {
 }
 
 .application-content {
-  max-width: 1200px;
+  max-width: var(--page-content-width);
   width: 100%;
   margin: 0 auto;
   padding: 32px 24px;
@@ -49,6 +56,65 @@ body {
   margin-bottom: 4px;
 }
 
+.page-back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.page-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.page-section {
+  margin-top: var(--section-space);
+}
+
+.page-filter-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: var(--section-space);
+}
+
+.list-filter-controls {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.list-filter {
+  display: grid;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.list-filter-search {
+  min-width: min(100%, 320px);
+  width: 320px;
+}
+
+.list-filter-compact {
+  min-width: 132px;
+  width: 132px;
+}
+
+.list-filter-regular {
+  width: 200px;
+}
+
+.list-filter-label {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.list-filter-actions {
+  flex: none;
+  padding-bottom: 3px;
+}
 
 .login-page {
   display: grid;
@@ -90,6 +156,12 @@ body {
   border-top: 1px solid #f0f0f0;
 }
 
+.modal-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
 .editable-table-add-row .ant-table-cell {
   padding-block: 8px !important;
 }
@@ -100,6 +172,21 @@ body {
 
 .inventory-history-card {
   margin-top: 24px;
+}
+
+@media (max-width: 960px) {
+  .application-header {
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+    padding-block: 8px;
+  }
+
+  .application-menu {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+  }
 }
 
 @media (max-width: 640px) {
@@ -119,6 +206,26 @@ body {
   .page-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .page-filter-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .list-filter-controls {
+    flex-direction: column;
+  }
+
+  .list-filter,
+  .list-filter-compact,
+  .list-filter-regular,
+  .list-filter-search {
+    width: 100%;
+  }
+
+  .list-filter-actions {
+    align-self: flex-end;
   }
 
   .form-page-actions {

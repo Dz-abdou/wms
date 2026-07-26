@@ -10,6 +10,10 @@ export const administrationRoutes = {
   rolesPattern: "administration/roles",
   users: "/administration/users",
   usersPattern: "administration/users",
+  userCreate: "/administration/users/new",
+  userCreatePattern: "administration/users/new",
+  userEdit: (id: string) => `/administration/users/${id}/edit`,
+  userEditPattern: "administration/users/:id/edit",
 } as const;
 
 export const administrationRoles = ["admin", "manager", "operator"] as const;
