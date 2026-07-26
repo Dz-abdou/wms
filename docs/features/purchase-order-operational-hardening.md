@@ -45,6 +45,8 @@ commercial terms changing underneath it.
    authenticated user.
 4. Draft edits require the current version. A stale update returns
    `purchase_order.concurrency_conflict` and never overwrites a newer draft.
+   This is optimistic concurrency: drafts remain editable by multiple managers;
+   the application detects a conflict only when a stale save is attempted.
 5. Submission requires at least one distinct, valid catalogue line and records
    the submission timestamp and a Draft-to-Submitted history entry.
 6. Submission snapshots each line's product and supplier identifiers, product
@@ -100,6 +102,10 @@ New stable purchase-order codes include `purchase_order.concurrency_conflict`,
 - The line table shows catalogue item, product, supplier SKU, UoM, MOQ,
   quantity, unit price, currency, derived line amount, and remove action. Its
   add action stays in the table footer.
+- The edit page retains the version returned by the API and submits it on every
+  save, submit, or cancel request. On `purchase_order.concurrency_conflict`, it
+  keeps the user's unsaved form values, shows localized recovery guidance, and
+  offers a refresh rather than overwriting the current draft.
 - The detail page shows order number, status, supplier, destination warehouse,
   buyer, dates, reference/notes, totals, immutable line table, and status
   timeline.
@@ -153,6 +159,8 @@ the current status and append-only status timeline are displayed.
 ### Frontend Tests
 
 - Header/line validation, version serialization, and translated server errors.
+- Stale save, submit, and cancel behavior preserves the current persisted draft
+  and shows the localized optimistic-concurrency recovery state.
 - List query serialization, totals/detail timeline rendering, and draft versus
   submitted action availability.
 
