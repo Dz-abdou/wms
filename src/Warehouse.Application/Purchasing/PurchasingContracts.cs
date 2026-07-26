@@ -50,11 +50,23 @@ public sealed record PurchaseOrderListQuery(
     int Page = PaginationConstants.DefaultPage,
     int PageSize = PaginationConstants.DefaultPageSize,
     PurchaseOrderStatus? Status = null,
-    Guid? SupplierId = null) : IPagedRequest;
+    Guid? SupplierId = null,
+    Guid? WarehouseId = null,
+    DateOnly? FromOrderDate = null,
+    DateOnly? ToOrderDate = null) : IPagedRequest;
 
 public sealed record PurchaseOrderLineInput(Guid SupplierProductId, decimal Quantity);
 
-public sealed record PurchaseOrderInput(Guid SupplierId, IReadOnlyCollection<PurchaseOrderLineInput>? Lines);
+public sealed record PurchaseOrderInput(
+    Guid SupplierId,
+    Guid DestinationWarehouseId,
+    string? CurrencyCode,
+    DateOnly OrderDate,
+    DateOnly? ExpectedDeliveryDate,
+    string? SupplierReference,
+    string? Notes,
+    int? Version,
+    IReadOnlyCollection<PurchaseOrderLineInput>? Lines);
 
 public sealed record PurchaseOrderLineResponse(
     Guid Id,
@@ -66,14 +78,28 @@ public sealed record PurchaseOrderLineResponse(
     string PurchaseUnitOfMeasure,
     decimal Quantity,
     decimal UnitPrice,
-    string CurrencyCode);
+    string CurrencyCode,
+    decimal LineAmount);
 
 public sealed record PurchaseOrderResponse(
     Guid Id,
     Guid SupplierId,
     string SupplierCode,
     string SupplierName,
+    string? Number,
+    Guid? DestinationWarehouseId,
+    string? DestinationWarehouseCode,
+    string? DestinationWarehouseName,
+    string? CurrencyCode,
+    DateOnly? OrderDate,
+    DateOnly? ExpectedDeliveryDate,
+    Guid? BuyerUserId,
+    string? SupplierReference,
+    string? Notes,
     PurchaseOrderStatus Status,
     IReadOnlyCollection<PurchaseOrderLineResponse> Lines,
+    decimal TotalAmount,
+    int Version,
+    DateTime? SubmittedAtUtc,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);

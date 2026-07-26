@@ -7,6 +7,7 @@ using Warehouse.Application.Products;
 using Warehouse.Application.Suppliers;
 using Warehouse.Domain.Products;
 using Warehouse.Domain.Purchasing;
+using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 
 namespace Warehouse.Application.Purchasing;
 
@@ -19,7 +20,9 @@ public sealed class PurchaseOrderService(
     {
         var orders = from purchaseOrder in dbContext.PurchaseOrders.AsNoTracking()
                      join supplier in dbContext.Suppliers.AsNoTracking() on purchaseOrder.SupplierId equals supplier.Id
-                     select new { purchaseOrder, supplier };
+                     join warehouse in dbContext.Warehouses.AsNoTracking() on purchaseOrder.DestinationWarehouseId equals warehouse.Id into warehouses
+                     from warehouse in warehouses.DefaultIfEmpty()
+                     select new { purchaseOrder, supplier, warehouse };
         if (query.Status is { } status)
         {
             orders = orders.Where(item => item.purchaseOrder.Status == status);
@@ -28,6 +31,9 @@ public sealed class PurchaseOrderService(
         {
             orders = orders.Where(item => item.purchaseOrder.SupplierId == supplierId);
         }
+        if (query.WarehouseId is { } warehouseId) orders = orders.Where(item => item.purchaseOrder.DestinationWarehouseId == warehouseId);
+        if (query.FromOrderDate is { } fromDate) orders = orders.Where(item => item.purchaseOrder.OrderDate >= fromDate);
+        if (query.ToOrderDate is { } toDate) orders = orders.Where(item => item.purchaseOrder.OrderDate <= toDate);
 
         var totalCount = await orders.CountAsync(cancellationToken);
         var page = await orders
@@ -35,15 +41,7 @@ public sealed class PurchaseOrderService(
             .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
             .Take(query.PageSize)
             .ToListAsync(cancellationToken);
-        var items = page.Select(item => new PurchaseOrderResponse(
-            item.purchaseOrder.Id,
-            item.purchaseOrder.SupplierId,
-            item.supplier.Code,
-            item.supplier.Name,
-            item.purchaseOrder.Status,
-            Array.Empty<PurchaseOrderLineResponse>(),
-            item.purchaseOrder.CreatedAtUtc,
-            item.purchaseOrder.UpdatedAtUtc)).ToList();
+        var items = page.Select(item => ToResponse(item.purchaseOrder, item.supplier.Code, item.supplier.Name, item.warehouse)).ToList();
         return new PagedResult<PurchaseOrderResponse>(items, query.Page, query.PageSize, totalCount);
     }
 
@@ -53,14 +51,23 @@ public sealed class PurchaseOrderService(
             .SingleOrDefaultAsync(order => order.Id == id, cancellationToken)
             ?? throw new PurchaseOrderNotFoundException(id);
         var supplier = await dbContext.Suppliers.AsNoTracking().SingleAsync(candidate => candidate.Id == purchaseOrder.SupplierId, cancellationToken);
-        return ToResponse(purchaseOrder, supplier.Code, supplier.Name);
+        var warehouse = purchaseOrder.DestinationWarehouseId is { } warehouseId
+            ? await dbContext.Warehouses.AsNoTracking().SingleOrDefaultAsync(candidate => candidate.Id == warehouseId, cancellationToken)
+            : null;
+        return ToResponse(purchaseOrder, supplier.Code, supplier.Name, warehouse);
     }
 
     public async Task<PurchaseOrderResponse> CreateAsync(PurchaseOrderInput input, CancellationToken cancellationToken)
     {
         await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
-        var lines = await ResolveLinesAsync(input.SupplierId, input.Lines ?? [], cancellationToken);
-        var purchaseOrder = PurchaseOrder.Create(input.SupplierId, UtcNow(), currentUser.UserId);
+        await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
+        var lines = await ResolveLinesAsync(input.SupplierId, input.CurrencyCode, input.Lines ?? [], cancellationToken);
+        var now = UtcNow();
+        var sequence = PurchaseOrderNumberSequence.Create(now.Year);
+        dbContext.PurchaseOrderNumberSequences.Add(sequence);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        var buyerUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
+        var purchaseOrder = PurchaseOrder.Create(sequence.ToNumber(), input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
         purchaseOrder.ReplaceLines(lines, UtcNow(), currentUser.UserId);
         dbContext.PurchaseOrders.Add(purchaseOrder);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -72,9 +79,10 @@ public sealed class PurchaseOrderService(
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         EnsureDraft(purchaseOrder);
         await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
-        var lines = await ResolveLinesAsync(input.SupplierId, input.Lines ?? [], cancellationToken);
+        await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
+        var lines = await ResolveLinesAsync(input.SupplierId, input.CurrencyCode, input.Lines ?? [], cancellationToken);
         var updatedAtUtc = UtcNow();
-        purchaseOrder.UpdateSupplier(input.SupplierId, updatedAtUtc, currentUser.UserId);
+        purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, input.CurrencyCode!, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, input.Version ?? -1, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
         purchaseOrder.ReplaceLines(lines, updatedAtUtc, currentUser.UserId);
         await dbContext.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
@@ -90,7 +98,7 @@ public sealed class PurchaseOrderService(
         }
 
         await EnsureSupplierIsActiveAsync(purchaseOrder.SupplierId, cancellationToken);
-        await ValidateDraftLinesAsync(purchaseOrder.SupplierId, purchaseOrder.Lines, cancellationToken);
+        await ValidateDraftLinesAsync(purchaseOrder.SupplierId, purchaseOrder.CurrencyCode, purchaseOrder.Lines, cancellationToken);
         purchaseOrder.Submit(UtcNow(), currentUser.UserId);
         await dbContext.SaveChangesAsync(cancellationToken);
         return await GetByIdAsync(id, cancellationToken);
@@ -110,7 +118,13 @@ public sealed class PurchaseOrderService(
         }
     }
 
-    private async Task<IReadOnlyCollection<PurchaseOrderLine>> ResolveLinesAsync(Guid supplierId, IReadOnlyCollection<PurchaseOrderLineInput> inputs, CancellationToken cancellationToken)
+    private async Task EnsureWarehouseIsActiveAsync(Guid warehouseId, CancellationToken cancellationToken)
+    {
+        var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(candidate => candidate.Id == warehouseId, cancellationToken);
+        if (warehouse is null || !warehouse.IsActive) throw new PurchaseOrderCatalogueInvalidException("An active destination warehouse is required.");
+    }
+
+    private async Task<IReadOnlyCollection<PurchaseOrderLine>> ResolveLinesAsync(Guid supplierId, string? currencyCode, IReadOnlyCollection<PurchaseOrderLineInput> inputs, CancellationToken cancellationToken)
     {
         if (inputs.Select(input => input.SupplierProductId).Distinct().Count() != inputs.Count)
         {
@@ -139,6 +153,10 @@ public sealed class PurchaseOrderService(
             {
                 throw new PurchaseOrderMinimumOrderQuantityException(lineIndex, catalogueItem.MinimumOrderQuantity);
             }
+            if (!string.Equals(catalogueItem.CurrencyCode, currencyCode, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new PurchaseOrderCatalogueInvalidException("Every line must use the purchase-order currency.");
+            }
 
             lines.Add(PurchaseOrderLine.Create(catalogueItem, product.Sku, product.Name, input.Quantity));
         }
@@ -146,10 +164,10 @@ public sealed class PurchaseOrderService(
         return lines;
     }
 
-    private async Task ValidateDraftLinesAsync(Guid supplierId, IReadOnlyCollection<PurchaseOrderLine> lines, CancellationToken cancellationToken)
+    private async Task ValidateDraftLinesAsync(Guid supplierId, string? currencyCode, IReadOnlyCollection<PurchaseOrderLine> lines, CancellationToken cancellationToken)
     {
         var inputs = lines.Select(line => new PurchaseOrderLineInput(line.SupplierProductId, line.Quantity)).ToArray();
-        await ResolveLinesAsync(supplierId, inputs, cancellationToken);
+        await ResolveLinesAsync(supplierId, currencyCode, inputs, cancellationToken);
     }
 
     private static void EnsureDraft(PurchaseOrder purchaseOrder)
@@ -160,11 +178,21 @@ public sealed class PurchaseOrderService(
         }
     }
 
-    private static PurchaseOrderResponse ToResponse(PurchaseOrder purchaseOrder, string supplierCode, string supplierName) => new(
+    private static PurchaseOrderResponse ToResponse(PurchaseOrder purchaseOrder, string supplierCode, string supplierName, WarehouseEntity? warehouse) => new(
         purchaseOrder.Id,
         purchaseOrder.SupplierId,
         supplierCode,
         supplierName,
+        purchaseOrder.Number,
+        purchaseOrder.DestinationWarehouseId,
+        warehouse?.Code,
+        warehouse?.Name,
+        purchaseOrder.CurrencyCode,
+        purchaseOrder.OrderDate,
+        purchaseOrder.ExpectedDeliveryDate,
+        purchaseOrder.BuyerUserId,
+        purchaseOrder.SupplierReference,
+        purchaseOrder.Notes,
         purchaseOrder.Status,
         purchaseOrder.Lines.Select(line => new PurchaseOrderLineResponse(
             line.Id,
@@ -176,7 +204,11 @@ public sealed class PurchaseOrderService(
             line.PurchaseUnitOfMeasure,
             line.Quantity,
             line.UnitPrice,
-            line.CurrencyCode)).ToList(),
+            line.CurrencyCode,
+            decimal.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero))).ToList(),
+        purchaseOrder.Lines.Sum(line => decimal.Round(line.Quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero)),
+        purchaseOrder.Version,
+        purchaseOrder.SubmittedAtUtc,
         purchaseOrder.CreatedAtUtc,
         purchaseOrder.UpdatedAtUtc);
 
