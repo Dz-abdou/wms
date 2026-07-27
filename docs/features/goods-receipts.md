@@ -49,12 +49,15 @@ leave no partial inventory changes if any line is invalid.
 5. Each accepted quantity uses the PO line's immutable conversion factor to
    update inventory in base units. Later product or catalogue changes cannot
    alter a posted receipt.
-6. Creating a receipt, applying all balances, writing all movements, and
+6. A receipt has no editable currency or exchange-rate field. It inherits the
+   purchase order's single currency and uses the PO-line commercial snapshots
+   only as read-only context; receiving never converts or reprices quantities.
+7. Creating a receipt, applying all balances, writing all movements, and
    changing purchase-order status occurs in one transaction. Any invalid line
    rolls back the entire receipt.
-7. A receipt is immutable after posting. Its number and timestamps are
+8. A receipt is immutable after posting. Its number and timestamps are
    historical records.
-8. Inventory-balance writes retain existing optimistic-concurrency protection.
+9. Inventory-balance writes retain existing optimistic-concurrency protection.
 
 ## Data Model Changes
 
@@ -93,6 +96,8 @@ inline by the frontend.
   displays a read-only header plus editable accepted-quantity table.
 - The line table shows PO line number, product/SKU, purchase UoM, ordered,
   previously received, outstanding, accepted now, and derived base quantity.
+- The PO currency is shown only as read-only commercial context when line value
+  is displayed. A receipt never lets users select a different currency.
 - Receipt destination warehouse, PO reference, and line context are
   informational and cannot be changed.
 - The detail route shows immutable receipt header/line snapshots and links to
@@ -112,6 +117,12 @@ receipt and one movement are created, and the PO becomes Partially Received.
 
 Given a partially received PO with 6 EA outstanding, when a manager receives
 6 EA, then stock increases by 6 base units and the PO becomes Received.
+
+### Currency integrity
+
+Given a purchase order in a single currency, when a manager opens or posts a
+receipt, then the receipt exposes that currency only as read-only context and
+cannot select, convert, or reprice in another currency.
 
 ### Atomic invalid receipt
 
