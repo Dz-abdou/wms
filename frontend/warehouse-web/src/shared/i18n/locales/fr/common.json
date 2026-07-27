@@ -88,6 +88,7 @@
       "purchase_order.currency_not_available": "Cette devise n’est pas disponible pour le fournisseur sélectionné.",
       "purchase_order.currency_locked": "La devise de la commande ne peut pas être modifiée après la sélection d’une ligne du catalogue.",
       "purchase_order.minimum_order_quantity": "La quantité est inférieure à la quantité minimale commandable du fournisseur.",
+      "purchase_order.quantity_unit_invalid": "La quantité doit être un nombre entier pour l’unité sélectionnée.",
       "purchase_order.submission_invalid": "Cette commande ne peut pas encore être soumise.",
       "purchase_order.concurrency_conflict": "Cette commande a été mise à jour par un autre utilisateur. Actualisez-la et examinez les dernières modifications avant de l’enregistrer à nouveau.",
       "purchase_order.invalid_transition": "Cette commande ne peut pas effectuer ce changement de statut.",

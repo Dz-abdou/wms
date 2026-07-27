@@ -294,6 +294,29 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Purchase_order_marks_a_fractional_quantity_for_a_whole_unit()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/purchase-orders", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 100.3m } }
+        });
+
+        await AssertFieldErrorAsync(
+            response,
+            "Lines[0].Quantity",
+            ApiErrorCodes.PurchaseOrderQuantityUnitInvalid);
+    }
+
+    [Fact]
     public async Task Purchase_order_marks_the_currency_field_when_it_is_not_available_for_the_supplier()
     {
         var supplier = await CreateSupplierAsync();

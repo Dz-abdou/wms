@@ -188,13 +188,20 @@ public sealed class PurchaseOrderService(
                 || catalogueItem.SupplierId != supplierId
                 || !catalogueItem.IsActive
                 || !products.TryGetValue(catalogueItem.ProductId, out var product)
-                || !product.IsActive
-                || !product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _))
+                || !product.IsActive)
             {
                 throw new PurchaseOrderFieldValidationException(
                     $"Lines[{lineIndex}].SupplierProductId",
                     ApiErrorCodes.PurchaseOrderCatalogueItemUnavailable,
                     "The selected supplier catalogue item is unavailable. Choose an active item for the selected supplier.");
+            }
+
+            if (!product.TryConvertToBaseQuantity(catalogueItem.PurchaseUnitOfMeasure, input.Quantity, out _))
+            {
+                throw new PurchaseOrderFieldValidationException(
+                    $"Lines[{lineIndex}].Quantity",
+                    ApiErrorCodes.PurchaseOrderQuantityUnitInvalid,
+                    "The quantity is not valid for the selected purchase unit.");
             }
 
             if (input.Quantity < catalogueItem.MinimumOrderQuantity)

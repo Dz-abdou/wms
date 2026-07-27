@@ -88,6 +88,7 @@
       "purchase_order.currency_not_available": "This currency is not available for the selected supplier.",
       "purchase_order.currency_locked": "The order currency cannot be changed after a catalogue line is selected.",
       "purchase_order.minimum_order_quantity": "Quantity is below the supplier minimum order quantity.",
+      "purchase_order.quantity_unit_invalid": "Quantity must be a whole number for the selected unit.",
       "purchase_order.submission_invalid": "This purchase order cannot be submitted yet.",
       "purchase_order.concurrency_conflict": "This purchase order was updated by another user. Refresh it and review the latest changes before saving again.",
       "purchase_order.invalid_transition": "This purchase order cannot make that status change.",

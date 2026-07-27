@@ -54,6 +54,7 @@ public static class ApiErrorCodes
     public const string PurchaseOrderCurrencyNotAvailable = "purchase_order.currency_not_available";
     public const string PurchaseOrderCurrencyLocked = "purchase_order.currency_locked";
     public const string PurchaseOrderMinimumOrderQuantity = "purchase_order.minimum_order_quantity";
+    public const string PurchaseOrderQuantityUnitInvalid = "purchase_order.quantity_unit_invalid";
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
     public const string PurchaseOrderInvalidTransition = "purchase_order.invalid_transition";

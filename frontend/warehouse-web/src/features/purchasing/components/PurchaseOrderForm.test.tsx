@@ -1,6 +1,7 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "../../../shared/api/apiClient";
 import { i18n } from "../../../shared/i18n/i18n";
 import { PurchaseOrderForm } from "./PurchaseOrderForm";
 
@@ -203,5 +204,47 @@ describe("PurchaseOrderForm", () => {
     expect(
       await screen.findByText("Quantity must be at least 2."),
     ).toBeInTheDocument();
+  });
+
+  it("shows a server quantity-unit error beside the line quantity", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockRejectedValue(
+      new ApiError(422, {
+        errorCodes: {
+          "Lines[0].Quantity": ["purchase_order.quantity_unit_invalid"],
+        },
+        errors: {
+          "Lines[0].Quantity": [
+            "The quantity is not valid for the selected purchase unit.",
+          ],
+        },
+      }),
+    );
+
+    render(
+      <PurchaseOrderForm
+        errorMessageKey="purchasing.orders.errors.create"
+        initialValues={{
+          supplierId: "supplier-1",
+          destinationWarehouseId: "warehouse-1",
+          currencyCode: "DZD",
+          orderDate: "2026-07-27",
+          lines: [{ supplierProductId: "catalogue-1", quantity: 100.3 }],
+        }}
+        isSubmitting={false}
+        onSubmit={onSubmit}
+        submitLabel="Create draft"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Create draft" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Quantity must be a whole number for the selected unit.",
+        ),
+      ).toBeInTheDocument(),
+    );
   });
 });
