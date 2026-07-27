@@ -57,7 +57,16 @@ leave no partial inventory changes if any line is invalid.
    rolls back the entire receipt.
 8. A receipt is immutable after posting. Its number and timestamps are
    historical records.
-9. Inventory-balance writes retain existing optimistic-concurrency protection.
+9. A receipt request includes the version returned with its purchase-order
+   receipt candidate. Posting rechecks that version while changing the PO
+   status; a stale request returns
+   `goods_receipt.purchase_order_concurrency_conflict` and makes no changes.
+   This prevents two receivers from over-receiving the same outstanding PO
+   line. The UI preserves entered accepted quantities and asks the user to
+   refresh the outstanding quantities before retrying.
+10. Inventory-balance writes retain existing optimistic-concurrency protection.
+    A balance conflict rolls back the receipt transaction and returns a stable
+    retryable conflict code; it never produces a partial receipt.
 
 ## Data Model Changes
 
@@ -81,7 +90,7 @@ files or the model snapshot.
 |---|---|---|
 | GET | `/api/goods-receipts` | Paged list, filterable by PO and warehouse. |
 | GET | `/api/goods-receipts/{id}` | Receipt header and immutable lines. |
-| GET | `/api/purchase-orders/{id}/receipt-candidate` | Submitted PO lines with received/outstanding quantities. |
+| GET | `/api/purchase-orders/{id}/receipt-candidate` | Submitted PO version and lines with received/outstanding quantities. |
 | POST | `/api/goods-receipts` | Atomically post a receipt. |
 
 All failures use Problem Details with stable codes. Request-field failures are
@@ -100,6 +109,9 @@ inline by the frontend.
   is displayed. A receipt never lets users select a different currency.
 - Receipt destination warehouse, PO reference, and line context are
   informational and cannot be changed.
+- The create request carries the receipt candidate's PO version. On a stale
+  receipt conflict, entered quantities remain visible and a localized refresh
+  action reloads the latest outstanding quantities before the user retries.
 - The detail route shows immutable receipt header/line snapshots and links to
   the related PO.
 - All visible copy and API errors use English/French locale keys. Every changed
@@ -130,6 +142,13 @@ Given a receipt request with multiple lines where one exceeds outstanding
 quantity, when it is submitted, then the API returns a localized field error
 and creates no receipt, movement, balance change, or PO status change.
 
+### Safe concurrent receiving
+
+Given two receivers open the same PO receipt candidate, when one posts a
+receipt first, then the other cannot post against the stale PO version. The
+second request returns `goods_receipt.purchase_order_concurrency_conflict` and
+creates no receipt, movement, balance change, or PO status change.
+
 ## Unit Tests
 
 - Receipt number and line snapshot invariants.
@@ -140,12 +159,15 @@ and creates no receipt, movement, balance change, or PO status change.
 
 - Partial/final receipt updates inventory, movements, and PO status atomically.
 - Over-receipt returns an exact field error with no partial persistence.
+- Concurrent receipt posting detects a stale PO version without partial
+  persistence.
 - Concurrent balance handling and receipt number uniqueness.
 
 ## Frontend Tests
 
 - Receipt candidate/outstanding display and accepted-quantity validation.
 - Nested server error maps to the responsible quantity cell in English/French.
+- A stale receipt conflict preserves entered quantities and offers a refresh.
 - List/create/detail loading, empty, and error states.
 
 ## Manual Test Checklist
