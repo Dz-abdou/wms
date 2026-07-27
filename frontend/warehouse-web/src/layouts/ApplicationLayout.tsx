@@ -10,6 +10,7 @@ import { productRoutes } from "../features/products/productConstants";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { supplierRoutes } from "../features/suppliers/supplierConstants";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
+import { receivingRoutes } from "../features/receiving/receivingConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -23,26 +24,31 @@ export function ApplicationLayout() {
     ? "products"
     : location.pathname.startsWith(productRoutes.categories)
       ? "categories"
-    : location.pathname.startsWith(warehouseRoutes.list)
-      ? "warehouses"
-      : location.pathname.startsWith(supplierRoutes.list)
-        ? "suppliers"
-        : location.pathname.startsWith(purchasingRoutes.catalogue)
-          ? "catalogue"
-          : location.pathname.startsWith(purchasingRoutes.currencies)
-            ? "currencies"
-          : location.pathname.startsWith(purchasingRoutes.orders)
-            ? "purchase-orders"
-            : location.pathname.startsWith(inventoryRoutes.adjustments)
-              ? "inventory-adjustments"
-              : location.pathname.startsWith(inventoryRoutes.movementHistory) ||
-                  location.pathname.startsWith(inventoryRoutes.root)
-                ? "inventory-movements"
-              : location.pathname.startsWith(administrationRoutes.users)
-                ? "users"
-                : location.pathname.startsWith(administrationRoutes.roles)
-                  ? "roles"
-                  : "home";
+      : location.pathname.startsWith(warehouseRoutes.list)
+        ? "warehouses"
+        : location.pathname.startsWith(supplierRoutes.list)
+          ? "suppliers"
+          : location.pathname.startsWith(purchasingRoutes.catalogue)
+            ? "catalogue"
+            : location.pathname.startsWith(purchasingRoutes.currencies)
+              ? "currencies"
+              : location.pathname.startsWith(purchasingRoutes.orders)
+                ? "purchase-orders"
+                : location.pathname.startsWith(receivingRoutes.list)
+                  ? "goods-receipts"
+                  : location.pathname.startsWith(inventoryRoutes.adjustments)
+                    ? "inventory-adjustments"
+                    : location.pathname.startsWith(
+                          inventoryRoutes.movementHistory,
+                        ) || location.pathname.startsWith(inventoryRoutes.root)
+                      ? "inventory-movements"
+                      : location.pathname.startsWith(administrationRoutes.users)
+                        ? "users"
+                        : location.pathname.startsWith(
+                              administrationRoutes.roles,
+                            )
+                          ? "roles"
+                          : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -55,17 +61,82 @@ export function ApplicationLayout() {
           className="application-menu"
           items={[
             { key: "home", label: <Link to="/">{t("navigation.home")}</Link> },
-            { key: "master-data", label: t("navigation.masterData"), children: [
-              { key: "products", label: <Link to={productRoutes.list}>{t("navigation.products")}</Link> },
-              { key: "categories", label: <Link to={productRoutes.categories}>{t("navigation.categories")}</Link> },
-              { key: "warehouses", label: <Link to={warehouseRoutes.list}>{t("navigation.warehouses")}</Link> },
-              { key: "suppliers", label: <Link to={supplierRoutes.list}>{t("navigation.suppliers")}</Link> },
-              { key: "currencies", label: <Link to={purchasingRoutes.currencies}>{t("navigation.currencies")}</Link> },
-            ] },
-            { key: "inbound", label: t("navigation.inbound"), children: [
-              { key: "catalogue", label: <Link to={purchasingRoutes.catalogue}>{t("navigation.supplierCatalogue")}</Link> },
-              { key: "purchase-orders", label: <Link to={purchasingRoutes.orders}>{t("navigation.purchaseOrders")}</Link> },
-            ] },
+            {
+              key: "master-data",
+              label: t("navigation.masterData"),
+              children: [
+                {
+                  key: "products",
+                  label: (
+                    <Link to={productRoutes.list}>
+                      {t("navigation.products")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "categories",
+                  label: (
+                    <Link to={productRoutes.categories}>
+                      {t("navigation.categories")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "warehouses",
+                  label: (
+                    <Link to={warehouseRoutes.list}>
+                      {t("navigation.warehouses")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "suppliers",
+                  label: (
+                    <Link to={supplierRoutes.list}>
+                      {t("navigation.suppliers")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "currencies",
+                  label: (
+                    <Link to={purchasingRoutes.currencies}>
+                      {t("navigation.currencies")}
+                    </Link>
+                  ),
+                },
+              ],
+            },
+            {
+              key: "inbound",
+              label: t("navigation.inbound"),
+              children: [
+                {
+                  key: "catalogue",
+                  label: (
+                    <Link to={purchasingRoutes.catalogue}>
+                      {t("navigation.supplierCatalogue")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "purchase-orders",
+                  label: (
+                    <Link to={purchasingRoutes.orders}>
+                      {t("navigation.purchaseOrders")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "goods-receipts",
+                  label: (
+                    <Link to={receivingRoutes.list}>
+                      {t("navigation.goodsReceipts")}
+                    </Link>
+                  ),
+                },
+              ],
+            },
             {
               key: "inventory",
               label: t("navigation.inventory"),

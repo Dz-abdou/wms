@@ -114,7 +114,9 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                         join warehouse in dbContext.Warehouses.AsNoTracking() on movement.WarehouseId equals warehouse.Id
                         join adjustment in dbContext.InventoryAdjustments.AsNoTracking() on movement.InventoryAdjustmentId equals adjustment.Id into adjustments
                         from adjustment in adjustments.DefaultIfEmpty()
-                        select new { movement, product, warehouse, adjustment };
+                        join receipt in dbContext.GoodsReceipts.AsNoTracking() on movement.GoodsReceiptId equals receipt.Id into receipts
+                        from receipt in receipts.DefaultIfEmpty()
+                        select new { movement, product, warehouse, adjustment, receipt };
         if (query.ProductId is { } productId) movements = movements.Where(item => item.movement.ProductId == productId);
         if (query.WarehouseId is { } warehouseId) movements = movements.Where(item => item.movement.WarehouseId == warehouseId);
         if (query.Type is { } type) movements = movements.Where(item => item.movement.Type == type);
@@ -123,7 +125,9 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         if (!string.IsNullOrWhiteSpace(query.Reference))
         {
             var reference = query.Reference.Trim();
-            movements = movements.Where(item => item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference));
+            movements = movements.Where(item =>
+                (item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference))
+                || (item.receipt != null && item.receipt.Number.Contains(reference)));
         }
         var totalCount = await movements.CountAsync(cancellationToken);
         var items = await movements
@@ -134,6 +138,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .Select(item => new InventoryMovementResponse(
                 item.movement.Id,
                 item.movement.InventoryAdjustmentId,
+                item.movement.GoodsReceiptId,
                 item.product.Id,
                 item.product.Sku,
                 item.product.Name,
@@ -141,6 +146,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.warehouse.Code,
                 item.warehouse.Name,
                 item.adjustment == null ? null : item.adjustment.Reference,
+                item.receipt == null ? null : item.receipt.Number,
                 item.movement.Type.ToString(),
                 item.movement.UnitOfMeasure,
                 item.movement.QuantityDeltaInUnit,

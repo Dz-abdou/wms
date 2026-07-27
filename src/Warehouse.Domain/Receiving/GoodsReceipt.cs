@@ -2,6 +2,12 @@ using Warehouse.Domain.Common;
 
 namespace Warehouse.Domain.Receiving;
 
+public static class GoodsReceiptRules
+{
+    public const int MaxSupplierDeliveryNoteLength = 128;
+    public const int MaxNotesLength = 2000;
+}
+
 public sealed class GoodsReceipt : PersistentEntity
 {
     private readonly List<GoodsReceiptLine> lines = [];
@@ -27,7 +33,7 @@ public sealed class GoodsReceipt : PersistentEntity
         if (string.IsNullOrWhiteSpace(number) || purchaseOrderId == Guid.Empty || warehouseId == Guid.Empty || receiverUserId == Guid.Empty)
             throw new ArgumentException("A valid goods receipt requires document identifiers.");
         if (receivedAtUtc.Kind != DateTimeKind.Utc) throw new ArgumentException("Received time must be UTC.", nameof(receivedAtUtc));
-        return new GoodsReceipt(Guid.NewGuid(), number.Trim().ToUpperInvariant(), purchaseOrderId, warehouseId, receivedAtUtc, NormalizeOptional(supplierDeliveryNote, 128), NormalizeOptional(notes, 2000), receiverUserId, receivedAtUtc);
+        return new GoodsReceipt(Guid.NewGuid(), number.Trim().ToUpperInvariant(), purchaseOrderId, warehouseId, receivedAtUtc, NormalizeOptional(supplierDeliveryNote, GoodsReceiptRules.MaxSupplierDeliveryNoteLength), NormalizeOptional(notes, GoodsReceiptRules.MaxNotesLength), receiverUserId, receivedAtUtc);
     }
 
     public void AddLines(IEnumerable<GoodsReceiptLine> receiptLines)

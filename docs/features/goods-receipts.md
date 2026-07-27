@@ -2,7 +2,8 @@
 
 ## Status
 
-In progress — Phase 5 on `features/Goods-Receipts`.
+Implementation complete — awaiting final manual database-constraint migration and
+manual workflow verification on `features/Goods-Receipts`.
 
 ## Goal
 
@@ -88,7 +89,7 @@ files or the model snapshot.
 
 | Method | Route | Purpose |
 |---|---|---|
-| GET | `/api/goods-receipts` | Paged list, filterable by PO and warehouse. |
+| GET | `/api/goods-receipts` | Paged list, filterable by PO number and warehouse. |
 | GET | `/api/goods-receipts/{id}` | Receipt header and immutable lines. |
 | GET | `/api/purchase-orders/{id}/receipt-candidate` | Submitted PO version and lines with received/outstanding quantities. |
 | POST | `/api/goods-receipts` | Atomically post a receipt. |
@@ -114,6 +115,8 @@ inline by the frontend.
   action reloads the latest outstanding quantities before the user retries.
 - The detail route shows immutable receipt header/line snapshots and links to
   the related PO.
+- Receipt-created inventory movements are visible in Movement history and link
+  back to the immutable receipt detail.
 - All visible copy and API errors use English/French locale keys. Every changed
   frontend file is formatted before commit.
 
@@ -172,7 +175,9 @@ creates no receipt, movement, balance change, or PO status change.
 
 ## Manual Test Checklist
 
-- [ ] Generate, review, and apply the migration manually.
+- [x] Generate, review, and apply the initial goods-receipt migration manually.
+- [ ] Generate, review, and apply the follow-up foreign-key/check-constraint
+  migration manually.
 - [ ] Post a partial receipt and verify stock/movement/PO status.
 - [ ] Post the final receipt and verify the PO is received.
 - [ ] Attempt an over-receipt and verify no data changes.

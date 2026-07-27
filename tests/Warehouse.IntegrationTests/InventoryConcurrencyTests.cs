@@ -25,8 +25,10 @@ public sealed class InventoryConcurrencyTests(ProductApiFixture fixture)
         using var secondScope = fixture.Factory.Services.CreateScope();
         var firstContext = firstScope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
         var secondContext = secondScope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
-        var firstBalance = await firstContext.InventoryBalances.SingleAsync();
-        var secondBalance = await secondContext.InventoryBalances.SingleAsync();
+        var firstBalance = await firstContext.InventoryBalances.SingleAsync(
+            balance => balance.ProductId == productId && balance.WarehouseId == warehouseId);
+        var secondBalance = await secondContext.InventoryBalances.SingleAsync(
+            balance => balance.ProductId == productId && balance.WarehouseId == warehouseId);
 
         firstBalance.ApplyAdjustment(1m, DateTime.UtcNow);
         secondBalance.ApplyAdjustment(1m, DateTime.UtcNow);

@@ -59,6 +59,9 @@ public static class ApiErrorCodes
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
     public const string PurchaseOrderInvalidTransition = "purchase_order.invalid_transition";
     public const string GoodsReceiptPurchaseOrderUnavailable = "goods_receipt.purchase_order_unavailable";
+    public const string GoodsReceiptNotFound = "goods_receipt.not_found";
     public const string GoodsReceiptPurchaseOrderConcurrencyConflict = "goods_receipt.purchase_order_concurrency_conflict";
     public const string GoodsReceiptOverReceipt = "goods_receipt.over_receipt";
+    public const string GoodsReceiptPurchaseOrderLineUnavailable = "goods_receipt.purchase_order_line_unavailable";
+    public const string GoodsReceiptDuplicatePurchaseOrderLine = "goods_receipt.duplicate_purchase_order_line";
 }

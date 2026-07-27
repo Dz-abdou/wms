@@ -28,6 +28,10 @@ import { PurchaseOrderDetailPage } from "../features/purchasing/pages/PurchaseOr
 import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrderEditPage";
 import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
+import { GoodsReceiptCreatePage } from "../features/receiving/pages/GoodsReceiptCreatePage";
+import { GoodsReceiptDetailPage } from "../features/receiving/pages/GoodsReceiptDetailPage";
+import { GoodsReceiptListPage } from "../features/receiving/pages/GoodsReceiptListPage";
+import { receivingRoutes } from "../features/receiving/receivingConstants";
 import { InventoryAdjustmentPage } from "../features/inventory/pages/InventoryAdjustmentPage";
 import { InventoryAdjustmentDetailPage } from "../features/inventory/pages/InventoryAdjustmentDetailPage";
 import { InventoryAdjustmentListPage } from "../features/inventory/pages/InventoryAdjustmentListPage";
@@ -195,6 +199,18 @@ export function App() {
                     <Route
                       path={purchasingRoutes.orderEditPattern}
                       element={<PurchaseOrderEditPage />}
+                    />
+                    <Route
+                      path={receivingRoutes.listPattern}
+                      element={<GoodsReceiptListPage />}
+                    />
+                    <Route
+                      path={receivingRoutes.createPattern}
+                      element={<GoodsReceiptCreatePage />}
+                    />
+                    <Route
+                      path={receivingRoutes.detailPattern}
+                      element={<GoodsReceiptDetailPage />}
                     />
                     <Route
                       element={<ProtectedRoute roles={[administratorRole]} />}

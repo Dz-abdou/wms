@@ -14,6 +14,7 @@ import type {
   InventoryMovementFilter,
 } from "../api/inventoryTypes";
 import { inventoryPageSize, inventoryRoutes } from "../inventoryConstants";
+import { receivingRoutes } from "../../receiving/receivingConstants";
 import {
   ListFilter,
   ListPageLayout,
@@ -63,7 +64,9 @@ export function InventoryMovementHistoryPage() {
         t(
           value === "ManualIncrease"
             ? "inventory.types.increase"
-            : "inventory.types.decrease",
+            : value === "ManualDecrease"
+              ? "inventory.types.decrease"
+              : "inventory.types.goodsReceipt",
         ),
     },
     {
@@ -81,6 +84,10 @@ export function InventoryMovementHistoryPage() {
             to={inventoryRoutes.adjustmentDetail(x.inventoryAdjustmentId)}
           >
             {x.adjustmentReference ?? t("inventory.adjustment")}
+          </ReturnAwareLink>
+        ) : x.goodsReceiptId ? (
+          <ReturnAwareLink to={receivingRoutes.detail(x.goodsReceiptId)}>
+            {x.goodsReceiptNumber ?? t("receiving.title")}
           </ReturnAwareLink>
         ) : (
           "—"
@@ -167,6 +174,10 @@ export function InventoryMovementHistoryPage() {
                 {
                   value: "ManualDecrease",
                   label: t("inventory.types.decrease"),
+                },
+                {
+                  value: "GoodsReceipt",
+                  label: t("inventory.types.goodsReceipt"),
                 },
               ]}
               placeholder={t("inventory.table.type")}

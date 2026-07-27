@@ -64,6 +64,7 @@ export type InventoryBalance = {
 export type InventoryMovement = {
   id: string;
   inventoryAdjustmentId: string | null;
+  goodsReceiptId: string | null;
   productId: string;
   productSku: string;
   productName: string;
@@ -71,7 +72,8 @@ export type InventoryMovement = {
   warehouseCode: string;
   warehouseName: string;
   adjustmentReference: string | null;
-  type: "ManualIncrease" | "ManualDecrease";
+  goodsReceiptNumber: string | null;
+  type: "ManualIncrease" | "ManualDecrease" | "GoodsReceipt";
   quantityDelta: number;
   unitOfMeasure: string;
   quantityDeltaInUnit: number;

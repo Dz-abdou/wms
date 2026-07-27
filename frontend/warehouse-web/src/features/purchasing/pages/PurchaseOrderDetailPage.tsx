@@ -26,6 +26,7 @@ import {
   type PurchaseOrderLine,
 } from "../api/purchasingTypes";
 import { purchasingRoutes } from "../purchasingConstants";
+import { receivingRoutes } from "../../receiving/receivingConstants";
 import {
   DetailPageLayout,
   RouteActionButton,
@@ -96,7 +97,7 @@ export function PurchaseOrderDetailPage() {
   return (
     <DetailPageLayout
       actions={
-        order.status === 0 || order.status === 1 ? (
+        order.status === 0 || order.status === 1 || order.status === 2 ? (
           <>
             {order.status === 0 ? (
               <>
@@ -116,16 +117,26 @@ export function PurchaseOrderDetailPage() {
                 </Popconfirm>
               </>
             ) : null}
-            <Popconfirm
-              cancelText={t("purchasing.cancel")}
-              okText={t("purchasing.orders.cancelOrder")}
-              onConfirm={() => cancel.mutateAsync({ version: order.version })}
-              title={t("purchasing.orders.cancelOrder")}
-            >
-              <Button danger loading={cancel.isPending} type="text">
-                {t("purchasing.orders.cancelOrder")}
-              </Button>
-            </Popconfirm>
+            {order.status === 1 || order.status === 2 ? (
+              <RouteActionButton
+                to={receivingRoutes.create(order.id)}
+                type="primary"
+              >
+                {t("receiving.record")}
+              </RouteActionButton>
+            ) : null}
+            {order.status === 0 || order.status === 1 ? (
+              <Popconfirm
+                cancelText={t("purchasing.cancel")}
+                okText={t("purchasing.orders.cancelOrder")}
+                onConfirm={() => cancel.mutateAsync({ version: order.version })}
+                title={t("purchasing.orders.cancelOrder")}
+              >
+                <Button danger loading={cancel.isPending} type="text">
+                  {t("purchasing.orders.cancelOrder")}
+                </Button>
+              </Popconfirm>
+            ) : null}
           </>
         ) : undefined
       }
