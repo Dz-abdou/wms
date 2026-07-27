@@ -72,6 +72,14 @@ Keep standard Problem Details field names in `errors` for compatibility. Add a p
 
 The frontend renders `errorCodes.sku` through locale JSON. If it receives an unknown code, it shows a generic localized error rather than backend text.
 
+Domain and persistence rules that reject one specific input (for example, an
+inactive selected record, an unavailable unit, a duplicate combination, or an
+inactive currency) must also use this validation-response shape. Return the
+stable rule code in both `code` and `errorCodes`, and key the error by the
+request property rendered by the form. The frontend can then show the
+translated error beside the field; a general notification is reserved for
+failures that cannot be assigned to a single field.
+
 ## Initial Error-Code Catalogue
 
 | Code | Meaning |

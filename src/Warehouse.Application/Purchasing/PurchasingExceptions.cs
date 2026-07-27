@@ -9,6 +9,17 @@ public sealed class SupplierProductConflictException(Guid supplierId, Guid produ
 public sealed class SupplierProductCurrencyNotSupportedException(string currencyCode)
     : Exception($"Currency '{currencyCode}' is not enabled for purchasing.");
 
+public sealed class SupplierProductFieldValidationException(
+    string propertyName,
+    string errorCode,
+    string message)
+    : Exception(message)
+{
+    public string PropertyName => propertyName;
+
+    public string ErrorCode => errorCode;
+}
+
 public sealed class PurchaseOrderNotFoundException(Guid purchaseOrderId)
     : Exception($"Purchase order '{purchaseOrderId}' was not found.");
 

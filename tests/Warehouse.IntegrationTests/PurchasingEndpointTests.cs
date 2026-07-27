@@ -37,8 +37,10 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
             currencyCode = "ZZZ"
         });
 
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await AssertCodeAsync(response, ApiErrorCodes.SupplierProductCurrencyNotSupported);
+        await AssertFieldErrorAsync(
+            response,
+            "CurrencyCode",
+            ApiErrorCodes.SupplierProductCurrencyNotSupported);
     }
 
     [Fact]
@@ -62,8 +64,33 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
             currencyCode = "DZD"
         });
 
-        Assert.Equal(HttpStatusCode.Conflict, duplicate.StatusCode);
-        await AssertCodeAsync(duplicate, ApiErrorCodes.SupplierProductConflict);
+        await AssertFieldErrorAsync(
+            duplicate,
+            "PurchaseUnitOfMeasure",
+            ApiErrorCodes.SupplierProductConflict,
+            HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Supplier_catalogue_marks_a_fractional_minimum_for_a_whole_unit()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/supplier-products", new
+        {
+            supplierId = supplier.Id,
+            productId = product.Id,
+            purchaseUnitOfMeasure = "EA",
+            minimumOrderQuantity = 1.5m,
+            unitPrice = 20m,
+            currencyCode = "DZD"
+        });
+
+        await AssertFieldErrorAsync(
+            response,
+            "MinimumOrderQuantity",
+            ApiErrorCodes.SupplierProductMinimumOrderQuantityInvalid);
     }
 
     [Fact]
@@ -400,9 +427,13 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
         Assert.Equal(expectedCode, problem.Code);
     }
 
-    private static async Task AssertFieldErrorAsync(HttpResponseMessage response, string propertyName, string expectedCode)
+    private static async Task AssertFieldErrorAsync(
+        HttpResponseMessage response,
+        string propertyName,
+        string expectedCode,
+        HttpStatusCode expectedStatus = HttpStatusCode.UnprocessableEntity)
     {
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(expectedStatus, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ValidationProblem>();
         Assert.NotNull(problem);
         Assert.Equal(expectedCode, problem.Code);

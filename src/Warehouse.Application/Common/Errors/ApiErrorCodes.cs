@@ -26,6 +26,10 @@ public static class ApiErrorCodes
     public const string SupplierProductNotFound = "supplier_product.not_found";
     public const string SupplierProductConflict = "supplier_product.conflict";
     public const string SupplierProductCurrencyNotSupported = "supplier_product.currency_not_supported";
+    public const string SupplierProductSupplierUnavailable = "supplier_product.supplier_unavailable";
+    public const string SupplierProductProductUnavailable = "supplier_product.product_unavailable";
+    public const string SupplierProductPurchaseUnitUnavailable = "supplier_product.purchase_unit_unavailable";
+    public const string SupplierProductMinimumOrderQuantityInvalid = "supplier_product.minimum_order_quantity_invalid";
     public const string CurrencyNotFound = "currency.not_found";
     public const string CurrencyCodeConflict = "currency.code_conflict";
     public const string CurrencyDefaultRequired = "currency.default_required";

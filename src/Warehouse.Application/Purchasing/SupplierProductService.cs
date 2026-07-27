@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Warehouse.Application.Common.Identity;
+using Warehouse.Application.Common.Errors;
 using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
@@ -153,14 +154,55 @@ public sealed class SupplierProductService(
 
     private async Task EnsurePurchasableAsync(bool supplierIsActive, Product product, string? unitOfMeasure, decimal minimumOrderQuantity, string currencyCode, CancellationToken cancellationToken)
     {
-        if (!supplierIsActive || !product.IsActive || !product.TryConvertToBaseQuantity(unitOfMeasure, minimumOrderQuantity, out _))
+        if (!supplierIsActive)
         {
-            throw new PurchaseOrderCatalogueInvalidException("The supplier, product, purchase unit, or minimum order quantity is not valid for purchasing.");
+            throw new SupplierProductFieldValidationException(
+                "SupplierId",
+                ApiErrorCodes.SupplierProductSupplierUnavailable,
+                "The selected supplier is inactive.");
+        }
+
+        if (!product.IsActive)
+        {
+            throw new SupplierProductFieldValidationException(
+                "ProductId",
+                ApiErrorCodes.SupplierProductProductUnavailable,
+                "The selected product is inactive.");
+        }
+
+        if (!IsPurchaseUnitAvailable(product, unitOfMeasure))
+        {
+            throw new SupplierProductFieldValidationException(
+                "PurchaseUnitOfMeasure",
+                ApiErrorCodes.SupplierProductPurchaseUnitUnavailable,
+                "The selected purchase unit is not configured for this product.");
+        }
+
+        if (!product.TryConvertToBaseQuantity(unitOfMeasure, minimumOrderQuantity, out _))
+        {
+            throw new SupplierProductFieldValidationException(
+                "MinimumOrderQuantity",
+                ApiErrorCodes.SupplierProductMinimumOrderQuantityInvalid,
+                "The minimum order quantity is not valid for the selected purchase unit.");
         }
 
         if (!await dbContext.Currencies.AnyAsync(currency => currency.Code == currencyCode && currency.IsActive, cancellationToken))
         {
             throw new SupplierProductCurrencyNotSupportedException(currencyCode);
+        }
+    }
+
+    private static bool IsPurchaseUnitAvailable(Product product, string? unitOfMeasure)
+    {
+        try
+        {
+            var normalizedUnit = ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure);
+            return normalizedUnit == product.BaseUnitOfMeasure
+                || product.UnitConversions.Any(conversion => conversion.UnitOfMeasure == normalizedUnit);
+        }
+        catch (ArgumentException)
+        {
+            return false;
         }
     }
 
