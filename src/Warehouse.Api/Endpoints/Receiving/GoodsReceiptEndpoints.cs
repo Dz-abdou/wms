@@ -9,9 +9,11 @@ public static class GoodsReceiptEndpoints
     public static IEndpointRouteBuilder MapGoodsReceiptEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/api/goods-receipts").WithTags("Goods receipts").AddEndpointFilter<GoodsReceiptExceptionEndpointFilter>();
+        endpoints.MapGet("/api/purchase-orders/{id:guid}/receipt-candidate", GetCandidateAsync).WithTags("Goods receipts").AddEndpointFilter<GoodsReceiptExceptionEndpointFilter>().RequireAuthorization(AuthorizationPolicies.ReadPurchasing).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadPurchasing));
         group.MapPost("", CreateAsync).RequireAuthorization(AuthorizationPolicies.AdjustInventory).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
         return endpoints;
     }
+    private static async Task<IResult> GetCandidateAsync(Guid id, GoodsReceiptService service, CancellationToken cancellationToken) => Results.Ok(await service.GetCandidateAsync(id, cancellationToken));
     private static async Task<IResult> CreateAsync(GoodsReceiptInput input, GoodsReceiptService service, CancellationToken cancellationToken)
     {
         var receipt = await service.CreateAsync(input, cancellationToken);

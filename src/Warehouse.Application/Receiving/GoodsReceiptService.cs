@@ -9,6 +9,16 @@ namespace Warehouse.Application.Receiving;
 
 public sealed class GoodsReceiptService(IWarehouseDbContext db, TimeProvider clock, ICurrentUser user)
 {
+    public async Task<GoodsReceiptCandidateResponse> GetCandidateAsync(Guid purchaseOrderId, CancellationToken cancellationToken)
+    {
+        var order = await db.PurchaseOrders.AsNoTracking().Include(order => order.Lines).SingleOrDefaultAsync(order => order.Id == purchaseOrderId, cancellationToken)
+            ?? throw new GoodsReceiptPurchaseOrderUnavailableException();
+        if (order.Status is not (PurchaseOrderStatus.Submitted or PurchaseOrderStatus.PartiallyReceived) || order.DestinationWarehouseId is null || order.Number is null)
+            throw new GoodsReceiptPurchaseOrderUnavailableException();
+        var received = await db.GoodsReceipts.Where(receipt => receipt.PurchaseOrderId == order.Id).SelectMany(receipt => receipt.Lines).GroupBy(line => line.PurchaseOrderLineId).ToDictionaryAsync(group => group.Key, group => group.Sum(line => line.AcceptedQuantity), cancellationToken);
+        return new GoodsReceiptCandidateResponse(order.Id, order.Number, order.DestinationWarehouseId.Value, order.CurrencyCode, order.Version, order.Lines.Select(line => new GoodsReceiptCandidateLineResponse(line.Id, line.LineNumber, line.ProductSku, line.ProductName, line.PurchaseUnitOfMeasure, line.Quantity, received.GetValueOrDefault(line.Id), line.Quantity - received.GetValueOrDefault(line.Id))).ToList());
+    }
+
     public async Task<GoodsReceiptResponse> CreateAsync(GoodsReceiptInput input, CancellationToken cancellationToken)
     {
         GoodsReceiptResponse? response = null;
