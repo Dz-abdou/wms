@@ -11,6 +11,15 @@ public static class ApiErrorCodes
     public const string WarehouseCodeConflict = "warehouse.code_conflict";
     public const string ProductNotFound = "product.not_found";
     public const string ProductSkuConflict = "product.sku_conflict";
+    public const string ProductMeasurementWeightUnitRequired = "product.measurement_weight_unit_required";
+    public const string ProductMeasurementWeightRequired = "product.measurement_weight_required";
+    public const string ProductMeasurementWeightInvalid = "product.measurement_weight_invalid";
+    public const string ProductMeasurementGrossWeightInvalid = "product.measurement_gross_weight_invalid";
+    public const string ProductMeasurementWeightUnitInvalid = "product.measurement_weight_unit_invalid";
+    public const string ProductMeasurementDimensionRequired = "product.measurement_dimension_required";
+    public const string ProductMeasurementDimensionUnitRequired = "product.measurement_dimension_unit_required";
+    public const string ProductMeasurementDimensionInvalid = "product.measurement_dimension_invalid";
+    public const string ProductMeasurementDimensionUnitInvalid = "product.measurement_dimension_unit_invalid";
     public const string SupplierNotFound = "supplier.not_found";
     public const string SupplierCodeConflict = "supplier.code_conflict";
     public const string SupplierDefaultCurrencyNotSupported = "supplier.default_currency_not_supported";

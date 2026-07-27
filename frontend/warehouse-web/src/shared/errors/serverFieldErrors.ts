@@ -58,13 +58,19 @@ function toFieldName(property: string): FieldName | undefined {
     return undefined;
   }
 
-  const nestedProperty = /^(?<list>[^[]+)\[(?<index>\d+)]\.(?<field>.+)$/.exec(property)?.groups;
+  const nestedProperty = /^(?<list>[^[]+)\[(?<index>\d+)]\.(?<field>.+)$/.exec(
+    property,
+  )?.groups;
   if (nestedProperty) {
     return [
       toCamelCase(nestedProperty.list),
       Number(nestedProperty.index),
       toCamelCase(nestedProperty.field),
     ];
+  }
+
+  if (property.includes(".")) {
+    return property.split(".").map(toCamelCase);
   }
 
   return toCamelCase(property);

@@ -85,6 +85,24 @@ public sealed class ProductEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Weight_without_a_unit_returns_a_localizable_nested_field_error()
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"WEIGHT-{Guid.NewGuid():N}"[..16],
+            name = "Weighted product",
+            measurements = new { netWeight = 1.2m }
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(
+            ApiErrorCodes.ProductMeasurementWeightUnitRequired,
+            Assert.Single(problem.ErrorCodes["Measurements.WeightUnitOfMeasure"]));
+    }
+
+    [Fact]
     public async Task List_searches_case_insensitively_and_paginates()
     {
         var suffix = Guid.NewGuid().ToString("N")[..8].ToUpperInvariant();
