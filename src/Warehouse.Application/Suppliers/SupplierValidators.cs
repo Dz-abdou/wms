@@ -25,5 +25,8 @@ public sealed class SupplierInputValidator : AbstractValidator<SupplierInput>
         RuleFor(input => input.Email).Must(value => value is null || value.Trim().Length <= SupplierRules.MaxEmailLength).WithMessage($"Supplier email cannot exceed {SupplierRules.MaxEmailLength} characters.").WithErrorCode(ApiErrorCodes.ValidationMaxLength);
         RuleFor(input => input.PhoneNumber).Must(value => value is null || value.Trim().Length <= SupplierRules.MaxPhoneNumberLength).WithMessage($"Supplier phone number cannot exceed {SupplierRules.MaxPhoneNumberLength} characters.").WithErrorCode(ApiErrorCodes.ValidationMaxLength);
         RuleFor(input => input.Address).Must(value => value is null || value.Trim().Length <= SupplierRules.MaxAddressLength).WithMessage($"Supplier address cannot exceed {SupplierRules.MaxAddressLength} characters.").WithErrorCode(ApiErrorCodes.ValidationMaxLength);
+        RuleFor(input => input.DefaultCurrencyCode)
+            .Must(value => value is null || (value.Trim().Length == SupplierRules.CurrencyCodeLength && value.Trim().All(char.IsAsciiLetter)))
+            .WithErrorCode(ApiErrorCodes.ValidationInvalid);
     }
 }

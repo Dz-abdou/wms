@@ -28,6 +28,8 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
 
+    public DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences => Set<PurchaseOrderNumberSequence>();
+
     public DbSet<Currency> Currencies => Set<Currency>();
 
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();

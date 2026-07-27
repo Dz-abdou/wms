@@ -15,6 +15,14 @@ The specification must include:
 - Acceptance criteria
 - Required tests
 - Expected database changes
+- Concurrency policy for every mutable transactional business object. Unless a
+  documented workflow genuinely requires a short-lived lock, use optimistic
+  concurrency: persist a version token, require it on mutation requests, return
+  a stable conflict code for stale writes, preserve the user's unsaved values in
+  the UI, and cover the conflict path with integration and frontend tests.
+  When a form library excludes unrendered fields from its submit payload, pass
+  the loaded version token explicitly; do not rely on an invisible initial form
+  value being submitted.
 
 ## 2. Ask Codex to Inspect
 
@@ -44,6 +52,8 @@ Include:
 - database changes
 - backend changes
 - frontend changes
+- frontend formatting for every changed frontend file
+- localization-key audit for every changed frontend screen
 - validation
 - unit tests
 - integration tests
@@ -65,6 +75,12 @@ Every approved roadmap or implementation-plan step is completed on its own branc
 - Keep the branch and pull request limited to that one approved step. Do not start the next step until its pull request is merged.
 - Commit continuously at meaningful, reviewable boundaries (for example: backend contract, frontend UI, tests, documentation). Do not put the whole step into one final catch-all commit.
 - Each commit must be focused, buildable when practical, and use the repository commit convention.
+- Every frontend file changed by the step must be formatted with the repository
+  formatter before it is committed. Do not leave formatting cleanup for a later
+  branch or rely on linting alone to detect it.
+- For each changed frontend screen, verify that every direct translation key
+  exists in both locale JSON files. Raw keys rendered in the UI are defects;
+  add a focused regression test when a missing key was user-visible.
 - Before opening the pull request, run the relevant checks and describe its scope, decisions, tests, and known risks.
 
 ## 4. Implement One Slice

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Warehouse.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Warehouse.Infrastructure.Persistence;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726154051_AddPurchaseOrderNumberSequence")]
+    partial class AddPurchaseOrderNumberSequence
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -527,48 +530,17 @@ namespace Warehouse.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("BuyerUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CurrencyCode")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<Guid?>("DestinationWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly?>("ExpectedDeliveryDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("Number")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<DateOnly?>("OrderDate")
-                        .HasColumnType("date");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("SubmittedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("SupplierId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("SupplierReference")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
@@ -576,22 +548,13 @@ namespace Warehouse.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("DestinationWarehouseId");
-
-                    b.HasIndex("Number")
-                        .IsUnique();
 
                     b.HasIndex("SupplierId", "Status");
 
                     b.ToTable("PurchaseOrders", null, t =>
                         {
-                            t.HasCheckConstraint("CK_PurchaseOrders_Status_Valid", "\"Status\" IN (0, 1, 2, 3, 4)");
+                            t.HasCheckConstraint("CK_PurchaseOrders_Status_Valid", "\"Status\" IN (0, 1)");
                         });
                 });
 
@@ -703,13 +666,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DefaultCurrencyCode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasDefaultValue("DZD");
-
                     b.Property<string>("Email")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
@@ -748,8 +704,6 @@ namespace Warehouse.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_Suppliers_Code_NotBlank", "btrim(\"Code\") <> ''");
 
                             t.HasCheckConstraint("CK_Suppliers_Code_Uppercase", "\"Code\" = upper(\"Code\")");
-
-                            t.HasCheckConstraint("CK_Suppliers_DefaultCurrencyCode_Uppercase", "\"DefaultCurrencyCode\" = upper(\"DefaultCurrencyCode\")");
 
                             t.HasCheckConstraint("CK_Suppliers_Name_NotBlank", "btrim(\"Name\") <> ''");
                         });
@@ -1065,11 +1019,6 @@ namespace Warehouse.Infrastructure.Migrations
 
             modelBuilder.Entity("Warehouse.Domain.Purchasing.PurchaseOrder", b =>
                 {
-                    b.HasOne("Warehouse.Domain.Warehouses.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("DestinationWarehouseId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Warehouse.Domain.Suppliers.Supplier", null)
                         .WithMany()
                         .HasForeignKey("SupplierId")
@@ -1079,23 +1028,13 @@ namespace Warehouse.Infrastructure.Migrations
                     b.OwnsMany("Warehouse.Domain.Purchasing.PurchaseOrderLine", "Lines", b1 =>
                         {
                             b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
-
-                            b1.Property<decimal>("ConversionFactorToBaseUnit")
-                                .HasPrecision(18, 6)
-                                .HasColumnType("numeric(18,6)");
 
                             b1.Property<string>("CurrencyCode")
                                 .IsRequired()
                                 .HasMaxLength(3)
                                 .HasColumnType("character varying(3)");
-
-                            b1.Property<decimal>("LineAmount")
-                                .HasPrecision(18, 4)
-                                .HasColumnType("numeric(18,4)");
-
-                            b1.Property<int>("LineNumber")
-                                .HasColumnType("integer");
 
                             b1.Property<Guid>("ProductId")
                                 .HasColumnType("uuid");
@@ -1122,10 +1061,6 @@ namespace Warehouse.Infrastructure.Migrations
                                 .HasPrecision(18, 6)
                                 .HasColumnType("numeric(18,6)");
 
-                            b1.Property<decimal>("QuantityInBaseUnit")
-                                .HasPrecision(18, 6)
-                                .HasColumnType("numeric(18,6)");
-
                             b1.Property<Guid>("SupplierProductId")
                                 .HasColumnType("uuid");
 
@@ -1141,8 +1076,7 @@ namespace Warehouse.Infrastructure.Migrations
 
                             b1.HasIndex("ProductId");
 
-                            b1.HasIndex("PurchaseOrderId", "LineNumber")
-                                .IsUnique();
+                            b1.HasIndex("PurchaseOrderId");
 
                             b1.HasIndex("SupplierProductId", "PurchaseUnitOfMeasure");
 
@@ -1171,43 +1105,7 @@ namespace Warehouse.Infrastructure.Migrations
                                 .IsRequired();
                         });
 
-                    b.OwnsMany("Warehouse.Domain.Purchasing.PurchaseOrderStatusHistory", "StatusHistory", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .HasColumnType("uuid");
-
-                            b1.Property<Guid>("ActorUserId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTime>("ChangedAtUtc")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<int?>("PreviousStatus")
-                                .HasColumnType("integer");
-
-                            b1.Property<Guid>("PurchaseOrderId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Reason")
-                                .HasMaxLength(500)
-                                .HasColumnType("character varying(500)");
-
-                            b1.Property<int>("Status")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("PurchaseOrderId");
-
-                            b1.ToTable("PurchaseOrderStatusHistory", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("PurchaseOrderId");
-                        });
-
                     b.Navigation("Lines");
-
-                    b.Navigation("StatusHistory");
                 });
 
             modelBuilder.Entity("Warehouse.Domain.Purchasing.SupplierProduct", b =>

@@ -15,6 +15,7 @@ import {
   setDefaultCurrency,
   updateCurrency,
   submitPurchaseOrder,
+  cancelPurchaseOrder,
   updatePurchaseOrder,
   updateSupplierProduct,
 } from "./purchasingApi";
@@ -180,7 +181,16 @@ export function useUpdatePurchaseOrder(id: string) {
 export function useSubmitPurchaseOrder(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => submitPurchaseOrder(id),
+    mutationFn: (version: number) => submitPurchaseOrder(id, version),
+    onSuccess: (order) => refreshOrder(queryClient, order),
+  });
+}
+
+export function useCancelPurchaseOrder(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ version, reason }: { version: number; reason?: string }) =>
+      cancelPurchaseOrder(id, version, reason),
     onSuccess: (order) => refreshOrder(queryClient, order),
   });
 }

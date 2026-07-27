@@ -25,6 +25,22 @@ public sealed class SupplierEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Create_persists_the_selected_default_currency()
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/suppliers", new
+        {
+            code = $"SUP-{Guid.NewGuid():N}"[..16],
+            name = "Currency supplier",
+            defaultCurrencyCode = "USD"
+        });
+
+        response.EnsureSuccessStatusCode();
+        var supplier = await response.Content.ReadFromJsonAsync<SupplierResponse>();
+        Assert.NotNull(supplier);
+        Assert.Equal("USD", supplier.DefaultCurrencyCode);
+    }
+
+    [Fact]
     public async Task Invalid_input_and_unknown_supplier_return_stable_codes()
     {
         var invalid = await fixture.Client.PostAsJsonAsync("/api/suppliers", new { code = " ", name = "" });

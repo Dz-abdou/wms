@@ -27,11 +27,28 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         }
         catch (SupplierProductConflictException exception)
         {
-            return Problem(StatusCodes.Status409Conflict, "Supplier catalogue item already exists.", exception.Message, ApiErrorCodes.SupplierProductConflict);
+            return ValidationProblem(
+                "PurchaseUnitOfMeasure",
+                exception.Message,
+                ApiErrorCodes.SupplierProductConflict,
+                "A supplier catalogue item already exists for this supplier, product, and purchase unit.",
+                StatusCodes.Status409Conflict);
         }
         catch (SupplierProductCurrencyNotSupportedException exception)
         {
-            return Problem(StatusCodes.Status422UnprocessableEntity, "Supplier catalogue currency is not supported.", exception.Message, ApiErrorCodes.SupplierProductCurrencyNotSupported);
+            return ValidationProblem(
+                "CurrencyCode",
+                exception.Message,
+                ApiErrorCodes.SupplierProductCurrencyNotSupported,
+                "Supplier catalogue currency is not supported.");
+        }
+        catch (SupplierProductFieldValidationException exception)
+        {
+            return ValidationProblem(
+                exception.PropertyName,
+                exception.Message,
+                exception.ErrorCode,
+                "Supplier catalogue data is invalid.");
         }
         catch (PurchaseOrderNotFoundException exception)
         {
@@ -41,12 +58,28 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status409Conflict, "Purchase order cannot be changed.", exception.Message, ApiErrorCodes.PurchaseOrderImmutable);
         }
+        catch (PurchaseOrderConcurrencyException exception)
+        {
+            return Problem(StatusCodes.Status409Conflict, "Purchase order was updated.", exception.Message, ApiErrorCodes.PurchaseOrderConcurrencyConflict);
+        }
+        catch (PurchaseOrderInvalidTransitionException exception)
+        {
+            return Problem(StatusCodes.Status409Conflict, "Purchase order status transition is invalid.", exception.Message, ApiErrorCodes.PurchaseOrderInvalidTransition);
+        }
         catch (PurchaseOrderMinimumOrderQuantityException exception)
         {
             return ValidationProblem(
                 exception.PropertyName,
                 exception.Message,
                 ApiErrorCodes.PurchaseOrderMinimumOrderQuantity);
+        }
+        catch (PurchaseOrderFieldValidationException exception)
+        {
+            return ValidationProblem(
+                exception.PropertyName,
+                exception.Message,
+                exception.ErrorCode,
+                "Purchase order data is invalid.");
         }
         catch (PurchaseOrderCatalogueInvalidException exception)
         {
@@ -64,10 +97,15 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         detail: detail,
         extensions: new Dictionary<string, object?> { ["code"] = code });
 
-    private static IResult ValidationProblem(string propertyName, string message, string errorCode) => Results.ValidationProblem(
+    private static IResult ValidationProblem(
+        string propertyName,
+        string message,
+        string errorCode,
+        string title = "Purchase order minimum order quantity is not met.",
+        int statusCode = StatusCodes.Status422UnprocessableEntity) => Results.ValidationProblem(
         errors: new Dictionary<string, string[]> { [propertyName] = [message] },
-        statusCode: StatusCodes.Status422UnprocessableEntity,
-        title: "Purchase order minimum order quantity is not met.",
+        statusCode: statusCode,
+        title: title,
         extensions: new Dictionary<string, object?>
         {
             ["code"] = errorCode,

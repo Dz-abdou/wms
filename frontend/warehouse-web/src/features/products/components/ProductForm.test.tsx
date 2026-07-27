@@ -77,4 +77,39 @@ describe("ProductForm", () => {
       expect(screen.getByText("Ce champ est obligatoire.")).toBeInTheDocument(),
     );
   });
+
+  it("shows a nested measurement error beside the responsible field", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockRejectedValue(
+      new ApiError(400, {
+        errorCodes: {
+          "Measurements.WeightUnitOfMeasure": [
+            "product.measurement_weight_unit_required",
+          ],
+        },
+        errors: {
+          "Measurements.WeightUnitOfMeasure": [
+            "A weight unit is required when a product weight is supplied.",
+          ],
+        },
+      }),
+    );
+
+    render(
+      <ProductForm
+        isSubmitting={false}
+        onSubmit={onSubmit}
+        submitLabel="Create product"
+      />,
+    );
+    await user.type(screen.getByLabelText("SKU"), "WEIGHT-001");
+    await user.type(screen.getByLabelText("Name"), "Weighted product");
+    await user.click(screen.getByRole("button", { name: "Create product" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Select a weight unit when entering a weight."),
+      ).toBeInTheDocument(),
+    );
+  });
 });

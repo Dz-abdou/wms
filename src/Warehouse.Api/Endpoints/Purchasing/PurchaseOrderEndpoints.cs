@@ -15,6 +15,7 @@ public static class PurchaseOrderEndpoints
         group.MapPost("", CreateAsync).RequireAuthorization(AuthorizationPolicies.ManagePurchasing).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManagePurchasing));
         group.MapPut("/{id:guid}", UpdateAsync).RequireAuthorization(AuthorizationPolicies.ManagePurchasing).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManagePurchasing));
         group.MapPatch("/{id:guid}/submit", SubmitAsync).RequireAuthorization(AuthorizationPolicies.ManagePurchasing).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManagePurchasing));
+        group.MapPatch("/{id:guid}/cancel", CancelAsync).RequireAuthorization(AuthorizationPolicies.ManagePurchasing).AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ManagePurchasing));
         return endpoints;
     }
 
@@ -40,5 +41,15 @@ public static class PurchaseOrderEndpoints
         return problem ?? Results.Ok(await service.UpdateAsync(id, input, cancellationToken));
     }
 
-    private static async Task<IResult> SubmitAsync(Guid id, PurchaseOrderService service, CancellationToken cancellationToken) => Results.Ok(await service.SubmitAsync(id, cancellationToken));
+    private static async Task<IResult> SubmitAsync(Guid id, PurchaseOrderVersionInput input, IValidator<PurchaseOrderVersionInput> validator, PurchaseOrderService service, CancellationToken cancellationToken)
+    {
+        var problem = await validator.ValidateRequestAsync(input, cancellationToken);
+        return problem ?? Results.Ok(await service.SubmitAsync(id, input, cancellationToken));
+    }
+
+    private static async Task<IResult> CancelAsync(Guid id, PurchaseOrderCancelInput input, IValidator<PurchaseOrderCancelInput> validator, PurchaseOrderService service, CancellationToken cancellationToken)
+    {
+        var problem = await validator.ValidateRequestAsync(input, cancellationToken);
+        return problem ?? Results.Ok(await service.CancelAsync(id, input, cancellationToken));
+    }
 }

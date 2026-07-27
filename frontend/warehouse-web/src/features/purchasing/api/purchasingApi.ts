@@ -128,6 +128,9 @@ export function getPurchaseOrders(
   if (query.supplierId) parameters.set("supplierId", query.supplierId);
   if (query.status !== undefined)
     parameters.set("status", String(query.status));
+  if (query.warehouseId) parameters.set("warehouseId", query.warehouseId);
+  if (query.fromOrderDate) parameters.set("fromOrderDate", query.fromOrderDate);
+  if (query.toOrderDate) parameters.set("toOrderDate", query.toOrderDate);
   return requestJson<PurchaseOrderListResult>(
     `${purchasingApiPaths.purchaseOrders}?${parameters}`,
     { signal },
@@ -154,10 +157,21 @@ export function updatePurchaseOrder(id: string, input: PurchaseOrderInput) {
   );
 }
 
-export function submitPurchaseOrder(id: string) {
+export function submitPurchaseOrder(id: string, version: number) {
   return requestJson<PurchaseOrder>(
     purchasingApiPaths.purchaseOrderSubmit(id),
-    jsonRequest("PATCH", {}),
+    jsonRequest("PATCH", { version }),
+  );
+}
+
+export function cancelPurchaseOrder(
+  id: string,
+  version: number,
+  reason?: string,
+) {
+  return requestJson<PurchaseOrder>(
+    purchasingApiPaths.purchaseOrderCancel(id),
+    jsonRequest("PATCH", { version, reason }),
   );
 }
 

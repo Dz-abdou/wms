@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Warehouse.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Warehouse.Infrastructure.Persistence;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726154532_AddPurchaseOrderOperationalModel")]
+    partial class AddPurchaseOrderOperationalModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -703,13 +706,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DefaultCurrencyCode")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)")
-                        .HasDefaultValue("DZD");
-
                     b.Property<string>("Email")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
@@ -748,8 +744,6 @@ namespace Warehouse.Infrastructure.Migrations
                             t.HasCheckConstraint("CK_Suppliers_Code_NotBlank", "btrim(\"Code\") <> ''");
 
                             t.HasCheckConstraint("CK_Suppliers_Code_Uppercase", "\"Code\" = upper(\"Code\")");
-
-                            t.HasCheckConstraint("CK_Suppliers_DefaultCurrencyCode_Uppercase", "\"DefaultCurrencyCode\" = upper(\"DefaultCurrencyCode\")");
 
                             t.HasCheckConstraint("CK_Suppliers_Name_NotBlank", "btrim(\"Name\") <> ''");
                         });
@@ -1079,23 +1073,13 @@ namespace Warehouse.Infrastructure.Migrations
                     b.OwnsMany("Warehouse.Domain.Purchasing.PurchaseOrderLine", "Lines", b1 =>
                         {
                             b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
-
-                            b1.Property<decimal>("ConversionFactorToBaseUnit")
-                                .HasPrecision(18, 6)
-                                .HasColumnType("numeric(18,6)");
 
                             b1.Property<string>("CurrencyCode")
                                 .IsRequired()
                                 .HasMaxLength(3)
                                 .HasColumnType("character varying(3)");
-
-                            b1.Property<decimal>("LineAmount")
-                                .HasPrecision(18, 4)
-                                .HasColumnType("numeric(18,4)");
-
-                            b1.Property<int>("LineNumber")
-                                .HasColumnType("integer");
 
                             b1.Property<Guid>("ProductId")
                                 .HasColumnType("uuid");
@@ -1122,10 +1106,6 @@ namespace Warehouse.Infrastructure.Migrations
                                 .HasPrecision(18, 6)
                                 .HasColumnType("numeric(18,6)");
 
-                            b1.Property<decimal>("QuantityInBaseUnit")
-                                .HasPrecision(18, 6)
-                                .HasColumnType("numeric(18,6)");
-
                             b1.Property<Guid>("SupplierProductId")
                                 .HasColumnType("uuid");
 
@@ -1141,8 +1121,7 @@ namespace Warehouse.Infrastructure.Migrations
 
                             b1.HasIndex("ProductId");
 
-                            b1.HasIndex("PurchaseOrderId", "LineNumber")
-                                .IsUnique();
+                            b1.HasIndex("PurchaseOrderId");
 
                             b1.HasIndex("SupplierProductId", "PurchaseUnitOfMeasure");
 
@@ -1174,6 +1153,7 @@ namespace Warehouse.Infrastructure.Migrations
                     b.OwnsMany("Warehouse.Domain.Purchasing.PurchaseOrderStatusHistory", "StatusHistory", b1 =>
                         {
                             b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
 
                             b1.Property<Guid>("ActorUserId")

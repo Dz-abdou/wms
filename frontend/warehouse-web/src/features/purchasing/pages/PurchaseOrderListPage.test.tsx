@@ -4,10 +4,12 @@ import { MemoryRouter } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
 import { PurchaseOrderListPage } from "./PurchaseOrderListPage";
 
-const { usePurchaseOrdersMock, useSuppliersMock } = vi.hoisted(() => ({
-  usePurchaseOrdersMock: vi.fn(),
-  useSuppliersMock: vi.fn(),
-}));
+const { usePurchaseOrdersMock, useSuppliersMock, useWarehousesMock } =
+  vi.hoisted(() => ({
+    usePurchaseOrdersMock: vi.fn(),
+    useSuppliersMock: vi.fn(),
+    useWarehousesMock: vi.fn(),
+  }));
 
 vi.mock("../api/usePurchasing", () => ({
   usePurchaseOrders: usePurchaseOrdersMock,
@@ -15,11 +17,15 @@ vi.mock("../api/usePurchasing", () => ({
 vi.mock("../../suppliers/api/useSuppliers", () => ({
   useSuppliers: useSuppliersMock,
 }));
+vi.mock("../../warehouses/api/useWarehouses", () => ({
+  useWarehouses: useWarehousesMock,
+}));
 
 describe("PurchaseOrderListPage", () => {
   beforeEach(() => {
     usePurchaseOrdersMock.mockReset();
     useSuppliersMock.mockReturnValue({ data: { items: [] } });
+    useWarehousesMock.mockReturnValue({ data: { items: [] } });
   });
 
   it("renders loading, empty, error, and populated states", () => {
@@ -91,6 +97,15 @@ describe("PurchaseOrderListPage", () => {
     );
     expect(screen.getByText("ACME — Acme Supplies")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Order number" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Destination warehouse" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "Line count" }),
+    ).toBeInTheDocument();
   });
 });
 

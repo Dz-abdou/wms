@@ -13,6 +13,7 @@ public sealed class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
             table.HasCheckConstraint("CK_Suppliers_Code_NotBlank", "btrim(\"Code\") <> ''");
             table.HasCheckConstraint("CK_Suppliers_Name_NotBlank", "btrim(\"Name\") <> ''");
             table.HasCheckConstraint("CK_Suppliers_Code_Uppercase", "\"Code\" = upper(\"Code\")");
+            table.HasCheckConstraint("CK_Suppliers_DefaultCurrencyCode_Uppercase", "\"DefaultCurrencyCode\" = upper(\"DefaultCurrencyCode\")");
         });
         builder.HasKey(supplier => supplier.Id);
         builder.Property(supplier => supplier.Code).HasMaxLength(SupplierRules.MaxCodeLength).IsRequired();
@@ -20,6 +21,7 @@ public sealed class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
         builder.Property(supplier => supplier.Email).HasMaxLength(SupplierRules.MaxEmailLength);
         builder.Property(supplier => supplier.PhoneNumber).HasMaxLength(SupplierRules.MaxPhoneNumberLength);
         builder.Property(supplier => supplier.Address).HasMaxLength(SupplierRules.MaxAddressLength);
+        builder.Property(supplier => supplier.DefaultCurrencyCode).HasMaxLength(SupplierRules.CurrencyCodeLength).HasDefaultValue(SupplierRules.DefaultCurrencyCode).IsRequired();
         builder.Property(supplier => supplier.IsActive).HasDefaultValue(true).IsRequired();
         builder.Property(supplier => supplier.CreatedByUserId).HasColumnType("uuid");
         builder.Property(supplier => supplier.UpdatedByUserId).HasColumnType("uuid");

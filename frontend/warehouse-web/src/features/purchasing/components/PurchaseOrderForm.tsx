@@ -1,4 +1,5 @@
-import { Button, Form, InputNumber, Select } from "antd";
+import { useMemo } from "react";
+import { Button, Form, Input, InputNumber, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,6 +8,7 @@ import {
 } from "../../../shared/components/EditableFormListTable";
 import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { useSuppliers } from "../../suppliers/api/useSuppliers";
+import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import { useSupplierProducts } from "../api/usePurchasing";
@@ -42,24 +44,48 @@ export function PurchaseOrderForm({
   const feedback = useApiFeedback();
   const supplierId = Form.useWatch("supplierId", form);
   const suppliers = useSuppliers({ page: 1, pageSize: 100 });
+  const warehouses = useWarehouses({ page: 1, pageSize: 100 });
   const catalogue = useSupplierProducts({ page: 1, pageSize: 100, supplierId });
   const lines = Form.useWatch("lines", form);
+  const currencyCode = Form.useWatch("currencyCode", form);
 
   async function submit(values: PurchaseOrderInput) {
     try {
-      await onSubmit({ ...values, lines: values.lines ?? [] });
+      await onSubmit({
+        ...values,
+        lines: values.lines ?? [],
+        version: initialValues?.version,
+      });
     } catch (error) {
       if (!applyServerFieldErrors(form, error, t, "errors.validationFailed"))
         feedback.notifyError(error, errorMessageKey);
     }
   }
 
-  const catalogueItems =
-    catalogue.data?.items.filter((item) => item.isActive) ?? [];
-  const catalogueOptions = catalogueItems.map((item) => ({
+  const catalogueItems = useMemo(
+    () => catalogue.data?.items.filter((item) => item.isActive) ?? [],
+    [catalogue.data?.items],
+  );
+  const selectedSupplier = suppliers.data?.items.find(
+    (supplier) => supplier.id === supplierId,
+  );
+  const hasSelectedCatalogueItem = Boolean(
+    lines?.some((line) => line.supplierProductId),
+  );
+  const availableCurrencyCodes = [
+    ...new Set([
+      selectedSupplier?.defaultCurrencyCode,
+      ...catalogueItems.map((item) => item.currencyCode),
+    ]),
+  ].filter((currency): currency is string => Boolean(currency));
+  const compatibleCatalogueItems = currencyCode
+    ? catalogueItems.filter((item) => item.currencyCode === currencyCode)
+    : [];
+  const catalogueOptions = compatibleCatalogueItems.map((item) => ({
     value: item.id,
     label: `${item.productSku} — ${item.productName}`,
   }));
+
   const columns = (
     remove: (fieldName: number) => void,
   ): ColumnsType<PurchaseOrderLineRow & EditableFormListTableRow> => [
@@ -189,7 +215,15 @@ export function PurchaseOrderForm({
       onFinish={submit}
       requiredMark="optional"
       onValuesChange={(changedValues) => {
-        if (changedValues.supplierId) form.setFieldsValue({ lines: [] });
+        if (changedValues.supplierId) {
+          const supplier = suppliers.data?.items.find(
+            (item) => item.id === changedValues.supplierId,
+          );
+          form.setFieldsValue({
+            currencyCode: supplier?.defaultCurrencyCode,
+            lines: [],
+          });
+        }
       }}
     >
       <Form.Item
@@ -207,6 +241,61 @@ export function PurchaseOrderForm({
               label: `${supplier.code} — ${supplier.name}`,
             }))}
         />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.warehouse")}
+        name="destinationWarehouseId"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+      >
+        <Select
+          options={warehouses.data?.items
+            .filter((warehouse) => warehouse.isActive)
+            .map((warehouse) => ({
+              value: warehouse.id,
+              label: `${warehouse.code} — ${warehouse.name}`,
+            }))}
+        />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.currency")}
+        name="currencyCode"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+        extra={
+          hasSelectedCatalogueItem
+            ? t("purchasing.orders.currencyLocked")
+            : t("purchasing.orders.currencyFromSupplier")
+        }
+      >
+        <Select
+          aria-label={t("purchasing.orders.currency")}
+          disabled={!supplierId || hasSelectedCatalogueItem}
+          options={availableCurrencyCodes.map((currency) => ({
+            value: currency,
+            label: currency,
+          }))}
+        />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.orderDate")}
+        name="orderDate"
+        rules={[{ required: true, message: t("errors.validationFailed") }]}
+      >
+        <Input type="date" />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.expectedDeliveryDate")}
+        name="expectedDeliveryDate"
+      >
+        <Input type="date" />
+      </Form.Item>
+      <Form.Item
+        label={t("purchasing.orders.supplierReference")}
+        name="supplierReference"
+      >
+        <Input />
+      </Form.Item>
+      <Form.Item label={t("purchasing.orders.notes")} name="notes">
+        <Input.TextArea rows={3} />
       </Form.Item>
       <EditableFormListTable<PurchaseOrderLineRow>
         addDisabled={!supplierId}

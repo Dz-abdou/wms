@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.Results;
 using Warehouse.Application.Common.Errors;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Domain.Products;
@@ -68,31 +69,16 @@ public sealed class ProductInputValidator : AbstractValidator<ProductInput>
 
                 if (normalizedUnits.Distinct().Count() != normalizedUnits.Count)
                 {
-                    context.AddFailure(nameof(ProductInput.UnitConversions), "Each conversion unit of measure must be unique.");
+                    AddFailure(context, nameof(ProductInput.UnitConversions), "Each conversion unit of measure must be unique.", ApiErrorCodes.ValidationInvalid);
                 }
 
                 if (input.BaseUnitOfMeasure is { } baseUnit &&
                     normalizedUnits.Contains(baseUnit.Trim().ToUpperInvariant()))
                 {
-                    context.AddFailure(nameof(ProductInput.UnitConversions), "The base unit of measure must not be repeated as a conversion.");
+                    AddFailure(context, nameof(ProductInput.UnitConversions), "The base unit of measure must not be repeated as a conversion.", ApiErrorCodes.ValidationInvalid);
                 }
 
-                try
-                {
-                    var measurements = input.Measurements;
-                    ProductMeasurements.Create(
-                        measurements?.NetWeight,
-                        measurements?.GrossWeight,
-                        measurements?.WeightUnitOfMeasure,
-                        measurements?.Length,
-                        measurements?.Width,
-                        measurements?.Height,
-                        measurements?.DimensionUnitOfMeasure);
-                }
-                catch (ArgumentException exception)
-                {
-                    context.AddFailure(nameof(ProductInput.Measurements), exception.Message);
-                }
+                ValidateMeasurements(input.Measurements, context);
             });
     }
 
@@ -121,4 +107,87 @@ public sealed class ProductInputValidator : AbstractValidator<ProductInput>
             return false;
         }
     }
+
+    private static void ValidateMeasurements(ProductMeasurementsInput? measurements, ValidationContext<ProductInput> context)
+    {
+        if (measurements is null)
+        {
+            return;
+        }
+
+        var hasWeight = measurements.NetWeight is not null || measurements.GrossWeight is not null || !string.IsNullOrWhiteSpace(measurements.WeightUnitOfMeasure);
+        if (hasWeight)
+        {
+            if (measurements.NetWeight is null && measurements.GrossWeight is null)
+            {
+                AddFailure(context, "Measurements.NetWeight", "Enter a net or gross weight when selecting a weight unit.", ApiErrorCodes.ProductMeasurementWeightRequired);
+            }
+            if (string.IsNullOrWhiteSpace(measurements.WeightUnitOfMeasure))
+            {
+                AddFailure(context, "Measurements.WeightUnitOfMeasure", "Select a weight unit when entering a weight.", ApiErrorCodes.ProductMeasurementWeightUnitRequired);
+            }
+            else if (!IsWeightUnit(measurements.WeightUnitOfMeasure))
+            {
+                AddFailure(context, "Measurements.WeightUnitOfMeasure", "Weight unit must be KG, G, or LB.", ApiErrorCodes.ProductMeasurementWeightUnitInvalid);
+            }
+            if (measurements.NetWeight is <= 0m)
+            {
+                AddFailure(context, "Measurements.NetWeight", "Net weight must be greater than zero.", ApiErrorCodes.ProductMeasurementWeightInvalid);
+            }
+            if (measurements.GrossWeight is <= 0m)
+            {
+                AddFailure(context, "Measurements.GrossWeight", "Gross weight must be greater than zero.", ApiErrorCodes.ProductMeasurementWeightInvalid);
+            }
+            if (measurements.NetWeight is { } netWeight && measurements.GrossWeight is { } grossWeight && grossWeight < netWeight)
+            {
+                AddFailure(context, "Measurements.GrossWeight", "Gross weight cannot be less than net weight.", ApiErrorCodes.ProductMeasurementGrossWeightInvalid);
+            }
+        }
+
+        var hasDimensions = measurements.Length is not null || measurements.Width is not null || measurements.Height is not null || !string.IsNullOrWhiteSpace(measurements.DimensionUnitOfMeasure);
+        if (!hasDimensions)
+        {
+            return;
+        }
+
+        if (measurements.Length is null)
+        {
+            AddFailure(context, "Measurements.Length", "Enter length when adding dimensions.", ApiErrorCodes.ProductMeasurementDimensionRequired);
+        }
+        if (measurements.Width is null)
+        {
+            AddFailure(context, "Measurements.Width", "Enter width when adding dimensions.", ApiErrorCodes.ProductMeasurementDimensionRequired);
+        }
+        if (measurements.Height is null)
+        {
+            AddFailure(context, "Measurements.Height", "Enter height when adding dimensions.", ApiErrorCodes.ProductMeasurementDimensionRequired);
+        }
+        if (string.IsNullOrWhiteSpace(measurements.DimensionUnitOfMeasure))
+        {
+            AddFailure(context, "Measurements.DimensionUnitOfMeasure", "Select a dimension unit when entering dimensions.", ApiErrorCodes.ProductMeasurementDimensionUnitRequired);
+        }
+        else if (!IsDimensionUnit(measurements.DimensionUnitOfMeasure))
+        {
+            AddFailure(context, "Measurements.DimensionUnitOfMeasure", "Dimension unit must be M, CM, or MM.", ApiErrorCodes.ProductMeasurementDimensionUnitInvalid);
+        }
+        if (measurements.Length is <= 0m)
+        {
+            AddFailure(context, "Measurements.Length", "Length must be greater than zero.", ApiErrorCodes.ProductMeasurementDimensionInvalid);
+        }
+        if (measurements.Width is <= 0m)
+        {
+            AddFailure(context, "Measurements.Width", "Width must be greater than zero.", ApiErrorCodes.ProductMeasurementDimensionInvalid);
+        }
+        if (measurements.Height is <= 0m)
+        {
+            AddFailure(context, "Measurements.Height", "Height must be greater than zero.", ApiErrorCodes.ProductMeasurementDimensionInvalid);
+        }
+    }
+
+    private static bool IsWeightUnit(string value) => value.Trim().ToUpperInvariant() is "KG" or "G" or "LB";
+
+    private static bool IsDimensionUnit(string value) => value.Trim().ToUpperInvariant() is "M" or "CM" or "MM";
+
+    private static void AddFailure(ValidationContext<ProductInput> context, string propertyName, string message, string errorCode) =>
+        context.AddFailure(new ValidationFailure(propertyName, message) { ErrorCode = errorCode });
 }

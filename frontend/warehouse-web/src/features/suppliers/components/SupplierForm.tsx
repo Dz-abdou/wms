@@ -1,8 +1,10 @@
-import { Form, Input } from "antd";
+import { useEffect } from "react";
+import { Form, Input, Select } from "antd";
 import { useTranslation } from "react-i18next";
 import { FormPageActions } from "../../../shared/components/FormPageActions";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
+import { usePurchasingCurrencies } from "../../purchasing/api/usePurchasing";
 import type { SupplierInput } from "../api/supplierTypes";
 import { supplierValidation } from "../supplierConstants";
 
@@ -28,6 +30,23 @@ export function SupplierForm({
   const [form] = Form.useForm<SupplierInput>();
   const { t } = useTranslation();
   const feedback = useApiFeedback();
+  const currencies = usePurchasingCurrencies();
+
+  useEffect(() => {
+    if (
+      initialValues?.defaultCurrencyCode ||
+      form.getFieldValue("defaultCurrencyCode")
+    ) {
+      return;
+    }
+
+    const defaultCurrencyCode = currencies.data?.find(
+      (currency) => currency.isDefault,
+    )?.code;
+    if (defaultCurrencyCode) {
+      form.setFieldValue("defaultCurrencyCode", defaultCurrencyCode);
+    }
+  }, [currencies.data, form, initialValues?.defaultCurrencyCode]);
 
   async function handleSubmit(values: SupplierInput) {
     try {
@@ -129,6 +148,24 @@ export function SupplierForm({
           maxLength={supplierValidation.maxAddressLength}
           rows={4}
           showCount
+        />
+      </Form.Item>
+      <Form.Item
+        label={t("suppliers.form.defaultCurrency")}
+        name="defaultCurrencyCode"
+        rules={[
+          {
+            required: true,
+            message: t("suppliers.form.defaultCurrencyRequired"),
+          },
+        ]}
+      >
+        <Select
+          disabled={currencies.isLoading}
+          options={currencies.data?.map((currency) => ({
+            value: currency.code,
+            label: currency.code,
+          }))}
         />
       </Form.Item>
       <FormPageActions

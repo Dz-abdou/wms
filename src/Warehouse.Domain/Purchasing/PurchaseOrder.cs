@@ -1,10 +1,12 @@
 using Warehouse.Domain.Common;
+using Warehouse.Domain.Products;
 
 namespace Warehouse.Domain.Purchasing;
 
 public sealed class PurchaseOrder : PersistentEntity
 {
     private readonly List<PurchaseOrderLine> lines = [];
+    private readonly List<PurchaseOrderStatusHistory> statusHistory = [];
 
     private PurchaseOrder(
         Guid id,
@@ -21,8 +23,19 @@ public sealed class PurchaseOrder : PersistentEntity
     }
 
     public Guid SupplierId { get; private set; }
+    public string? Number { get; private set; }
+    public Guid? DestinationWarehouseId { get; private set; }
+    public string? CurrencyCode { get; private set; }
+    public DateOnly? OrderDate { get; private set; }
+    public DateOnly? ExpectedDeliveryDate { get; private set; }
+    public Guid? BuyerUserId { get; private set; }
+    public string? SupplierReference { get; private set; }
+    public string? Notes { get; private set; }
     public PurchaseOrderStatus Status { get; private set; }
+    public DateTime? SubmittedAtUtc { get; private set; }
+    public int Version { get; private set; }
     public IReadOnlyCollection<PurchaseOrderLine> Lines => lines;
+    public IReadOnlyCollection<PurchaseOrderStatusHistory> StatusHistory => statusHistory;
 
     public static PurchaseOrder Create(Guid supplierId, DateTime createdAtUtc, Guid? actorUserId = null)
     {
@@ -35,6 +48,55 @@ public sealed class PurchaseOrder : PersistentEntity
             createdAtUtc,
             actorUserId,
             actorUserId);
+    }
+
+    public static PurchaseOrder Create(
+        string number,
+        Guid supplierId,
+        Guid destinationWarehouseId,
+        string currencyCode,
+        DateOnly orderDate,
+        DateOnly? expectedDeliveryDate,
+        Guid buyerUserId,
+        string? supplierReference,
+        string? notes,
+        DateTime createdAtUtc)
+    {
+        var order = Create(supplierId, createdAtUtc, buyerUserId);
+        order.Number = NormalizeRequired(number, PurchaseOrderRules.MaxNumberLength, nameof(number)).ToUpperInvariant();
+        order.DestinationWarehouseId = RequireId(destinationWarehouseId, nameof(destinationWarehouseId));
+        order.CurrencyCode = NormalizeCurrencyCode(currencyCode);
+        order.OrderDate = orderDate;
+        order.ExpectedDeliveryDate = ValidateExpectedDeliveryDate(orderDate, expectedDeliveryDate);
+        order.BuyerUserId = RequireId(buyerUserId, nameof(buyerUserId));
+        order.SupplierReference = NormalizeOptional(supplierReference, PurchaseOrderRules.MaxSupplierReferenceLength, nameof(supplierReference));
+        order.Notes = NormalizeOptional(notes, PurchaseOrderRules.MaxNotesLength, nameof(notes));
+        order.statusHistory.Add(PurchaseOrderStatusHistory.Create(null, PurchaseOrderStatus.Draft, createdAtUtc, buyerUserId, null));
+        return order;
+    }
+
+    public void UpdateOperationalDetails(
+        Guid supplierId,
+        Guid destinationWarehouseId,
+        string currencyCode,
+        DateOnly orderDate,
+        DateOnly? expectedDeliveryDate,
+        string? supplierReference,
+        string? notes,
+        int version,
+        DateTime updatedAtUtc,
+        Guid actorUserId)
+    {
+        EnsureDraft();
+        if (Version != version) throw new InvalidOperationException("The purchase order was changed by another user.");
+        UpdateSupplier(supplierId, updatedAtUtc, actorUserId);
+        DestinationWarehouseId = RequireId(destinationWarehouseId, nameof(destinationWarehouseId));
+        CurrencyCode = NormalizeCurrencyCode(currencyCode);
+        OrderDate = orderDate;
+        ExpectedDeliveryDate = ValidateExpectedDeliveryDate(orderDate, expectedDeliveryDate);
+        SupplierReference = NormalizeOptional(supplierReference, PurchaseOrderRules.MaxSupplierReferenceLength, nameof(supplierReference));
+        Notes = NormalizeOptional(notes, PurchaseOrderRules.MaxNotesLength, nameof(notes));
+        Version++;
     }
 
     public void ReplaceLines(IEnumerable<PurchaseOrderLine> replacementLines, DateTime updatedAtUtc, Guid? actorUserId = null)
@@ -79,6 +141,31 @@ public sealed class PurchaseOrder : PersistentEntity
         }
 
         Status = PurchaseOrderStatus.Submitted;
+        SubmittedAtUtc = updatedAtUtc;
+        Version++;
+        if (actorUserId is { } userId)
+        {
+            statusHistory.Add(PurchaseOrderStatusHistory.Create(PurchaseOrderStatus.Draft, Status, updatedAtUtc, userId, null));
+        }
+        UpdatedAtUtc = updatedAtUtc;
+        SetUpdatedByUser(actorUserId);
+    }
+
+    public void Cancel(string? reason, DateTime updatedAtUtc, Guid actorUserId)
+    {
+        EnsureUtc(updatedAtUtc);
+        if (Status is not (PurchaseOrderStatus.Draft or PurchaseOrderStatus.Submitted))
+            throw new InvalidOperationException("This purchase order cannot be cancelled in its current state.");
+
+        var previousStatus = Status;
+        Status = PurchaseOrderStatus.Cancelled;
+        Version++;
+        statusHistory.Add(PurchaseOrderStatusHistory.Create(
+            previousStatus,
+            Status,
+            updatedAtUtc,
+            actorUserId,
+            NormalizeOptional(reason, PurchaseOrderRules.MaxStatusReasonLength, nameof(reason))));
         UpdatedAtUtc = updatedAtUtc;
         SetUpdatedByUser(actorUserId);
     }
@@ -102,6 +189,52 @@ public sealed class PurchaseOrder : PersistentEntity
             throw new ArgumentException("Timestamps must be UTC.");
         }
     }
+
+    private static string NormalizeRequired(string? value, int maximumLength, string parameterName)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized) || normalized.Length > maximumLength)
+            throw new ArgumentException("A valid value is required.", parameterName);
+        return normalized;
+    }
+
+    private static string NormalizeCurrencyCode(string? currencyCode)
+    {
+        var normalized = NormalizeRequired(currencyCode, SupplierProductRules.CurrencyCodeLength, nameof(currencyCode));
+        if (normalized.Length != SupplierProductRules.CurrencyCodeLength || !normalized.All(char.IsAsciiLetter))
+            throw new ArgumentException("A valid currency code is required.", nameof(currencyCode));
+        return normalized.ToUpperInvariant();
+    }
+
+    private static DateOnly? ValidateExpectedDeliveryDate(DateOnly orderDate, DateOnly? expectedDeliveryDate) =>
+        expectedDeliveryDate is null || expectedDeliveryDate >= orderDate
+            ? expectedDeliveryDate
+            : throw new ArgumentOutOfRangeException(nameof(expectedDeliveryDate));
+
+    private static string? NormalizeOptional(string? value, int maximumLength, string parameterName)
+    {
+        var normalized = value?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized)) return null;
+        if (normalized.Length > maximumLength) throw new ArgumentOutOfRangeException(parameterName);
+        return normalized;
+    }
+}
+
+public sealed class PurchaseOrderStatusHistory
+{
+    private PurchaseOrderStatusHistory(Guid id, PurchaseOrderStatus? previousStatus, PurchaseOrderStatus status, DateTime changedAtUtc, Guid actorUserId, string? reason)
+    {
+        Id = id; PreviousStatus = previousStatus; Status = status; ChangedAtUtc = changedAtUtc; ActorUserId = actorUserId; Reason = reason;
+    }
+    public Guid Id { get; private set; }
+    public PurchaseOrderStatus? PreviousStatus { get; private set; }
+    public PurchaseOrderStatus Status { get; private set; }
+    public DateTime ChangedAtUtc { get; private set; }
+    public Guid ActorUserId { get; private set; }
+    public string? Reason { get; private set; }
+    public static PurchaseOrderStatusHistory Create(PurchaseOrderStatus? previousStatus, PurchaseOrderStatus status, DateTime changedAtUtc, Guid actorUserId, string? reason) =>
+        new(Guid.NewGuid(), previousStatus, status, changedAtUtc, RequireActor(actorUserId), reason);
+    private static Guid RequireActor(Guid actorUserId) => actorUserId != Guid.Empty ? actorUserId : throw new ArgumentException("An actor is required.", nameof(actorUserId));
 }
 
 public sealed class PurchaseOrderLine
@@ -131,6 +264,7 @@ public sealed class PurchaseOrderLine
     }
 
     public Guid Id { get; private set; }
+    public int LineNumber { get; private set; }
     public Guid SupplierProductId { get; private set; }
     public Guid ProductId { get; private set; }
     public string ProductSku { get; private set; } = null!;
@@ -138,8 +272,11 @@ public sealed class PurchaseOrderLine
     public string? SupplierSku { get; private set; }
     public string PurchaseUnitOfMeasure { get; private set; } = null!;
     public decimal Quantity { get; private set; }
+    public decimal QuantityInBaseUnit { get; private set; }
+    public decimal ConversionFactorToBaseUnit { get; private set; }
     public decimal UnitPrice { get; private set; }
     public string CurrencyCode { get; private set; } = null!;
+    public decimal LineAmount { get; private set; }
 
     public static PurchaseOrderLine Create(
         SupplierProduct supplierProduct,
@@ -164,6 +301,25 @@ public sealed class PurchaseOrderLine
             quantity,
             supplierProduct.UnitPrice,
             supplierProduct.CurrencyCode);
+    }
+
+    public static PurchaseOrderLine Create(
+        int lineNumber,
+        SupplierProduct supplierProduct,
+        Product product,
+        decimal quantity)
+    {
+        ArgumentNullException.ThrowIfNull(product);
+        if (lineNumber <= 0) throw new ArgumentOutOfRangeException(nameof(lineNumber));
+        if (!product.TryConvertToBaseQuantity(supplierProduct.PurchaseUnitOfMeasure, quantity, out var quantityInBaseUnit))
+            throw new ArgumentException("The purchase quantity cannot be converted to the product base unit.", nameof(quantity));
+
+        var line = Create(supplierProduct, product.Sku, product.Name, quantity);
+        line.LineNumber = lineNumber;
+        line.QuantityInBaseUnit = quantityInBaseUnit;
+        line.ConversionFactorToBaseUnit = quantityInBaseUnit / quantity;
+        line.LineAmount = decimal.Round(quantity * line.UnitPrice, 4, MidpointRounding.AwayFromZero);
+        return line;
     }
 
     private static string NormalizeRequired(string value, int maximumLength, string parameterName)
