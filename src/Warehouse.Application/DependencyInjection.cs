@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<PurchaseOrderService>();
         services.AddScoped<CurrencyService>();
         services.AddScoped<InventoryService>();
+        services.AddScoped<Warehouse.Application.Receiving.GoodsReceiptService>();
         services.AddValidatorsFromAssemblyContaining<ProductService>();
 
         return services;

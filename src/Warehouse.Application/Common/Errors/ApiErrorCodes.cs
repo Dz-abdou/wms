@@ -58,4 +58,7 @@ public static class ApiErrorCodes
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
     public const string PurchaseOrderInvalidTransition = "purchase_order.invalid_transition";
+    public const string GoodsReceiptPurchaseOrderUnavailable = "goods_receipt.purchase_order_unavailable";
+    public const string GoodsReceiptPurchaseOrderConcurrencyConflict = "goods_receipt.purchase_order_concurrency_conflict";
+    public const string GoodsReceiptOverReceipt = "goods_receipt.over_receipt";
 }

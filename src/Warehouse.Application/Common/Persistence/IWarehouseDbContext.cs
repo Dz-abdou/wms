@@ -5,6 +5,7 @@ using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Domain.Suppliers;
 using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Currencies;
+using Warehouse.Domain.Receiving;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -26,6 +27,8 @@ public interface IWarehouseDbContext
     DbSet<PurchaseOrder> PurchaseOrders { get; }
 
     DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences { get; }
+    DbSet<GoodsReceipt> GoodsReceipts { get; }
+    DbSet<GoodsReceiptNumberSequence> GoodsReceiptNumberSequences { get; }
 
     DbSet<Currency> Currencies { get; }
 

@@ -151,6 +151,15 @@ public sealed class PurchaseOrder : PersistentEntity
         SetUpdatedByUser(actorUserId);
     }
 
+    public void ApplyReceiptProgress(bool isFullyReceived, DateTime updatedAtUtc, Guid actorUserId)
+    {
+        if (Status is not (PurchaseOrderStatus.Submitted or PurchaseOrderStatus.PartiallyReceived)) throw new InvalidOperationException("Only submitted purchase orders can be received.");
+        var next = isFullyReceived ? PurchaseOrderStatus.Received : PurchaseOrderStatus.PartiallyReceived;
+        if (Status == next) return;
+        var previous = Status; Status = next; Version++; UpdatedAtUtc = updatedAtUtc; SetUpdatedByUser(actorUserId);
+        statusHistory.Add(PurchaseOrderStatusHistory.Create(previous, next, updatedAtUtc, actorUserId, null));
+    }
+
     public void Cancel(string? reason, DateTime updatedAtUtc, Guid actorUserId)
     {
         EnsureUtc(updatedAtUtc);

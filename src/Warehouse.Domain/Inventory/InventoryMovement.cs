@@ -8,6 +8,7 @@ public sealed class InventoryMovement : PersistentEntity
     private InventoryMovement(
         Guid id,
         Guid? inventoryAdjustmentId,
+        Guid? goodsReceiptId,
         Guid productId,
         Guid warehouseId,
         InventoryMovementType type,
@@ -22,6 +23,7 @@ public sealed class InventoryMovement : PersistentEntity
         : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
         InventoryAdjustmentId = inventoryAdjustmentId;
+        GoodsReceiptId = goodsReceiptId;
         ProductId = productId;
         WarehouseId = warehouseId;
         Type = type;
@@ -34,6 +36,8 @@ public sealed class InventoryMovement : PersistentEntity
     public Guid ProductId { get; private set; }
 
     public Guid? InventoryAdjustmentId { get; private set; }
+
+    public Guid? GoodsReceiptId { get; private set; }
 
     public Guid WarehouseId { get; private set; }
 
@@ -73,6 +77,7 @@ public sealed class InventoryMovement : PersistentEntity
         return new InventoryMovement(
             Guid.NewGuid(),
             inventoryAdjustmentId,
+            null,
             productId,
             warehouseId,
             quantityDelta > 0m ? InventoryMovementType.ManualIncrease : InventoryMovementType.ManualDecrease,
@@ -82,6 +87,37 @@ public sealed class InventoryMovement : PersistentEntity
             balanceAfter,
             createdAtUtc,
             createdAtUtc,
+            actorUserId,
+            actorUserId);
+    }
+
+    public static InventoryMovement CreateGoodsReceipt(
+        Guid goodsReceiptId,
+        Guid productId,
+        Guid warehouseId,
+        string? unitOfMeasure,
+        decimal quantityReceivedInUnit,
+        decimal quantityReceivedInBaseUnit,
+        decimal balanceAfter,
+        DateTime receivedAtUtc,
+        Guid? actorUserId = null)
+    {
+        if (goodsReceiptId == Guid.Empty || quantityReceivedInUnit <= 0m || quantityReceivedInBaseUnit <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(quantityReceivedInUnit));
+
+        return new InventoryMovement(
+            Guid.NewGuid(),
+            null,
+            goodsReceiptId,
+            productId,
+            warehouseId,
+            InventoryMovementType.GoodsReceipt,
+            ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure),
+            quantityReceivedInUnit,
+            quantityReceivedInBaseUnit,
+            balanceAfter,
+            receivedAtUtc,
+            receivedAtUtc,
             actorUserId,
             actorUserId);
     }
