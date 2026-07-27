@@ -51,7 +51,11 @@ export function PurchaseOrderForm({
 
   async function submit(values: PurchaseOrderInput) {
     try {
-      await onSubmit({ ...values, lines: values.lines ?? [] });
+      await onSubmit({
+        ...values,
+        lines: values.lines ?? [],
+        version: initialValues?.version,
+      });
     } catch (error) {
       if (!applyServerFieldErrors(form, error, t, "errors.validationFailed"))
         feedback.notifyError(error, errorMessageKey);

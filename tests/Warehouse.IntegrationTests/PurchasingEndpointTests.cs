@@ -218,6 +218,30 @@ public sealed class PurchasingEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Purchase_order_update_requires_the_loaded_version()
+    {
+        var supplier = await CreateSupplierAsync();
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var catalogueItem = await CreateCatalogueItemAsync(supplier.Id, product.Id, "EA", 1m);
+        var draft = await CreatePurchaseOrderAsync(supplier.Id, warehouse.Id, catalogueItem.Id, "2026-07-26");
+
+        var response = await fixture.Client.PutAsJsonAsync($"/api/purchase-orders/{draft.Id}", new
+        {
+            supplierId = supplier.Id,
+            destinationWarehouseId = warehouse.Id,
+            currencyCode = "DZD",
+            orderDate = "2026-07-26",
+            lines = new[] { new { supplierProductId = catalogueItem.Id, quantity = 1m } }
+        });
+
+        await AssertFieldErrorAsync(
+            response,
+            "Version",
+            ApiErrorCodes.ValidationRequired);
+    }
+
+    [Fact]
     public async Task Concurrent_draft_creation_allocates_unique_purchase_order_numbers()
     {
         var supplier = await CreateSupplierAsync();

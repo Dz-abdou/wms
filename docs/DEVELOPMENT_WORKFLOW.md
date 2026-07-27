@@ -20,6 +20,9 @@ The specification must include:
   concurrency: persist a version token, require it on mutation requests, return
   a stable conflict code for stale writes, preserve the user's unsaved values in
   the UI, and cover the conflict path with integration and frontend tests.
+  When a form library excludes unrendered fields from its submit payload, pass
+  the loaded version token explicitly; do not rely on an invisible initial form
+  value being submitted.
 
 ## 2. Ask Codex to Inspect
 

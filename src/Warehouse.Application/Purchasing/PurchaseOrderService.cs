@@ -80,7 +80,11 @@ public sealed class PurchaseOrderService(
     {
         var purchaseOrder = await FindTrackedAsync(id, cancellationToken);
         EnsureDraft(purchaseOrder);
-        if (input.Version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
+        var version = input.Version ?? throw new PurchaseOrderFieldValidationException(
+            "Version",
+            ApiErrorCodes.ValidationRequired,
+            "A purchase-order version is required when updating a draft.");
+        if (version != purchaseOrder.Version) throw new PurchaseOrderConcurrencyException(id);
         var supplier = await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
         await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
         var currencyCode = await ResolvePurchaseOrderCurrencyAsync(supplier, input.CurrencyCode, cancellationToken);
@@ -94,7 +98,7 @@ public sealed class PurchaseOrderService(
 
         var lines = await ResolveLinesAsync(input.SupplierId, currencyCode, input.Lines ?? [], cancellationToken);
         var updatedAtUtc = UtcNow();
-        purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, input.Version ?? -1, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
+        purchaseOrder.UpdateOperationalDetails(input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, input.SupplierReference, input.Notes, version, updatedAtUtc, currentUser.UserId ?? Guid.Empty);
         purchaseOrder.ReplaceLines(lines, updatedAtUtc, currentUser.UserId);
         await SaveWithConcurrencyHandlingAsync(id, cancellationToken);
         return await GetByIdAsync(id, cancellationToken);

@@ -206,6 +206,36 @@ describe("PurchaseOrderForm", () => {
     ).toBeInTheDocument();
   });
 
+  it("preserves the loaded version when submitting an edit", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <PurchaseOrderForm
+        errorMessageKey="purchasing.orders.errors.update"
+        initialValues={{
+          supplierId: "supplier-1",
+          destinationWarehouseId: "warehouse-1",
+          currencyCode: "DZD",
+          orderDate: "2026-07-27",
+          version: 4,
+          lines: [{ supplierProductId: "catalogue-1", quantity: 2 }],
+        }}
+        isSubmitting={false}
+        onSubmit={onSubmit}
+        submitLabel="Save"
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() =>
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ version: 4 }),
+      ),
+    );
+  });
+
   it("shows a server quantity-unit error beside the line quantity", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn().mockRejectedValue(
