@@ -2,6 +2,7 @@ export type ProblemDetails = {
   code?: string;
   detail?: string;
   errorCodes?: Record<string, string[]>;
+  errorParameters?: Record<string, Array<Record<string, string | number>>>;
   errors?: Record<string, string[]>;
   status?: number;
   title?: string;

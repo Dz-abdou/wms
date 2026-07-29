@@ -56,7 +56,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
           "lines": [
             {
               "productId": "{{product.Id}}",
-              "warehouseId": "{{warehouse.Id}",
+              "warehouseId": "{{warehouse.Id}}",
               "quantity": 2,
               "direction": "Increase",
               "unitOfMeasure": "EA"
@@ -88,10 +88,14 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1m, direction = InventoryAdjustmentDirection.Decrease, unitOfMeasure = "EA" } }
         });
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
         Assert.NotNull(problem);
         Assert.Equal(ApiErrorCodes.InventoryInsufficientStock, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.InventoryInsufficientStock,
+            Assert.Single(problem.ErrorCodes!["Lines[0].Quantity"]));
+        Assert.Contains("Lines[0].Quantity", problem.Errors!.Keys);
 
         using var scope = fixture.Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
@@ -299,5 +303,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         return (await response.Content.ReadFromJsonAsync<WarehouseResponse>())!;
     }
 
-    private sealed record ProblemResponse(string? Code);
+    private sealed record ProblemResponse(
+        string? Code,
+        Dictionary<string, string[]>? Errors = null,
+        Dictionary<string, string[]>? ErrorCodes = null);
 }

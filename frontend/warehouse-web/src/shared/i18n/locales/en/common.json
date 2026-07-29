@@ -109,6 +109,7 @@
       "admin.user_invalid": "The user details do not meet the account requirements.",
       "admin.self_management_forbidden": "You cannot change your own account from this page.",
       "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product.",
+      "inventory.insufficient_stock": "The quantity exceeds available stock in {{warehouse}}. Available: {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "The inventory adjustment was not found."
     }
   },

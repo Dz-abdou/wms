@@ -9,8 +9,24 @@ public sealed class InventoryWarehouseNotFoundException(Guid warehouseId)
 public sealed class InventoryInvalidUnitOfMeasureException(Guid productId, string? unitOfMeasure)
     : Exception($"Unit of measure '{unitOfMeasure}' is not valid for product '{productId}'.");
 
-public sealed class InsufficientInventoryException(Guid productId, Guid warehouseId)
-    : Exception($"Insufficient inventory for product '{productId}' in warehouse '{warehouseId}'.");
+public sealed class InsufficientInventoryException(
+    int lineIndex,
+    Guid productId,
+    Guid warehouseId,
+    decimal availableQuantity,
+    string baseUnitOfMeasure,
+    string warehouseCode,
+    string warehouseName)
+    : Exception($"Insufficient inventory for product '{productId}' in warehouse '{warehouseId}'.")
+{
+    public string PropertyName => $"Lines[{lineIndex}].Quantity";
+
+    public decimal AvailableQuantity { get; } = availableQuantity;
+
+    public string BaseUnitOfMeasure { get; } = baseUnitOfMeasure;
+
+    public string Warehouse { get; } = $"{warehouseCode} — {warehouseName}";
+}
 
 public sealed class InventoryConcurrencyException(Exception innerException)
     : Exception("The inventory balance was changed by another operation.", innerException);

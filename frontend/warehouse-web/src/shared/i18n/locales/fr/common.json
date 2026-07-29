@@ -109,6 +109,7 @@
       "admin.user_invalid": "Les informations ne respectent pas les exigences du compte.",
       "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page.",
       "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné.",
+      "inventory.insufficient_stock": "La quantité dépasse le stock disponible dans {{warehouse}}. Disponible : {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "L’ajustement de stock est introuvable."
     }
   },

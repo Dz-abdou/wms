@@ -36,6 +36,7 @@ export function applyServerFieldErrors(
               t,
               getErrorCodes(error.problem.errorCodes, property),
               fallbackKey,
+              getErrorParameters(error.problem.errorParameters, property),
             ),
           }
         : undefined;
@@ -92,4 +93,19 @@ function getErrorCodes(
     (key) => key.toLowerCase() === property.toLowerCase(),
   );
   return matchingProperty ? errorCodes[matchingProperty] : undefined;
+}
+
+function getErrorParameters(
+  errorParameters:
+    Record<string, Array<Record<string, string | number>>> | undefined,
+  property: string,
+): Array<Record<string, string | number>> | undefined {
+  if (!errorParameters) {
+    return undefined;
+  }
+
+  const matchingProperty = Object.keys(errorParameters).find(
+    (key) => key.toLowerCase() === property.toLowerCase(),
+  );
+  return matchingProperty ? errorParameters[matchingProperty] : undefined;
 }

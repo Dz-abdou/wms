@@ -21,18 +21,30 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 var adjustment = InventoryAdjustment.Create(input.Reason, input.Reference, input.Note, timestamp, currentUser.UserId);
                 dbContext.InventoryAdjustments.Add(adjustment);
                 var results = new List<InventoryBalanceResponse>();
-                foreach (var line in input.Lines)
+                for (var lineIndex = 0; lineIndex < input.Lines.Count; lineIndex++)
                 {
+                    var line = input.Lines[lineIndex];
                     var product = await dbContext.Products.Include(candidate => candidate.UnitConversions).SingleOrDefaultAsync(candidate => candidate.Id == line.ProductId && candidate.IsActive, token)
                         ?? throw new InventoryProductNotFoundException(line.ProductId);
-                    if (!await dbContext.Warehouses.AnyAsync(warehouse => warehouse.Id == line.WarehouseId && warehouse.IsActive, token)) throw new InventoryWarehouseNotFoundException(line.WarehouseId);
+                    var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(candidate => candidate.Id == line.WarehouseId && candidate.IsActive, token)
+                        ?? throw new InventoryWarehouseNotFoundException(line.WarehouseId);
                     if (!product.TryConvertToBaseQuantity(line.UnitOfMeasure, line.Quantity, out var quantityInBaseUnit)) throw new InventoryInvalidUnitOfMeasureException(line.ProductId, line.UnitOfMeasure);
                     var balance = await dbContext.InventoryBalances.SingleOrDefaultAsync(candidate => candidate.ProductId == line.ProductId && candidate.WarehouseId == line.WarehouseId, token)
                         ?? InventoryBalance.Create(line.ProductId, line.WarehouseId, timestamp, currentUser.UserId);
                     if (balance.Id == Guid.Empty) throw new InvalidOperationException();
                     if (!dbContext.InventoryBalances.Local.Contains(balance)) dbContext.InventoryBalances.Add(balance);
                     var delta = line.Direction == InventoryAdjustmentDirection.Increase ? quantityInBaseUnit : -quantityInBaseUnit;
-                    if (delta < 0m && balance.Quantity < -delta) throw new InsufficientInventoryException(line.ProductId, line.WarehouseId);
+                    if (delta < 0m && balance.Quantity < -delta)
+                    {
+                        throw new InsufficientInventoryException(
+                            lineIndex,
+                            line.ProductId,
+                            line.WarehouseId,
+                            balance.Quantity,
+                            product.BaseUnitOfMeasure,
+                            warehouse.Code,
+                            warehouse.Name);
+                    }
                     var quantityDeltaInUnit = line.Direction == InventoryAdjustmentDirection.Increase ? line.Quantity : -line.Quantity;
                     balance.ApplyAdjustment(delta, timestamp, currentUser.UserId);
                     dbContext.InventoryMovements.Add(InventoryMovement.CreateManualAdjustment(line.ProductId, line.WarehouseId, ProductUnitOfMeasure.NormalizeUnitOfMeasure(line.UnitOfMeasure), quantityDeltaInUnit, delta, balance.Quantity, timestamp, currentUser.UserId, adjustment.Id));
