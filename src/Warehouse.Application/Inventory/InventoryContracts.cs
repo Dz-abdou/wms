@@ -85,6 +85,7 @@ public sealed record InventoryMovementResponse(
     Guid Id,
     Guid? InventoryAdjustmentId,
     Guid? GoodsReceiptId,
+    Guid? CycleCountId,
     Guid ProductId,
     string ProductSku,
     string ProductName,
@@ -93,6 +94,7 @@ public sealed record InventoryMovementResponse(
     string WarehouseName,
     string? AdjustmentReference,
     string? GoodsReceiptNumber,
+    string? CycleCountReference,
     string Type,
     string UnitOfMeasure,
     decimal QuantityDeltaInUnit,
@@ -125,3 +127,69 @@ public sealed record InventoryOverviewQuery(
     Guid? WarehouseId = null,
     Guid? CategoryId = null,
     bool? IsActive = null) : IPagedRequest;
+
+public sealed record CycleCountLineInput(
+    Guid ProductId,
+    decimal SystemQuantityInBase,
+    int SystemBalanceVersion,
+    string? CountedUnitOfMeasure,
+    decimal CountedQuantityInUnit);
+
+public sealed record CycleCountInput(
+    Guid WarehouseId,
+    string? Reference,
+    string? Note,
+    IReadOnlyList<CycleCountLineInput> Lines);
+
+public sealed record CycleCountCandidateResponse(
+    Guid ProductId,
+    string ProductSku,
+    string ProductName,
+    string BaseUnitOfMeasure,
+    decimal SystemQuantityInBase,
+    int SystemBalanceVersion);
+
+public sealed record CycleCountCandidateQuery(Guid WarehouseId, Guid ProductId);
+
+public sealed record CycleCountListQuery(
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize,
+    Guid? WarehouseId = null,
+    string? Reference = null,
+    DateTime? FromUtc = null,
+    DateTime? ToUtc = null) : IPagedRequest;
+
+public sealed record CycleCountListItemResponse(
+    Guid Id,
+    Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    string? Reference,
+    DateTime CountedAtUtc,
+    int LineCount,
+    int VarianceLineCount);
+
+public sealed record CycleCountDetailResponse(
+    Guid Id,
+    Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    string? Reference,
+    string? Note,
+    DateTime CountedAtUtc,
+    IReadOnlyList<CycleCountLineResponse> Lines);
+
+public sealed record CycleCountLineResponse(
+    Guid Id,
+    int LineNumber,
+    Guid ProductId,
+    string ProductSku,
+    string ProductName,
+    decimal SystemQuantityInBase,
+    int SystemBalanceVersion,
+    string BaseUnitOfMeasure,
+    string CountedUnitOfMeasure,
+    decimal CountedQuantityInUnit,
+    decimal CountedQuantityInBase,
+    decimal VarianceQuantityInBase,
+    Guid? InventoryMovementId);

@@ -33,3 +33,19 @@ public sealed class InventoryConcurrencyException(Exception innerException)
 
 public sealed class InventoryAdjustmentNotFoundException(Guid adjustmentId)
     : Exception($"Inventory adjustment '{adjustmentId}' was not found.");
+
+public sealed class CycleCountNotFoundException(Guid cycleCountId)
+    : Exception($"Cycle count '{cycleCountId}' was not found.");
+
+public sealed class CycleCountStaleBalanceException(
+    int lineIndex,
+    decimal currentQuantityInBase,
+    string baseUnitOfMeasure)
+    : Exception("Inventory changed after this count line was loaded.")
+{
+    public string PropertyName => $"Lines[{lineIndex}].SystemQuantityInBase";
+
+    public decimal CurrentQuantityInBase { get; } = currentQuantityInBase;
+
+    public string BaseUnitOfMeasure { get; } = baseUnitOfMeasure;
+}
