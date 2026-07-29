@@ -1,11 +1,14 @@
 export const inventoryApiPaths = {
-  adjustments: '/api/inventory/adjustments',
-  movements: '/api/inventory/movements',
-} as const
+  adjustments: "/api/inventory/adjustments",
+  movements: "/api/inventory/movements",
+  overview: "/api/inventory/overview",
+} as const;
 
 export const inventoryRoutes = {
   root: "/inventory",
   rootPattern: "inventory",
+  overview: "/inventory/overview",
+  overviewPattern: "inventory/overview",
   movementHistory: "/inventory/movements",
   movementHistoryPattern: "inventory/movements",
   adjustments: "/inventory/adjustments",
@@ -14,8 +17,16 @@ export const inventoryRoutes = {
   adjustmentCreatePattern: "inventory/adjustments/new",
   adjustmentDetail: (id: string) => `/inventory/adjustments/${id}`,
   adjustmentDetailPattern: "inventory/adjustments/:id",
-} as const
+} as const;
 
-export const inventoryPageSize = 100
+export const inventoryPageSize = 100;
 
-export const fractionalBaseUnitCodes: ReadonlySet<string> = new Set(['KG', 'G', 'L', 'ML', 'M', 'CM', 'MM'])
+export const fractionalBaseUnitCodes: ReadonlySet<string> = new Set([
+  "KG",
+  "G",
+  "L",
+  "ML",
+  "M",
+  "CM",
+  "MM",
+]);

@@ -36,19 +36,25 @@ export function ApplicationLayout() {
                 ? "purchase-orders"
                 : location.pathname.startsWith(receivingRoutes.list)
                   ? "goods-receipts"
-                  : location.pathname.startsWith(inventoryRoutes.adjustments)
-                    ? "inventory-adjustments"
-                    : location.pathname.startsWith(
-                          inventoryRoutes.movementHistory,
-                        ) || location.pathname.startsWith(inventoryRoutes.root)
-                      ? "inventory-movements"
-                      : location.pathname.startsWith(administrationRoutes.users)
-                        ? "users"
+                  : location.pathname.startsWith(inventoryRoutes.overview) ||
+                      location.pathname === inventoryRoutes.root
+                    ? "inventory-overview"
+                    : location.pathname.startsWith(inventoryRoutes.adjustments)
+                      ? "inventory-adjustments"
+                      : location.pathname.startsWith(
+                            inventoryRoutes.movementHistory,
+                          ) ||
+                          location.pathname.startsWith(inventoryRoutes.root)
+                        ? "inventory-movements"
                         : location.pathname.startsWith(
-                              administrationRoutes.roles,
+                              administrationRoutes.users,
                             )
-                          ? "roles"
-                          : "home";
+                          ? "users"
+                          : location.pathname.startsWith(
+                                administrationRoutes.roles,
+                              )
+                            ? "roles"
+                            : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -141,6 +147,14 @@ export function ApplicationLayout() {
               key: "inventory",
               label: t("navigation.inventory"),
               children: [
+                {
+                  key: "inventory-overview",
+                  label: (
+                    <Link to={inventoryRoutes.overview}>
+                      {t("navigation.inventoryOverview")}
+                    </Link>
+                  ),
+                },
                 {
                   key: "inventory-movements",
                   label: (

@@ -157,6 +157,60 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         return new PagedResult<InventoryMovementResponse>(items, query.Page, query.PageSize, totalCount);
     }
 
+    public async Task<PagedResult<InventoryOverviewItemResponse>> GetOverviewAsync(
+        InventoryOverviewQuery query,
+        CancellationToken cancellationToken)
+    {
+        var balances = from balance in dbContext.InventoryBalances.AsNoTracking()
+                       join product in dbContext.Products.AsNoTracking() on balance.ProductId equals product.Id
+                       join warehouse in dbContext.Warehouses.AsNoTracking() on balance.WarehouseId equals warehouse.Id
+                       select new { balance, product, warehouse };
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var search = query.Search.Trim().ToUpperInvariant();
+            balances = balances.Where(item =>
+                item.product.Sku.ToUpper().Contains(search) ||
+                item.product.Name.ToUpper().Contains(search));
+        }
+
+        if (query.WarehouseId is { } warehouseId)
+        {
+            balances = balances.Where(item => item.warehouse.Id == warehouseId);
+        }
+
+        if (query.CategoryId is { } categoryId)
+        {
+            balances = balances.Where(item => item.product.CategoryId == categoryId);
+        }
+
+        if (query.IsActive is { } isActive)
+        {
+            balances = balances.Where(item => item.product.IsActive == isActive);
+        }
+
+        var totalCount = await balances.CountAsync(cancellationToken);
+        var items = await balances
+            .OrderBy(item => item.product.Sku)
+            .ThenBy(item => item.warehouse.Code)
+            .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(item => new InventoryOverviewItemResponse(
+                item.product.Id,
+                item.product.Sku,
+                item.product.Name,
+                item.product.IsActive,
+                item.warehouse.Id,
+                item.warehouse.Code,
+                item.warehouse.Name,
+                item.balance.Quantity,
+                item.product.BaseUnitOfMeasure,
+                item.balance.UpdatedAtUtc))
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<InventoryOverviewItemResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
     private static InventoryBalanceResponse ToResponse(InventoryBalance balance, string baseUnitOfMeasure) => new(balance.ProductId, balance.WarehouseId, balance.Quantity, balance.UpdatedAtUtc, baseUnitOfMeasure);
 }

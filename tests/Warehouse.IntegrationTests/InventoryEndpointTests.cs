@@ -85,6 +85,51 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Inventory_overview_returns_filtered_on_hand_balances()
+    {
+        var categoryResponse = await fixture.Client.PostAsJsonAsync("/api/product-categories", new
+        {
+            code = $"INV-{Guid.NewGuid():N}"[..14],
+            name = "Inventory overview category"
+        });
+        categoryResponse.EnsureSuccessStatusCode();
+        var category = (await categoryResponse.Content.ReadFromJsonAsync<ProductCategoryResponse>())!;
+
+        var productResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"OVR-{Guid.NewGuid():N}"[..14],
+            name = "Inventory overview product",
+            categoryId = category.Id
+        });
+        productResponse.EnsureSuccessStatusCode();
+        var product = (await productResponse.Content.ReadFromJsonAsync<ProductResponse>())!;
+        var warehouse = await CreateWarehouseAsync();
+        await AdjustAsync(product.Id, warehouse.Id, 7m, InventoryAdjustmentDirection.Increase);
+
+        var overview = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryOverviewItemResponse>>(
+            $"/api/inventory/overview?search={Uri.EscapeDataString(product.Sku)}&warehouseId={warehouse.Id}&categoryId={category.Id}&isActive=true&page=1&pageSize=20");
+
+        Assert.NotNull(overview);
+        var item = Assert.Single(overview.Items);
+        Assert.Equal(product.Id, item.ProductId);
+        Assert.Equal(product.Sku, item.ProductSku);
+        Assert.Equal(warehouse.Id, item.WarehouseId);
+        Assert.Equal(7m, item.Quantity);
+        Assert.Equal("EA", item.BaseUnitOfMeasure);
+        Assert.True(item.ProductIsActive);
+
+        var deactivateResponse = await fixture.Client.PatchAsJsonAsync(
+            $"/api/products/{product.Id}/status",
+            new { isActive = false });
+        deactivateResponse.EnsureSuccessStatusCode();
+
+        var inactiveOverview = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryOverviewItemResponse>>(
+            $"/api/inventory/overview?categoryId={category.Id}&isActive=false&page=1&pageSize=20");
+        Assert.NotNull(inactiveOverview);
+        Assert.Contains(inactiveOverview.Items, item => item.ProductId == product.Id);
+    }
+
+    [Fact]
     public async Task Adjustment_documents_are_listed_detailed_and_linked_to_ledger_movements()
     {
         var product = await CreateProductAsync();

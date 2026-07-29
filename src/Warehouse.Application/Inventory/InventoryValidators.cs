@@ -51,3 +51,11 @@ public sealed class InventoryAdjustmentListQueryValidator : PagedRequestValidato
             .When(query => query.FromUtc.HasValue && query.ToUtc.HasValue);
     }
 }
+
+public sealed class InventoryOverviewQueryValidator : PagedRequestValidator<InventoryOverviewQuery>
+{
+    public InventoryOverviewQueryValidator()
+    {
+        RuleFor(query => query.Search).MaximumLength(200);
+    }
+}
