@@ -326,6 +326,34 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.False(await dbContext.CycleCounts.AnyAsync(count => count.WarehouseId == warehouse.Id));
     }
 
+    [Fact]
+    public async Task Cycle_count_records_an_exact_count_without_a_zero_movement()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, warehouse.Id, 4m);
+        var candidate = await fixture.Client.GetFromJsonAsync<CycleCountCandidateResponse>(
+            $"/api/inventory/cycle-counts/candidate?warehouseId={warehouse.Id}&productId={product.Id}");
+
+        Assert.NotNull(candidate);
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/cycle-counts", new CycleCountInput(
+            warehouse.Id,
+            null,
+            null,
+            [new CycleCountLineInput(product.Id, candidate.SystemQuantityInBase, candidate.SystemBalanceVersion, "EA", 4m)]));
+
+        response.EnsureSuccessStatusCode();
+        var cycleCount = await response.Content.ReadFromJsonAsync<CycleCountDetailResponse>();
+        Assert.NotNull(cycleCount);
+        var line = Assert.Single(cycleCount.Lines);
+        Assert.Equal(0m, line.VarianceQuantityInBase);
+        Assert.Null(line.InventoryMovementId);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        Assert.False(await dbContext.InventoryMovements.AnyAsync(movement => movement.CycleCountId == cycleCount.Id));
+    }
+
 
     private async Task<InventoryBalanceResponse> AdjustAsync(
         Guid productId,
