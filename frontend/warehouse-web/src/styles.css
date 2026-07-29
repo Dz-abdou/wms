@@ -182,6 +182,19 @@ body {
   margin-top: 24px;
 }
 
+.quantity-delta {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.quantity-delta-positive {
+  color: var(--ant-color-success);
+}
+
+.quantity-delta-negative {
+  color: var(--ant-color-error);
+}
+
 @media (max-width: 960px) {
   .application-header {
     height: auto;

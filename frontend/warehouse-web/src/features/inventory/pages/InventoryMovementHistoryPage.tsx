@@ -6,6 +6,7 @@ import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { formatDateTime } from "../../../shared/formatting/dateTime";
 import { toAppLanguage } from "../../../shared/i18n/constants";
 import { useUrlListQuery } from "../../../shared/pagination/pagination";
+import { QuantityDelta } from "../../../shared/components/QuantityDelta";
 import { useProducts } from "../../products/api/useProducts";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import { useMovementHistory } from "../api/useInventory";
@@ -76,6 +77,7 @@ export function InventoryMovementHistoryPage() {
       title: t("inventory.table.delta"),
       dataIndex: "quantityDeltaInUnit",
       width: 120,
+      render: (value) => <QuantityDelta value={value} />,
     },
     {
       title: t("inventory.form.unitOfMeasure"),
