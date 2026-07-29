@@ -30,9 +30,12 @@ export function getFieldErrorMessages(
   t: TFunction,
   errorCodes: string[] | undefined,
   fallbackKey: string,
+  errorParameters?: Array<Record<string, string | number>>,
 ): string[] {
   const translated = errorCodes
-    ?.map((errorCode) => translateErrorCode(t, errorCode))
+    ?.map((errorCode, index) =>
+      translateErrorCode(t, errorCode, errorParameters?.[index]),
+    )
     .filter((message): message is string => message !== undefined);
 
   return translated && translated.length > 0 ? translated : [t(fallbackKey)];
@@ -41,7 +44,11 @@ export function getFieldErrorMessages(
 function translateErrorCode(
   t: TFunction,
   errorCode: string,
+  parameters?: Record<string, string | number>,
 ): string | undefined {
-  const translation = t(`errors.codes.${errorCode}`, { defaultValue: "" });
+  const translation = t(`errors.codes.${errorCode}`, {
+    ...parameters,
+    defaultValue: "",
+  });
   return translation || undefined;
 }

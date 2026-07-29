@@ -23,6 +23,7 @@
     "purchaseOrders": "Commandes d’achat",
     "goodsReceipts": "Réceptions de marchandises",
     "inventory": "Stock",
+    "inventoryOverview": "Vue d’ensemble du stock",
     "movementHistory": "Historique des mouvements",
     "adjustments": "Ajustements",
     "users": "Utilisateurs",
@@ -108,6 +109,7 @@
       "admin.user_invalid": "Les informations ne respectent pas les exigences du compte.",
       "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page.",
       "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné.",
+      "inventory.insufficient_stock": "La quantité dépasse le stock disponible dans {{warehouse}}. Disponible : {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "L’ajustement de stock est introuvable."
     }
   },
@@ -547,6 +549,8 @@
     "title": "Stock",
     "subtitle": "Effectuez un ajustement manuel et consultez l’historique des mouvements.",
     "adjustTitle": "Ajustement manuel",
+    "overviewTitle": "Vue d’ensemble du stock",
+    "overviewSubtitle": "Consultez le stock disponible par produit et entrepôt.",
     "adjustmentsTitle": "Ajustements",
     "adjustmentsSubtitle": "Consultez les documents d’ajustement validés ou créez-en un nouveau.",
     "adjustmentDetailTitle": "Ajustement de stock",
@@ -566,12 +570,17 @@
     "selectForHistory": "Sélectionnez un produit et un entrepôt pour consulter l’historique.",
     "loadingSources": "Chargement des produits et entrepôts…",
     "loadingHistory": "Chargement de l’historique des mouvements…",
+    "loadingOverview": "Chargement de la vue d’ensemble du stock…",
     "loadingAdjustments": "Chargement des ajustements…",
     "loadingAdjustment": "Chargement de l’ajustement…",
     "emptyHistory": "Aucun mouvement de stock n’existe pour cette sélection.",
+    "emptyOverview": "Aucun stock ne correspond à ces filtres.",
     "emptyAdjustments": "Aucun ajustement de stock n’existe encore.",
     "applyFilters": "Appliquer les filtres",
     "filters": {
+      "search": "SKU ou nom du produit",
+      "category": "Catégorie",
+      "status": "Statut du produit",
       "fromDate": "Date de début",
       "toDate": "Date de fin"
     },
@@ -596,7 +605,10 @@
       "reference": "Référence",
       "lines": "Lignes",
       "delta": "Variation",
+      "onHand": "Stock disponible",
+      "status": "Statut",
       "balanceAfter": "Stock après mouvement",
+      "updated": "Dernière mise à jour",
       "created": "Créé le",
       "actions": "Actions"
     },
@@ -619,6 +631,7 @@
       "loadSources": "Les produits ou entrepôts n’ont pas pu être chargés.",
       "adjust": "L’ajustement de stock n’a pas pu être appliqué.",
       "loadHistory": "L’historique des mouvements n’a pas pu être chargé.",
+      "loadOverview": "La vue d’ensemble du stock n’a pas pu être chargée.",
       "loadAdjustments": "Les ajustements de stock n’ont pas pu être chargés.",
       "loadAdjustment": "L’ajustement de stock n’a pas pu être chargé."
     }

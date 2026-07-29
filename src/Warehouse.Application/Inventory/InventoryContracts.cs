@@ -31,6 +31,18 @@ public sealed record InventoryBalanceResponse(
     DateTime UpdatedAtUtc,
     string BaseUnitOfMeasure);
 
+public sealed record InventoryOverviewItemResponse(
+    Guid ProductId,
+    string ProductSku,
+    string ProductName,
+    bool ProductIsActive,
+    Guid WarehouseId,
+    string WarehouseCode,
+    string WarehouseName,
+    decimal Quantity,
+    string BaseUnitOfMeasure,
+    DateTime UpdatedAtUtc);
+
 public sealed record InventoryAdjustmentResponse(
     Guid Id,
     InventoryAdjustmentReason Reason,
@@ -105,3 +117,11 @@ public sealed record InventoryAdjustmentListQuery(
     string? Reference = null,
     DateTime? FromUtc = null,
     DateTime? ToUtc = null) : IPagedRequest;
+
+public sealed record InventoryOverviewQuery(
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize,
+    string? Search = null,
+    Guid? WarehouseId = null,
+    Guid? CategoryId = null,
+    bool? IsActive = null) : IPagedRequest;

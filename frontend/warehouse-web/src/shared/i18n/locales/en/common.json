@@ -23,6 +23,7 @@
     "purchaseOrders": "Purchase orders",
     "goodsReceipts": "Goods receipts",
     "inventory": "Inventory",
+    "inventoryOverview": "Inventory overview",
     "movementHistory": "Movement history",
     "adjustments": "Adjustments",
     "users": "Users",
@@ -108,6 +109,7 @@
       "admin.user_invalid": "The user details do not meet the account requirements.",
       "admin.self_management_forbidden": "You cannot change your own account from this page.",
       "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product.",
+      "inventory.insufficient_stock": "The quantity exceeds available stock in {{warehouse}}. Available: {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "The inventory adjustment was not found."
     }
   },
@@ -545,6 +547,8 @@
     "title": "Inventory",
     "subtitle": "Apply a manual stock adjustment and review the resulting movement history.",
     "adjustTitle": "Manual adjustment",
+    "overviewTitle": "Inventory overview",
+    "overviewSubtitle": "Review on-hand stock by product and warehouse.",
     "adjustmentsTitle": "Adjustments",
     "adjustmentsSubtitle": "Review posted adjustment documents or create a new one.",
     "adjustmentDetailTitle": "Inventory adjustment",
@@ -564,12 +568,17 @@
     "selectForHistory": "Select a product and warehouse to view history.",
     "loadingSources": "Loading products and warehouses…",
     "loadingHistory": "Loading movement history…",
+    "loadingOverview": "Loading inventory overview…",
     "loadingAdjustments": "Loading adjustments…",
     "loadingAdjustment": "Loading adjustment…",
     "emptyHistory": "No inventory movements exist for this selection.",
+    "emptyOverview": "No inventory balances match these filters.",
     "emptyAdjustments": "No inventory adjustments exist yet.",
     "applyFilters": "Apply filters",
     "filters": {
+      "search": "SKU or product name",
+      "category": "Category",
+      "status": "Product status",
       "fromDate": "From date",
       "toDate": "To date"
     },
@@ -594,7 +603,10 @@
       "reference": "Reference",
       "lines": "Lines",
       "delta": "Change",
+      "onHand": "On hand",
+      "status": "Status",
       "balanceAfter": "Balance after",
+      "updated": "Last updated",
       "created": "Created",
       "actions": "Actions"
     },
@@ -617,6 +629,7 @@
       "loadSources": "Products or warehouses could not be loaded.",
       "adjust": "The inventory adjustment could not be applied.",
       "loadHistory": "Movement history could not be loaded.",
+      "loadOverview": "Inventory overview could not be loaded.",
       "loadAdjustments": "Inventory adjustments could not be loaded.",
       "loadAdjustment": "The inventory adjustment could not be loaded."
     }

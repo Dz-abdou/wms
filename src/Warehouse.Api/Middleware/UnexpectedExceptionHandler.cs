@@ -14,6 +14,25 @@ public sealed class UnexpectedExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
+        if (exception is BadHttpRequestException)
+        {
+            logger.LogWarning(exception, "An invalid HTTP request was received.");
+
+            await ProblemDetailsResponseWriter.WriteAsync(
+                problemDetailsService,
+                httpContext,
+                exception,
+                new ProblemDetails
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Request data is invalid.",
+                    Extensions = { ["code"] = ApiErrorCodes.ValidationFailed }
+                },
+                cancellationToken);
+
+            return true;
+        }
+
         logger.LogError(exception, "An unhandled exception occurred while processing the request.");
 
         await ProblemDetailsResponseWriter.WriteAsync(

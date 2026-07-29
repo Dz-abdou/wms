@@ -61,6 +61,19 @@ export type InventoryBalance = {
   baseUnitOfMeasure: string;
 };
 
+export type InventoryOverviewItem = {
+  productId: string;
+  productSku: string;
+  productName: string;
+  productIsActive: boolean;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  quantity: number;
+  baseUnitOfMeasure: string;
+  updatedAtUtc: string;
+};
+
 export type InventoryMovement = {
   id: string;
   inventoryAdjustmentId: string | null;
@@ -101,6 +114,15 @@ export type InventoryAdjustmentListQuery = {
   toUtc?: string;
 };
 
+export type InventoryOverviewQuery = {
+  page: number;
+  pageSize: number;
+  search?: string;
+  warehouseId?: string;
+  categoryId?: string;
+  isActive?: boolean;
+};
+
 export type PagedInventoryMovements = {
   items: InventoryMovement[];
   page: number;
@@ -110,6 +132,13 @@ export type PagedInventoryMovements = {
 
 export type PagedInventoryAdjustments = {
   items: InventoryAdjustmentListItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type PagedInventoryOverview = {
+  items: InventoryOverviewItem[];
   page: number;
   pageSize: number;
   totalCount: number;

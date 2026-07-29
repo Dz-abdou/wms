@@ -36,6 +36,7 @@ import { InventoryAdjustmentPage } from "../features/inventory/pages/InventoryAd
 import { InventoryAdjustmentDetailPage } from "../features/inventory/pages/InventoryAdjustmentDetailPage";
 import { InventoryAdjustmentListPage } from "../features/inventory/pages/InventoryAdjustmentListPage";
 import { InventoryMovementHistoryPage } from "../features/inventory/pages/InventoryMovementHistoryPage";
+import { InventoryOverviewPage } from "../features/inventory/pages/InventoryOverviewPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
@@ -110,11 +111,12 @@ export function App() {
                     <Route
                       path={inventoryRoutes.rootPattern}
                       element={
-                        <Navigate
-                          replace
-                          to={inventoryRoutes.movementHistory}
-                        />
+                        <Navigate replace to={inventoryRoutes.overview} />
                       }
+                    />
+                    <Route
+                      path={inventoryRoutes.overviewPattern}
+                      element={<InventoryOverviewPage />}
                     />
                     <Route
                       path={inventoryRoutes.movementHistoryPattern}

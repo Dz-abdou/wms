@@ -27,7 +27,20 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         }
         catch (InsufficientInventoryException exception)
         {
-            return Problem(StatusCodes.Status409Conflict, "Insufficient stock.", exception.Message, ApiErrorCodes.InventoryInsufficientStock);
+            return Results.ValidationProblem(
+                errors: new Dictionary<string, string[]> { [exception.PropertyName] = [exception.Message] },
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Inventory adjustment data is invalid.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = ApiErrorCodes.InventoryInsufficientStock,
+                    ["errorCodes"] = new Dictionary<string, string[]> { [exception.PropertyName] = [ApiErrorCodes.InventoryInsufficientStock] },
+                    ["errorParameters"] = new Dictionary<string, object?[]>
+                    {
+                        [exception.PropertyName] =
+                        [new { exception.AvailableQuantity, exception.BaseUnitOfMeasure, exception.Warehouse }]
+                    }
+                });
         }
         catch (InventoryConcurrencyException exception)
         {

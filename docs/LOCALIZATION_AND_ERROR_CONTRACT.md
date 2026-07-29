@@ -54,7 +54,7 @@ The frontend uses `code` to select localized copy. `title` and `detail` remain u
 
 ### Validation responses
 
-Keep standard Problem Details field names in `errors` for compatibility. Add a parallel `errorCodes` extension keyed by field name.
+Keep standard Problem Details field names in `errors` for compatibility. Add a parallel `errorCodes` extension keyed by field name. When a localized field message needs safe runtime values (for example, available quantity and warehouse), add matching `errorParameters` entries; the frontend interpolates them into the translation for the stable error code and never uses diagnostic backend text as UI copy.
 
 ```json
 {
@@ -66,6 +66,9 @@ Keep standard Problem Details field names in `errors` for compatibility. Add a p
   },
   "errorCodes": {
     "sku": ["validation.required"]
+  },
+  "errorParameters": {
+    "sku": [{}]
   }
 }
 ```

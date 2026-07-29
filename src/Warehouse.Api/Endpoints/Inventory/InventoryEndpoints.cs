@@ -16,6 +16,9 @@ public static class InventoryEndpoints
         group.MapGet(InventoryApiRoutes.MovementHistoryPath, GetMovementHistoryAsync)
             .RequireAuthorization(AuthorizationPolicies.ReadInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapGet(InventoryApiRoutes.OverviewPath, GetOverviewAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
         group.MapGet(InventoryApiRoutes.AdjustmentPath, GetAdjustmentsAsync)
             .RequireAuthorization(AuthorizationPolicies.ReadInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
@@ -37,6 +40,16 @@ public static class InventoryEndpoints
     {
         var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
         return validationProblem ?? Results.Ok(await inventoryService.GetMovementHistoryAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetOverviewAsync(
+        [AsParameters] InventoryOverviewQuery query,
+        IValidator<InventoryOverviewQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetOverviewAsync(query, cancellationToken));
     }
 
     private static async Task<IResult> AdjustAsync(

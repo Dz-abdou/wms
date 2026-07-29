@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Errors;
@@ -45,6 +46,37 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
     }
 
     [Fact]
+    public async Task Manual_adjustment_accepts_string_enum_values_from_the_frontend()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var requestBody = $$"""
+        {
+          "reason": "StockCorrection",
+          "lines": [
+            {
+              "productId": "{{product.Id}}",
+              "warehouseId": "{{warehouse.Id}}",
+              "quantity": 2,
+              "direction": "Increase",
+              "unitOfMeasure": "EA"
+            }
+          ]
+        }
+        """;
+
+        var response = await fixture.Client.PostAsync(
+            "/api/inventory/adjustments",
+            new StringContent(requestBody, Encoding.UTF8, "application/json"));
+
+        response.EnsureSuccessStatusCode();
+        var adjustment = await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>();
+        Assert.NotNull(adjustment);
+        Assert.Equal(InventoryAdjustmentReason.StockCorrection, adjustment.Reason);
+        Assert.Equal(2m, Assert.Single(adjustment.Lines).Quantity);
+    }
+
+    [Fact]
     public async Task Negative_adjustment_that_would_go_below_zero_writes_nothing()
     {
         var product = await CreateProductAsync();
@@ -56,10 +88,14 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             lines = new[] { new { productId = product.Id, warehouseId = warehouse.Id, quantity = 1m, direction = InventoryAdjustmentDirection.Decrease, unitOfMeasure = "EA" } }
         });
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
         Assert.NotNull(problem);
         Assert.Equal(ApiErrorCodes.InventoryInsufficientStock, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.InventoryInsufficientStock,
+            Assert.Single(problem.ErrorCodes!["Lines[0].Quantity"]));
+        Assert.Contains("Lines[0].Quantity", problem.Errors!.Keys);
 
         using var scope = fixture.Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
@@ -82,6 +118,51 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(product.Id, history.Items[0].ProductId);
         Assert.Equal(warehouse.Id, history.Items[0].WarehouseId);
         Assert.Equal("ManualIncrease", history.Items[0].Type);
+    }
+
+    [Fact]
+    public async Task Inventory_overview_returns_filtered_on_hand_balances()
+    {
+        var categoryResponse = await fixture.Client.PostAsJsonAsync("/api/product-categories", new
+        {
+            code = $"INV-{Guid.NewGuid():N}"[..14],
+            name = "Inventory overview category"
+        });
+        categoryResponse.EnsureSuccessStatusCode();
+        var category = (await categoryResponse.Content.ReadFromJsonAsync<ProductCategoryResponse>())!;
+
+        var productResponse = await fixture.Client.PostAsJsonAsync("/api/products", new
+        {
+            sku = $"OVR-{Guid.NewGuid():N}"[..14],
+            name = "Inventory overview product",
+            categoryId = category.Id
+        });
+        productResponse.EnsureSuccessStatusCode();
+        var product = (await productResponse.Content.ReadFromJsonAsync<ProductResponse>())!;
+        var warehouse = await CreateWarehouseAsync();
+        await AdjustAsync(product.Id, warehouse.Id, 7m, InventoryAdjustmentDirection.Increase);
+
+        var overview = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryOverviewItemResponse>>(
+            $"/api/inventory/overview?search={Uri.EscapeDataString(product.Sku)}&warehouseId={warehouse.Id}&categoryId={category.Id}&isActive=true&page=1&pageSize=20");
+
+        Assert.NotNull(overview);
+        var item = Assert.Single(overview.Items);
+        Assert.Equal(product.Id, item.ProductId);
+        Assert.Equal(product.Sku, item.ProductSku);
+        Assert.Equal(warehouse.Id, item.WarehouseId);
+        Assert.Equal(7m, item.Quantity);
+        Assert.Equal("EA", item.BaseUnitOfMeasure);
+        Assert.True(item.ProductIsActive);
+
+        var deactivateResponse = await fixture.Client.PatchAsJsonAsync(
+            $"/api/products/{product.Id}/status",
+            new { isActive = false });
+        deactivateResponse.EnsureSuccessStatusCode();
+
+        var inactiveOverview = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryOverviewItemResponse>>(
+            $"/api/inventory/overview?categoryId={category.Id}&isActive=false&page=1&pageSize=20");
+        Assert.NotNull(inactiveOverview);
+        Assert.Contains(inactiveOverview.Items, item => item.ProductId == product.Id);
     }
 
     [Fact]
@@ -222,5 +303,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         return (await response.Content.ReadFromJsonAsync<WarehouseResponse>())!;
     }
 
-    private sealed record ProblemResponse(string? Code);
+    private sealed record ProblemResponse(
+        string? Code,
+        Dictionary<string, string[]>? Errors = null,
+        Dictionary<string, string[]>? ErrorCodes = null);
 }
