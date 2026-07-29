@@ -20,6 +20,10 @@ public interface IWarehouseDbContext
     DbSet<InventoryBalance> InventoryBalances { get; }
 
     DbSet<InventoryAdjustment> InventoryAdjustments { get; }
+
+    DbSet<CycleCount> CycleCounts { get; }
+
+    DbSet<CycleCountLine> CycleCountLines { get; }
     DbSet<Supplier> Suppliers { get; }
 
     DbSet<SupplierProduct> SupplierProducts { get; }

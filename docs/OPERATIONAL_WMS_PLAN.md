@@ -10,7 +10,7 @@ This is the business-design companion to [the implementation roadmap](ROADMAP.md
 
 Before an agent implements a phase, it must compare the relevant priority below with the current code and create or refresh the matching `docs/features/` specification. That specification records the approved vertical-slice boundary, exclusions, API contract, acceptance criteria, and tests. If this plan and a current feature specification differ, the conflict must be made explicit and resolved before code changes.
 
-**Current next business priority:** the purchase-order hardening and goods-receipt slices are complete. Implement Priority 4 incrementally, beginning with the read-only Inventory Overview described in `docs/features/inventory-overview.md`; do not combine it with cycle counts, transfers, reservations, or reorder planning.
+**Current next business priority:** the inventory overview, movement ledger, and adjustment-document slices are complete. Implement Priority 4 incrementally with the immutable Cycle Count workflow described in `docs/features/inventory-cycle-counts.md`; do not combine it with transfers, reservations, or reorder planning.
 
 ## Guiding Decisions
 

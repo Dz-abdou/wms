@@ -4,5 +4,7 @@ public enum InventoryMovementType
 {
     ManualIncrease,
     ManualDecrease,
-    GoodsReceipt
+    GoodsReceipt,
+    CycleCountIncrease,
+    CycleCountDecrease
 }

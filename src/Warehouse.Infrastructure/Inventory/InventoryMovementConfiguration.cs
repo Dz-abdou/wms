@@ -18,6 +18,7 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         builder.HasKey(movement => movement.Id);
         builder.Property(movement => movement.InventoryAdjustmentId).HasColumnType("uuid");
         builder.Property(movement => movement.GoodsReceiptId).HasColumnType("uuid");
+        builder.Property(movement => movement.CycleCountId).HasColumnType("uuid");
         builder.Property(movement => movement.ProductId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.WarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.UnitOfMeasure).HasMaxLength(ProductUnitOfMeasure.MaxCodeLength).IsRequired();
@@ -32,6 +33,7 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         builder.HasIndex(movement => new { movement.ProductId, movement.WarehouseId, movement.CreatedAtUtc });
         builder.HasIndex(movement => movement.InventoryAdjustmentId);
         builder.HasIndex(movement => movement.GoodsReceiptId);
+        builder.HasIndex(movement => movement.CycleCountId);
         builder.HasOne<InventoryAdjustment>()
             .WithMany()
             .HasForeignKey(movement => movement.InventoryAdjustmentId)
@@ -39,6 +41,10 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         builder.HasOne<GoodsReceipt>()
             .WithMany()
             .HasForeignKey(movement => movement.GoodsReceiptId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<CycleCount>()
+            .WithMany()
+            .HasForeignKey(movement => movement.CycleCountId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

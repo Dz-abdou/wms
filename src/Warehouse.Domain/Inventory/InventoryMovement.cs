@@ -9,6 +9,7 @@ public sealed class InventoryMovement : PersistentEntity
         Guid id,
         Guid? inventoryAdjustmentId,
         Guid? goodsReceiptId,
+        Guid? cycleCountId,
         Guid productId,
         Guid warehouseId,
         InventoryMovementType type,
@@ -24,6 +25,7 @@ public sealed class InventoryMovement : PersistentEntity
     {
         InventoryAdjustmentId = inventoryAdjustmentId;
         GoodsReceiptId = goodsReceiptId;
+        CycleCountId = cycleCountId;
         ProductId = productId;
         WarehouseId = warehouseId;
         Type = type;
@@ -38,6 +40,8 @@ public sealed class InventoryMovement : PersistentEntity
     public Guid? InventoryAdjustmentId { get; private set; }
 
     public Guid? GoodsReceiptId { get; private set; }
+
+    public Guid? CycleCountId { get; private set; }
 
     public Guid WarehouseId { get; private set; }
 
@@ -78,6 +82,7 @@ public sealed class InventoryMovement : PersistentEntity
             Guid.NewGuid(),
             inventoryAdjustmentId,
             null,
+            null,
             productId,
             warehouseId,
             quantityDelta > 0m ? InventoryMovementType.ManualIncrease : InventoryMovementType.ManualDecrease,
@@ -109,6 +114,7 @@ public sealed class InventoryMovement : PersistentEntity
             Guid.NewGuid(),
             null,
             goodsReceiptId,
+            null,
             productId,
             warehouseId,
             InventoryMovementType.GoodsReceipt,
@@ -118,6 +124,47 @@ public sealed class InventoryMovement : PersistentEntity
             balanceAfter,
             receivedAtUtc,
             receivedAtUtc,
+            actorUserId,
+            actorUserId);
+    }
+
+    public static InventoryMovement CreateCycleCount(
+        Guid cycleCountId,
+        Guid productId,
+        Guid warehouseId,
+        string? unitOfMeasure,
+        decimal quantityDeltaInUnit,
+        decimal quantityDelta,
+        decimal balanceAfter,
+        DateTime countedAtUtc,
+        Guid? actorUserId = null)
+    {
+        if (cycleCountId == Guid.Empty || quantityDeltaInUnit == 0m || quantityDelta == 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantityDelta), "Cycle-count movement quantities must not be zero.");
+        }
+
+        if ((quantityDeltaInUnit < 0m) != (quantityDelta < 0m))
+        {
+            throw new ArgumentException("Quantity deltas must have the same direction.", nameof(quantityDeltaInUnit));
+        }
+
+        return new InventoryMovement(
+            Guid.NewGuid(),
+            null,
+            null,
+            cycleCountId,
+            productId,
+            warehouseId,
+            quantityDelta > 0m
+                ? InventoryMovementType.CycleCountIncrease
+                : InventoryMovementType.CycleCountDecrease,
+            ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure),
+            quantityDeltaInUnit,
+            quantityDelta,
+            balanceAfter,
+            countedAtUtc,
+            countedAtUtc,
             actorUserId,
             actorUserId);
     }
