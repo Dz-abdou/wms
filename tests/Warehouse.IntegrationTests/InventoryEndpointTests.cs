@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Application.Common.Errors;
@@ -42,6 +43,37 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal("EA", movements[0].UnitOfMeasure);
         Assert.Equal(-2m, movements[1].QuantityDeltaInUnit);
         Assert.Equal(3m, movements[1].BalanceAfter);
+    }
+
+    [Fact]
+    public async Task Manual_adjustment_accepts_string_enum_values_from_the_frontend()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        var requestBody = $$"""
+        {
+          "reason": "StockCorrection",
+          "lines": [
+            {
+              "productId": "{{product.Id}}",
+              "warehouseId": "{{warehouse.Id}",
+              "quantity": 2,
+              "direction": "Increase",
+              "unitOfMeasure": "EA"
+            }
+          ]
+        }
+        """;
+
+        var response = await fixture.Client.PostAsync(
+            "/api/inventory/adjustments",
+            new StringContent(requestBody, Encoding.UTF8, "application/json"));
+
+        response.EnsureSuccessStatusCode();
+        var adjustment = await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>();
+        Assert.NotNull(adjustment);
+        Assert.Equal(InventoryAdjustmentReason.StockCorrection, adjustment.Reason);
+        Assert.Equal(2m, Assert.Single(adjustment.Lines).Quantity);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Authorization;
@@ -41,6 +42,7 @@ builder.Services.AddAuthorization(options => { options.AddPolicy(AuthorizationPo
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationProblemDetailsMiddlewareResultHandler>();
 if (!string.IsNullOrWhiteSpace(frontendOrigin)) builder.Services.AddCors(options => options.AddPolicy("frontend", policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 builder.Services.AddProblemDetails(); builder.Services.AddExceptionHandler<UnexpectedExceptionHandler>(); builder.Services.AddOpenApi(); builder.Services.AddSwaggerGen(options => options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme { Type = SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT", Description = "Enter a JWT access token." }));
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddHealthChecks().AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"]).AddDbContextCheck<WarehouseDbContext>("postgresql", tags: ["ready"]);
 var app = builder.Build();
 app.MapSupplierEndpoints();
