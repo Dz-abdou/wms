@@ -83,7 +83,8 @@ describe("InventoryOverviewPage", () => {
     renderPage();
 
     expect(screen.getByText("SKU-001 — Sample product")).toBeInTheDocument();
-    expect(screen.getByText("12 EA")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("EA")).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "View history" })).toHaveAttribute(
       "href",

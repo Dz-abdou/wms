@@ -55,9 +55,13 @@ export function InventoryOverviewPage() {
     },
     {
       title: t("inventory.table.onHand"),
-      key: "quantity",
-      width: 160,
-      render: (_, item) => `${item.quantity} ${item.baseUnitOfMeasure}`,
+      dataIndex: "quantity",
+      width: 130,
+    },
+    {
+      title: t("inventory.form.unitOfMeasure"),
+      dataIndex: "baseUnitOfMeasure",
+      width: 100,
     },
     {
       title: t("inventory.table.status"),
@@ -208,7 +212,7 @@ export function InventoryOverviewPage() {
             overview.data ? listQuery.toTablePagination(overview.data) : false
           }
           rowKey={(item) => `${item.productId}-${item.warehouseId}`}
-          scroll={{ x: 1150 }}
+          scroll={{ x: 1220 }}
         />
       )}
     </ListPageLayout>

@@ -50,16 +50,19 @@ export function InventoryMovementHistoryPage() {
     {
       title: t("inventory.table.product"),
       key: "product",
+      width: 250,
       render: (_, x) => `${x.productSku} — ${x.productName}`,
     },
     {
       title: t("inventory.table.warehouse"),
       key: "warehouse",
+      width: 230,
       render: (_, x) => `${x.warehouseCode} — ${x.warehouseName}`,
     },
     {
       title: t("inventory.table.type"),
       dataIndex: "type",
+      width: 150,
       render: (value) =>
         t(
           value === "ManualIncrease"
@@ -71,13 +74,23 @@ export function InventoryMovementHistoryPage() {
     },
     {
       title: t("inventory.table.delta"),
-      key: "delta",
-      render: (_, x) => `${x.quantityDeltaInUnit} ${x.unitOfMeasure}`,
+      dataIndex: "quantityDeltaInUnit",
+      width: 120,
     },
-    { title: t("inventory.table.balanceAfter"), dataIndex: "balanceAfter" },
+    {
+      title: t("inventory.form.unitOfMeasure"),
+      dataIndex: "unitOfMeasure",
+      width: 100,
+    },
+    {
+      title: t("inventory.table.balanceAfter"),
+      dataIndex: "balanceAfter",
+      width: 150,
+    },
     {
       title: t("inventory.table.reference"),
       key: "reference",
+      width: 170,
       render: (_, x) =>
         x.inventoryAdjustmentId ? (
           <ReturnAwareLink
@@ -96,6 +109,7 @@ export function InventoryMovementHistoryPage() {
     {
       title: t("inventory.table.created"),
       dataIndex: "createdAtUtc",
+      width: 190,
       render: (value) =>
         formatDateTime(value, toAppLanguage(i18n.resolvedLanguage)),
     },
@@ -258,6 +272,7 @@ export function InventoryMovementHistoryPage() {
                 : false
             }
             rowKey="id"
+            scroll={{ x: 1360 }}
           />
         )}
       </Card>
