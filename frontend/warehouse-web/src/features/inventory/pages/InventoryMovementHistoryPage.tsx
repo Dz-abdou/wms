@@ -70,7 +70,11 @@ export function InventoryMovementHistoryPage() {
             ? "inventory.types.increase"
             : value === "ManualDecrease"
               ? "inventory.types.decrease"
-              : "inventory.types.goodsReceipt",
+              : value === "CycleCountIncrease"
+                ? "inventory.types.cycleCountIncrease"
+                : value === "CycleCountDecrease"
+                  ? "inventory.types.cycleCountDecrease"
+                  : "inventory.types.goodsReceipt",
         ),
     },
     {
@@ -103,6 +107,12 @@ export function InventoryMovementHistoryPage() {
         ) : x.goodsReceiptId ? (
           <ReturnAwareLink to={receivingRoutes.detail(x.goodsReceiptId)}>
             {x.goodsReceiptNumber ?? t("receiving.title")}
+          </ReturnAwareLink>
+        ) : x.cycleCountId ? (
+          <ReturnAwareLink
+            to={inventoryRoutes.cycleCountDetail(x.cycleCountId)}
+          >
+            {x.cycleCountReference ?? t("inventory.cycleCounts.document")}
           </ReturnAwareLink>
         ) : (
           "—"
@@ -194,6 +204,14 @@ export function InventoryMovementHistoryPage() {
                 {
                   value: "GoodsReceipt",
                   label: t("inventory.types.goodsReceipt"),
+                },
+                {
+                  value: "CycleCountIncrease",
+                  label: t("inventory.types.cycleCountIncrease"),
+                },
+                {
+                  value: "CycleCountDecrease",
+                  label: t("inventory.types.cycleCountDecrease"),
                 },
               ]}
               placeholder={t("inventory.table.type")}

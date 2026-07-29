@@ -7,7 +7,12 @@ import type {
   InventoryAdjustmentListQuery,
   InventoryMovementFilter,
   InventoryOverviewQuery,
+  CycleCountCandidate,
+  CycleCountInput,
+  CycleCountDetail,
+  CycleCountListQuery,
   PagedInventoryAdjustments,
+  PagedCycleCounts,
   PagedInventoryMovements,
   PagedInventoryOverview,
 } from "./inventoryTypes";
@@ -65,6 +70,47 @@ export function getAdjustments(
 export function getAdjustment(id: string, signal?: AbortSignal) {
   return requestJson<InventoryAdjustmentDetail>(
     `${inventoryApiPaths.adjustments}/${id}`,
+    { signal },
+  );
+}
+
+export function getCycleCounts(
+  query: CycleCountListQuery,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") parameters.set(key, String(value));
+  });
+  return requestJson<PagedCycleCounts>(
+    `${inventoryApiPaths.cycleCounts}?${parameters}`,
+    { signal },
+  );
+}
+
+export function getCycleCountCandidate(
+  warehouseId: string,
+  productId: string,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams({ warehouseId, productId });
+  return requestJson<CycleCountCandidate>(
+    `${inventoryApiPaths.cycleCountCandidate}?${parameters}`,
+    { signal },
+  );
+}
+
+export function createCycleCount(input: CycleCountInput) {
+  return requestJson<CycleCountDetail>(inventoryApiPaths.cycleCounts, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export function getCycleCount(id: string, signal?: AbortSignal) {
+  return requestJson<CycleCountDetail>(
+    `${inventoryApiPaths.cycleCounts}/${id}`,
     { signal },
   );
 }

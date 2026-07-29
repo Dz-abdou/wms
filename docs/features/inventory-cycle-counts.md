@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved for implementation on the `features/inventory-cycle-count` branch. This is the next Priority 4 vertical slice after the completed inventory overview, movement ledger, and adjustment documents.
+Implemented on the `features/inventory-cycle-count` branch. This is the completed Priority 4 cycle-count vertical slice after the inventory overview, movement ledger, and adjustment documents.
 
 ## Goal
 
@@ -78,7 +78,7 @@ All failures use Problem Details with stable error codes. Field errors use exact
 
 ## Manual Test Checklist
 
-- [ ] Generate, review, and apply the cycle-count migration.
+- [x] Generate, review, and apply the cycle-count migration.
 - [ ] Post a negative variance and verify count detail, balance, and red movement-history delta.
 - [ ] Post a positive variance and verify the green movement-history delta.
 - [ ] Post an exact count and verify no movement is created.

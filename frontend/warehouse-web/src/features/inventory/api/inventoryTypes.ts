@@ -78,6 +78,7 @@ export type InventoryMovement = {
   id: string;
   inventoryAdjustmentId: string | null;
   goodsReceiptId: string | null;
+  cycleCountId: string | null;
   productId: string;
   productSku: string;
   productName: string;
@@ -86,7 +87,13 @@ export type InventoryMovement = {
   warehouseName: string;
   adjustmentReference: string | null;
   goodsReceiptNumber: string | null;
-  type: "ManualIncrease" | "ManualDecrease" | "GoodsReceipt";
+  cycleCountReference: string | null;
+  type:
+    | "ManualIncrease"
+    | "ManualDecrease"
+    | "GoodsReceipt"
+    | "CycleCountIncrease"
+    | "CycleCountDecrease";
   quantityDelta: number;
   unitOfMeasure: string;
   quantityDeltaInUnit: number;
@@ -139,6 +146,76 @@ export type PagedInventoryAdjustments = {
 
 export type PagedInventoryOverview = {
   items: InventoryOverviewItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type CycleCountLineInput = {
+  productId: string;
+  systemQuantityInBase: number;
+  systemBalanceVersion: number;
+  countedUnitOfMeasure: string;
+  countedQuantityInUnit: number;
+};
+
+export type CycleCountInput = {
+  warehouseId: string;
+  reference?: string;
+  note?: string;
+  lines: CycleCountLineInput[];
+};
+
+export type CycleCountCandidate = {
+  productId: string;
+  productSku: string;
+  productName: string;
+  baseUnitOfMeasure: string;
+  systemQuantityInBase: number;
+  systemBalanceVersion: number;
+};
+
+export type CycleCountListQuery = {
+  page: number;
+  pageSize: number;
+  warehouseId?: string;
+  reference?: string;
+  fromUtc?: string;
+  toUtc?: string;
+};
+
+export type CycleCountListItem = {
+  id: string;
+  warehouseId: string;
+  warehouseCode: string;
+  warehouseName: string;
+  reference: string | null;
+  countedAtUtc: string;
+  lineCount: number;
+  varianceLineCount: number;
+};
+
+export type CycleCountLine = CycleCountLineInput & {
+  id: string;
+  lineNumber: number;
+  productSku: string;
+  productName: string;
+  baseUnitOfMeasure: string;
+  countedQuantityInBase: number;
+  varianceQuantityInBase: number;
+  inventoryMovementId: string | null;
+};
+
+export type CycleCountDetail = Omit<CycleCountInput, "lines"> & {
+  id: string;
+  warehouseCode: string;
+  warehouseName: string;
+  countedAtUtc: string;
+  lines: CycleCountLine[];
+};
+
+export type PagedCycleCounts = {
+  items: CycleCountListItem[];
   page: number;
   pageSize: number;
   totalCount: number;

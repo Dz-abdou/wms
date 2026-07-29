@@ -5,12 +5,17 @@ import {
   getAdjustments,
   getInventoryOverview,
   getMovementHistory,
+  createCycleCount,
+  getCycleCount,
+  getCycleCounts,
 } from "./inventoryApi";
 import type {
   InventoryAdjustmentInput,
   InventoryAdjustmentListQuery,
   InventoryMovementFilter,
   InventoryOverviewQuery,
+  CycleCountInput,
+  CycleCountListQuery,
 } from "./inventoryTypes";
 
 export const inventoryKeys = {
@@ -22,6 +27,10 @@ export const inventoryKeys = {
   adjustments: (query: InventoryAdjustmentListQuery) =>
     [...inventoryKeys.all, "adjustments", query] as const,
   adjustment: (id: string) => [...inventoryKeys.all, "adjustment", id] as const,
+  cycleCounts: (query: CycleCountListQuery) =>
+    [...inventoryKeys.all, "cycle-counts", query] as const,
+  cycleCount: (id: string) =>
+    [...inventoryKeys.all, "cycle-count", id] as const,
 };
 
 export function useMovementHistory(filter: InventoryMovementFilter) {
@@ -58,6 +67,31 @@ export function useAdjustInventory() {
 
   return useMutation({
     mutationFn: (input: InventoryAdjustmentInput) => adjustInventory(input),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+  });
+}
+
+export function useCycleCounts(query: CycleCountListQuery) {
+  return useQuery({
+    queryKey: inventoryKeys.cycleCounts(query),
+    queryFn: ({ signal }) => getCycleCounts(query, signal),
+  });
+}
+
+export function useCycleCount(id: string | undefined) {
+  return useQuery({
+    queryKey: inventoryKeys.cycleCount(id ?? ""),
+    queryFn: ({ signal }) => getCycleCount(id ?? "", signal),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateCycleCount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CycleCountInput) => createCycleCount(input),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
   });

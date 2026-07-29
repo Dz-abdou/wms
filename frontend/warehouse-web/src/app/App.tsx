@@ -37,6 +37,9 @@ import { InventoryAdjustmentDetailPage } from "../features/inventory/pages/Inven
 import { InventoryAdjustmentListPage } from "../features/inventory/pages/InventoryAdjustmentListPage";
 import { InventoryMovementHistoryPage } from "../features/inventory/pages/InventoryMovementHistoryPage";
 import { InventoryOverviewPage } from "../features/inventory/pages/InventoryOverviewPage";
+import { CycleCountPage } from "../features/inventory/pages/CycleCountPage";
+import { CycleCountListPage } from "../features/inventory/pages/CycleCountListPage";
+import { CycleCountDetailPage } from "../features/inventory/pages/CycleCountDetailPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
@@ -133,6 +136,18 @@ export function App() {
                     <Route
                       path={inventoryRoutes.adjustmentDetailPattern}
                       element={<InventoryAdjustmentDetailPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.cycleCountsPattern}
+                      element={<CycleCountListPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.cycleCountCreatePattern}
+                      element={<CycleCountPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.cycleCountDetailPattern}
+                      element={<CycleCountDetailPage />}
                     />
                     <Route
                       path={warehouseRoutes.create}
