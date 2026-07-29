@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Warehouse.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Warehouse.Infrastructure.Persistence;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260727215506_AddGoodsReciept")]
+    partial class AddGoodsReciept
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -735,8 +738,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.HasIndex("Number")
                         .IsUnique();
 
-                    b.HasIndex("WarehouseId");
-
                     b.HasIndex("PurchaseOrderId", "ReceivedAtUtc");
 
                     b.ToTable("GoodsReceipts", (string)null);
@@ -1315,18 +1316,6 @@ namespace Warehouse.Infrastructure.Migrations
 
             modelBuilder.Entity("Warehouse.Domain.Receiving.GoodsReceipt", b =>
                 {
-                    b.HasOne("Warehouse.Domain.Purchasing.PurchaseOrder", null)
-                        .WithMany()
-                        .HasForeignKey("PurchaseOrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Warehouse.Domain.Warehouses.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("WarehouseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.OwnsMany("Warehouse.Domain.Receiving.GoodsReceiptLine", "Lines", b1 =>
                         {
                             b1.Property<Guid>("Id")
@@ -1377,27 +1366,13 @@ namespace Warehouse.Infrastructure.Migrations
 
                             b1.HasKey("Id");
 
-                            b1.HasIndex("InventoryMovementId")
-                                .IsUnique();
-
                             b1.HasIndex("GoodsReceiptId", "PurchaseOrderLineId")
                                 .IsUnique();
 
-                            b1.ToTable("GoodsReceiptLines", null, t =>
-                                {
-                                    t.HasCheckConstraint("CK_GoodsReceiptLines_AcceptedQuantityInBaseUnit_Positive", "\"AcceptedQuantityInBaseUnit\" > 0");
-
-                                    t.HasCheckConstraint("CK_GoodsReceiptLines_AcceptedQuantity_Positive", "\"AcceptedQuantity\" > 0");
-                                });
+                            b1.ToTable("GoodsReceiptLines", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("GoodsReceiptId");
-
-                            b1.HasOne("Warehouse.Domain.Inventory.InventoryMovement", null)
-                                .WithMany()
-                                .HasForeignKey("InventoryMovementId")
-                                .OnDelete(DeleteBehavior.Restrict)
-                                .IsRequired();
                         });
 
                     b.Navigation("Lines");

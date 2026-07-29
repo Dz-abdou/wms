@@ -72,6 +72,7 @@ public sealed record InventoryAdjustmentLineResponse(
 public sealed record InventoryMovementResponse(
     Guid Id,
     Guid? InventoryAdjustmentId,
+    Guid? GoodsReceiptId,
     Guid ProductId,
     string ProductSku,
     string ProductName,
@@ -79,6 +80,7 @@ public sealed record InventoryMovementResponse(
     string WarehouseCode,
     string WarehouseName,
     string? AdjustmentReference,
+    string? GoodsReceiptNumber,
     string Type,
     string UnitOfMeasure,
     decimal QuantityDeltaInUnit,

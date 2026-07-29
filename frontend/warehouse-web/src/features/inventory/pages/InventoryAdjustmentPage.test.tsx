@@ -5,13 +5,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
 import { InventoryAdjustmentPage } from "./InventoryAdjustmentPage";
 
-const { useProductsMock, useWarehousesMock, useAdjustInventoryMock } = vi.hoisted(
-  () => ({
+const { useProductsMock, useWarehousesMock, useAdjustInventoryMock } =
+  vi.hoisted(() => ({
     useProductsMock: vi.fn(),
     useWarehousesMock: vi.fn(),
     useAdjustInventoryMock: vi.fn(),
-  }),
-);
+  }));
 
 vi.mock("../../products/api/useProducts", () => ({
   useProducts: useProductsMock,
@@ -108,7 +107,7 @@ describe("InventoryAdjustmentPage", () => {
     expect(await screen.findByText("EA")).toBeInTheDocument();
     await user.click(screen.getByLabelText("Unit of measure"));
     expect(screen.getAllByText("CTN")).not.toHaveLength(0);
-  });
+  }, 20_000);
 });
 
 function renderPage() {

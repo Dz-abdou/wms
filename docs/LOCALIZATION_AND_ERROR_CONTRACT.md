@@ -91,6 +91,12 @@ failures that cannot be assigned to a single field.
 | `warehouse.not_found` | The requested Warehouse does not exist. |
 | `warehouse.code_conflict` | Another Warehouse already uses the code. |
 | `product.sku_conflict` | Another Product already uses the SKU. |
+| `goods_receipt.not_found` | The requested goods receipt does not exist. |
+| `goods_receipt.purchase_order_unavailable` | The PO cannot currently be received. |
+| `goods_receipt.purchase_order_concurrency_conflict` | The PO changed after the receiver loaded its candidate. |
+| `goods_receipt.over_receipt` | A receipt quantity exceeds the outstanding PO quantity. |
+| `goods_receipt.purchase_order_line_unavailable` | A selected PO line is not valid for the receipt. |
+| `goods_receipt.duplicate_purchase_order_line` | A PO line appears more than once in one receipt. |
 | `system.unexpected` | An unexpected server error occurred. |
 
 Codes are additive and stable. Renaming or removing a published code is a breaking API change.
