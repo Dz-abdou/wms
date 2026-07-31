@@ -37,6 +37,9 @@ public sealed class InventoryAdjustmentNotFoundException(Guid adjustmentId)
 public sealed class CycleCountNotFoundException(Guid cycleCountId)
     : Exception($"Cycle count '{cycleCountId}' was not found.");
 
+public sealed class InventoryTransferNotFoundException(Guid inventoryTransferId)
+    : Exception($"Inventory transfer '{inventoryTransferId}' was not found.");
+
 public sealed class CycleCountStaleBalanceException(
     int lineIndex,
     decimal currentQuantityInBase,

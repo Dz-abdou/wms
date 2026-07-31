@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved for implementation on the `features/inter-warehouse-transfers` branch.
+Implemented and verified on the `features/inter-warehouse-transfers` branch; pending review and merge.
 
 ## Goal
 
@@ -61,3 +61,12 @@ Let an inventory operator move stock between two active warehouses while preserv
 - Add `InventoryTransfers` and `InventoryTransferLines`.
 - Add nullable `InventoryTransferId` to `InventoryMovements`, its index, and a restrictive foreign key.
 - The developer must generate, review, and apply the EF Core migration manually. Codex does not edit migrations or the model snapshot.
+
+## Manual Test Checklist
+
+- [ ] Create two active warehouses and an active product with stock only in the source warehouse.
+- [ ] Post a transfer and verify the source quantity decreases while the destination quantity increases by exactly the same base quantity.
+- [ ] Open the transfer detail and confirm the reference, both warehouses, quantity, and resulting balances are preserved.
+- [ ] Open movement history, filter by **Transfer out** or **Transfer in**, and confirm both rows link back to the transfer document.
+- [ ] Attempt to transfer more than the available source stock; confirm the quantity cell shows the localized error and no balances or transfer document change.
+- [ ] Switch the source or destination warehouse after adding lines; confirm the lines reset before posting.

@@ -54,6 +54,10 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status404NotFound, "Cycle count not found.", exception.Message, ApiErrorCodes.InventoryCycleCountNotFound);
         }
+        catch (InventoryTransferNotFoundException exception)
+        {
+            return Problem(StatusCodes.Status404NotFound, "Inventory transfer not found.", exception.Message, ApiErrorCodes.InventoryTransferNotFound);
+        }
         catch (CycleCountStaleBalanceException exception)
         {
             return Results.ValidationProblem(

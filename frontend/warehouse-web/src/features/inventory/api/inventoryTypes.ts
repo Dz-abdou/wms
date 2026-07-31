@@ -79,6 +79,7 @@ export type InventoryMovement = {
   inventoryAdjustmentId: string | null;
   goodsReceiptId: string | null;
   cycleCountId: string | null;
+  inventoryTransferId: string | null;
   productId: string;
   productSku: string;
   productName: string;
@@ -88,12 +89,15 @@ export type InventoryMovement = {
   adjustmentReference: string | null;
   goodsReceiptNumber: string | null;
   cycleCountReference: string | null;
+  transferReference: string | null;
   type:
     | "ManualIncrease"
     | "ManualDecrease"
     | "GoodsReceipt"
     | "CycleCountIncrease"
-    | "CycleCountDecrease";
+    | "CycleCountDecrease"
+    | "TransferOut"
+    | "TransferIn";
   quantityDelta: number;
   unitOfMeasure: string;
   quantityDeltaInUnit: number;
@@ -216,6 +220,81 @@ export type CycleCountDetail = Omit<CycleCountInput, "lines"> & {
 
 export type PagedCycleCounts = {
   items: CycleCountListItem[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
+
+export type InventoryTransferLineInput = {
+  productId: string;
+  quantity: number;
+  unitOfMeasure: string;
+};
+
+export type InventoryTransferInput = {
+  sourceWarehouseId: string;
+  destinationWarehouseId: string;
+  reference?: string;
+  note?: string;
+  lines: InventoryTransferLineInput[];
+};
+
+export type InventoryTransferCandidate = {
+  productId: string;
+  baseUnitOfMeasure: string;
+  availableQuantityInBase: number;
+};
+
+export type InventoryTransferListQuery = {
+  page: number;
+  pageSize: number;
+  sourceWarehouseId?: string;
+  destinationWarehouseId?: string;
+  reference?: string;
+  fromUtc?: string;
+  toUtc?: string;
+};
+
+export type InventoryTransferListItem = {
+  id: string;
+  sourceWarehouseId: string;
+  sourceWarehouseCode: string;
+  sourceWarehouseName: string;
+  destinationWarehouseId: string;
+  destinationWarehouseCode: string;
+  destinationWarehouseName: string;
+  reference: string | null;
+  transferredAtUtc: string;
+  lineCount: number;
+};
+
+export type InventoryTransferLine = {
+  id: string;
+  lineNumber: number;
+  productId: string;
+  productSku: string;
+  productName: string;
+  unitOfMeasure: string;
+  quantityInUnit: number;
+  quantityInBaseUnit: number;
+  transferOutMovementId: string;
+  sourceBalanceAfter: number;
+  transferInMovementId: string;
+  destinationBalanceAfter: number;
+};
+
+export type InventoryTransferDetail = Omit<InventoryTransferInput, "lines"> & {
+  id: string;
+  sourceWarehouseCode: string;
+  sourceWarehouseName: string;
+  destinationWarehouseCode: string;
+  destinationWarehouseName: string;
+  transferredAtUtc: string;
+  lines: InventoryTransferLine[];
+};
+
+export type PagedInventoryTransfers = {
+  items: InventoryTransferListItem[];
   page: number;
   pageSize: number;
   totalCount: number;

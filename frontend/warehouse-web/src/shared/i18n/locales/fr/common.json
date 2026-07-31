@@ -27,6 +27,7 @@
     "movementHistory": "Historique des mouvements",
     "adjustments": "Ajustements",
     "cycleCounts": "Inventaires tournants",
+    "transfers": "Transferts",
     "users": "Utilisateurs",
     "roles": "Rôles",
     "masterData": "Données de base",
@@ -113,7 +114,8 @@
       "inventory.insufficient_stock": "La quantité dépasse le stock disponible dans {{warehouse}}. Disponible : {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "L’ajustement de stock est introuvable.",
       "inventory.cycle_count_not_found": "L’inventaire tournant est introuvable.",
-      "inventory.cycle_count_stale_balance": "Le stock a changé. La quantité système actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Rechargez cette ligne."
+      "inventory.cycle_count_stale_balance": "Le stock a changé. La quantité système actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Rechargez cette ligne.",
+      "inventory.transfer_not_found": "Le transfert de stock est introuvable."
     }
   },
   "products": {
@@ -593,7 +595,9 @@
       "decrease": "Sortie",
       "goodsReceipt": "Réception de marchandises",
       "cycleCountIncrease": "Entrée d’inventaire tournant",
-      "cycleCountDecrease": "Sortie d’inventaire tournant"
+      "cycleCountDecrease": "Sortie d’inventaire tournant",
+      "transferOut": "Transfert sortant",
+      "transferIn": "Transfert entrant"
     },
     "reasons": {
       "StockCorrection": "Correction de stock",
@@ -642,7 +646,11 @@
       "loadCountCandidate": "La quantité de stock actuelle n’a pas pu être chargée.",
       "createCycleCount": "L’inventaire tournant n’a pas pu être validé.",
       "loadCycleCounts": "Les inventaires tournants n’ont pas pu être chargés.",
-      "loadCycleCount": "L’inventaire tournant n’a pas pu être chargé."
+      "loadCycleCount": "L’inventaire tournant n’a pas pu être chargé.",
+      "loadTransferCandidate": "La quantité disponible à la source n’a pas pu être chargée.",
+      "createTransfer": "Le transfert de stock n’a pas pu être validé.",
+      "loadTransfers": "Les transferts de stock n’ont pas pu être chargés.",
+      "loadTransfer": "Le transfert de stock n’a pas pu être chargé."
     },
     "cycleCounts": {
       "title": "Inventaires tournants",
@@ -664,6 +672,28 @@
       "loading": "Chargement des inventaires tournants…",
       "loadingOne": "Chargement de l’inventaire tournant…",
       "empty": "Aucun inventaire tournant n’existe encore."
+    },
+    "transfers": {
+      "title": "Transferts",
+      "subtitle": "Déplacez du stock entre entrepôts et conservez la trace des mouvements générés.",
+      "createTitle": "Enregistrer un transfert",
+      "createSubtitle": "Déplacez le stock sélectionné d’un entrepôt à un autre dans une seule opération atomique.",
+      "detailTitle": "Transfert de stock",
+      "document": "Transfert",
+      "post": "Valider le transfert",
+      "sourceWarehouse": "Entrepôt source",
+      "destinationWarehouse": "Entrepôt de destination",
+      "sourceRequired": "Un entrepôt source est obligatoire.",
+      "destinationRequired": "Un entrepôt de destination est obligatoire.",
+      "availableAtSource": "Disponible à la source",
+      "quantity": "Quantité à transférer",
+      "baseQuantity": "Quantité de base",
+      "sourceBalanceAfter": "Stock source après transfert",
+      "destinationBalanceAfter": "Stock destination après transfert",
+      "transferredAt": "Transféré le",
+      "loading": "Chargement des transferts…",
+      "loadingOne": "Chargement du transfert…",
+      "empty": "Aucun transfert de stock n’existe encore."
     }
   }
 }

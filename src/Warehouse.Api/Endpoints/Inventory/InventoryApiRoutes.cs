@@ -10,4 +10,7 @@ public static class InventoryApiRoutes
     public const string CycleCountPath = "/cycle-counts";
     public const string CycleCountCandidatePath = "/cycle-counts/candidate";
     public const string CycleCountByIdPath = "/cycle-counts/{id:guid}";
+    public const string TransferPath = "/transfers";
+    public const string TransferCandidatePath = "/transfers/candidate";
+    public const string TransferByIdPath = "/transfers/{id:guid}";
 }

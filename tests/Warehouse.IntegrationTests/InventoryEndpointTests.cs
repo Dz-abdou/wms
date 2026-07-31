@@ -355,6 +355,98 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
     }
 
 
+    [Fact]
+    public async Task Transfer_moves_stock_atomically_and_links_both_ledger_entries()
+    {
+        var product = await CreateProductAsync();
+        var sourceWarehouse = await CreateWarehouseAsync();
+        var destinationWarehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, sourceWarehouse.Id, 10m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/transfers", new InventoryTransferInput(
+            sourceWarehouse.Id,
+            destinationWarehouse.Id,
+            "TR-2026-001",
+            "Replenish the destination warehouse",
+            [new InventoryTransferLineInput(product.Id, 3m, "EA")]));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var transfer = await response.Content.ReadFromJsonAsync<InventoryTransferDetailResponse>();
+        Assert.NotNull(transfer);
+        var line = Assert.Single(transfer.Lines);
+        Assert.Equal(3m, line.QuantityInBaseUnit);
+        Assert.Equal(7m, line.SourceBalanceAfter);
+        Assert.Equal(3m, line.DestinationBalanceAfter);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        var balances = await dbContext.InventoryBalances
+            .Where(balance => balance.ProductId == product.Id)
+            .OrderBy(balance => balance.WarehouseId)
+            .ToListAsync();
+        var movements = await dbContext.InventoryMovements
+            .Where(movement => movement.InventoryTransferId == transfer.Id)
+            .OrderBy(movement => movement.Type)
+            .ToListAsync();
+
+        Assert.Equal(2, balances.Count);
+        Assert.Equal(7m, balances.Single(balance => balance.WarehouseId == sourceWarehouse.Id).Quantity);
+        Assert.Equal(3m, balances.Single(balance => balance.WarehouseId == destinationWarehouse.Id).Quantity);
+        Assert.Equal(2, movements.Count);
+        Assert.Contains(movements, movement => movement.Type == InventoryMovementType.TransferOut && movement.QuantityDelta == -3m);
+        Assert.Contains(movements, movement => movement.Type == InventoryMovementType.TransferIn && movement.QuantityDelta == 3m);
+
+        var history = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryMovementResponse>>(
+            "/api/inventory/movements?type=TransferOut&reference=TR-2026-001&page=1&pageSize=20");
+        Assert.NotNull(history);
+        var historyItem = Assert.Single(history.Items);
+        Assert.Equal(transfer.Id, historyItem.InventoryTransferId);
+        Assert.Equal("TR-2026-001", historyItem.TransferReference);
+
+        var list = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryTransferListItemResponse>>(
+            $"/api/inventory/transfers?sourceWarehouseId={sourceWarehouse.Id}&page=1&pageSize=20");
+        Assert.NotNull(list);
+        Assert.Equal(transfer.Id, Assert.Single(list.Items).Id);
+    }
+
+    [Fact]
+    public async Task Transfer_rejects_insufficient_stock_without_partial_changes()
+    {
+        var stockedProduct = await CreateProductAsync();
+        var unavailableProduct = await CreateProductAsync();
+        var sourceWarehouse = await CreateWarehouseAsync();
+        var destinationWarehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(stockedProduct.Id, sourceWarehouse.Id, 2m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/transfers", new InventoryTransferInput(
+            sourceWarehouse.Id,
+            destinationWarehouse.Id,
+            null,
+            null,
+            [
+                new InventoryTransferLineInput(stockedProduct.Id, 1m, "EA"),
+                new InventoryTransferLineInput(unavailableProduct.Id, 1m, "EA")
+            ]));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.InventoryInsufficientStock, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.InventoryInsufficientStock,
+            Assert.Single(problem.ErrorCodes!["Lines[1].Quantity"]));
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        var sourceBalance = await dbContext.InventoryBalances.SingleAsync(balance =>
+            balance.ProductId == stockedProduct.Id && balance.WarehouseId == sourceWarehouse.Id);
+        Assert.Equal(2m, sourceBalance.Quantity);
+        Assert.False(await dbContext.InventoryBalances.AnyAsync(balance => balance.WarehouseId == destinationWarehouse.Id));
+        Assert.False(await dbContext.InventoryTransfers.AnyAsync());
+        Assert.False(await dbContext.InventoryMovements.AnyAsync(movement =>
+            movement.InventoryTransferId != null));
+    }
+
     private async Task<InventoryBalanceResponse> AdjustAsync(
         Guid productId,
         Guid warehouseId,

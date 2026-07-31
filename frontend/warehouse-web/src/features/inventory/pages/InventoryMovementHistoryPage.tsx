@@ -74,7 +74,11 @@ export function InventoryMovementHistoryPage() {
                 ? "inventory.types.cycleCountIncrease"
                 : value === "CycleCountDecrease"
                   ? "inventory.types.cycleCountDecrease"
-                  : "inventory.types.goodsReceipt",
+                  : value === "TransferOut"
+                    ? "inventory.types.transferOut"
+                    : value === "TransferIn"
+                      ? "inventory.types.transferIn"
+                      : "inventory.types.goodsReceipt",
         ),
     },
     {
@@ -113,6 +117,12 @@ export function InventoryMovementHistoryPage() {
             to={inventoryRoutes.cycleCountDetail(x.cycleCountId)}
           >
             {x.cycleCountReference ?? t("inventory.cycleCounts.document")}
+          </ReturnAwareLink>
+        ) : x.inventoryTransferId ? (
+          <ReturnAwareLink
+            to={inventoryRoutes.transferDetail(x.inventoryTransferId)}
+          >
+            {x.transferReference ?? t("inventory.transfers.document")}
           </ReturnAwareLink>
         ) : (
           "—"
@@ -212,6 +222,14 @@ export function InventoryMovementHistoryPage() {
                 {
                   value: "CycleCountDecrease",
                   label: t("inventory.types.cycleCountDecrease"),
+                },
+                {
+                  value: "TransferOut",
+                  label: t("inventory.types.transferOut"),
+                },
+                {
+                  value: "TransferIn",
+                  label: t("inventory.types.transferIn"),
                 },
               ]}
               placeholder={t("inventory.table.type")}

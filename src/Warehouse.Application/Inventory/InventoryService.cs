@@ -119,6 +119,250 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             lines);
     }
 
+    public async Task<InventoryTransferDetailResponse> CreateTransferAsync(
+        InventoryTransferInput input,
+        CancellationToken cancellationToken)
+    {
+        InventoryTransferDetailResponse? response = null;
+        try
+        {
+            await dbContext.ExecuteInTransactionAsync(async token =>
+            {
+                var now = UtcNow();
+                var sourceWarehouse = await dbContext.Warehouses.SingleOrDefaultAsync(
+                    warehouse => warehouse.Id == input.SourceWarehouseId && warehouse.IsActive,
+                    token) ?? throw new InventoryWarehouseNotFoundException(input.SourceWarehouseId);
+                var destinationWarehouse = await dbContext.Warehouses.SingleOrDefaultAsync(
+                    warehouse => warehouse.Id == input.DestinationWarehouseId && warehouse.IsActive,
+                    token) ?? throw new InventoryWarehouseNotFoundException(input.DestinationWarehouseId);
+                var transfer = InventoryTransfer.Create(
+                    sourceWarehouse.Id,
+                    destinationWarehouse.Id,
+                    input.Reference,
+                    input.Note,
+                    now,
+                    currentUser.UserId);
+                dbContext.InventoryTransfers.Add(transfer);
+                var responseLines = new List<InventoryTransferLineResponse>();
+
+                for (var lineIndex = 0; lineIndex < input.Lines.Count; lineIndex++)
+                {
+                    var inputLine = input.Lines[lineIndex];
+                    var product = await dbContext.Products.Include(candidate => candidate.UnitConversions)
+                        .SingleOrDefaultAsync(candidate => candidate.Id == inputLine.ProductId && candidate.IsActive, token)
+                        ?? throw new InventoryProductNotFoundException(inputLine.ProductId);
+                    if (!product.TryConvertToBaseQuantity(inputLine.UnitOfMeasure, inputLine.Quantity, out var quantityInBaseUnit))
+                    {
+                        throw new InventoryInvalidUnitOfMeasureException(product.Id, inputLine.UnitOfMeasure);
+                    }
+
+                    var sourceBalance = await dbContext.InventoryBalances.SingleOrDefaultAsync(balance =>
+                        balance.ProductId == product.Id && balance.WarehouseId == sourceWarehouse.Id, token);
+                    if (sourceBalance is null || sourceBalance.Quantity < quantityInBaseUnit)
+                    {
+                        throw new InsufficientInventoryException(
+                            lineIndex,
+                            product.Id,
+                            sourceWarehouse.Id,
+                            sourceBalance?.Quantity ?? 0m,
+                            product.BaseUnitOfMeasure,
+                            sourceWarehouse.Code,
+                            sourceWarehouse.Name);
+                    }
+
+                    var destinationBalance = await dbContext.InventoryBalances.SingleOrDefaultAsync(balance =>
+                        balance.ProductId == product.Id && balance.WarehouseId == destinationWarehouse.Id, token)
+                        ?? InventoryBalance.Create(product.Id, destinationWarehouse.Id, now, currentUser.UserId);
+                    if (!dbContext.InventoryBalances.Local.Contains(destinationBalance))
+                    {
+                        dbContext.InventoryBalances.Add(destinationBalance);
+                    }
+
+                    sourceBalance.ApplyAdjustment(-quantityInBaseUnit, now, currentUser.UserId);
+                    destinationBalance.ApplyAdjustment(quantityInBaseUnit, now, currentUser.UserId);
+                    var transferLine = InventoryTransferLine.Create(
+                        transfer.Id,
+                        lineIndex + 1,
+                        product.Id,
+                        inputLine.UnitOfMeasure,
+                        inputLine.Quantity,
+                        quantityInBaseUnit,
+                        now,
+                        currentUser.UserId);
+                    var transferOut = InventoryMovement.CreateTransferOut(
+                        transfer.Id,
+                        product.Id,
+                        sourceWarehouse.Id,
+                        transferLine.UnitOfMeasure,
+                        transferLine.QuantityInUnit,
+                        transferLine.QuantityInBaseUnit,
+                        sourceBalance.Quantity,
+                        now,
+                        currentUser.UserId);
+                    var transferIn = InventoryMovement.CreateTransferIn(
+                        transfer.Id,
+                        product.Id,
+                        destinationWarehouse.Id,
+                        transferLine.UnitOfMeasure,
+                        transferLine.QuantityInUnit,
+                        transferLine.QuantityInBaseUnit,
+                        destinationBalance.Quantity,
+                        now,
+                        currentUser.UserId);
+                    transferLine.LinkMovements(transferOut.Id, transferIn.Id);
+                    dbContext.InventoryTransferLines.Add(transferLine);
+                    dbContext.InventoryMovements.AddRange(transferOut, transferIn);
+                    responseLines.Add(new InventoryTransferLineResponse(
+                        transferLine.Id,
+                        transferLine.LineNumber,
+                        product.Id,
+                        product.Sku,
+                        product.Name,
+                        transferLine.UnitOfMeasure,
+                        transferLine.QuantityInUnit,
+                        transferLine.QuantityInBaseUnit,
+                        transferOut.Id,
+                        transferOut.BalanceAfter,
+                        transferIn.Id,
+                        transferIn.BalanceAfter));
+                }
+
+                await dbContext.SaveChangesAsync(token);
+                response = new InventoryTransferDetailResponse(
+                    transfer.Id,
+                    sourceWarehouse.Id,
+                    sourceWarehouse.Code,
+                    sourceWarehouse.Name,
+                    destinationWarehouse.Id,
+                    destinationWarehouse.Code,
+                    destinationWarehouse.Name,
+                    transfer.Reference,
+                    transfer.Note,
+                    transfer.TransferredAtUtc,
+                    responseLines);
+            }, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new InventoryConcurrencyException(exception);
+        }
+
+        return response ?? throw new InvalidOperationException("Inventory transfer did not produce a result.");
+    }
+
+    public async Task<InventoryTransferCandidateResponse> GetTransferCandidateAsync(
+        InventoryTransferCandidateQuery query,
+        CancellationToken cancellationToken)
+    {
+        if (!await dbContext.Warehouses.AnyAsync(
+                warehouse => warehouse.Id == query.SourceWarehouseId && warehouse.IsActive,
+                cancellationToken))
+        {
+            throw new InventoryWarehouseNotFoundException(query.SourceWarehouseId);
+        }
+
+        var product = await dbContext.Products.AsNoTracking().SingleOrDefaultAsync(
+            candidate => candidate.Id == query.ProductId && candidate.IsActive,
+            cancellationToken) ?? throw new InventoryProductNotFoundException(query.ProductId);
+        var balance = await dbContext.InventoryBalances.AsNoTracking().SingleOrDefaultAsync(
+            candidate => candidate.ProductId == product.Id && candidate.WarehouseId == query.SourceWarehouseId,
+            cancellationToken);
+
+        return new InventoryTransferCandidateResponse(
+            product.Id,
+            product.BaseUnitOfMeasure,
+            balance?.Quantity ?? 0m);
+    }
+
+    public async Task<PagedResult<InventoryTransferListItemResponse>> GetTransfersAsync(
+        InventoryTransferListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var transfers = from transfer in dbContext.InventoryTransfers.AsNoTracking()
+                        join sourceWarehouse in dbContext.Warehouses.AsNoTracking() on transfer.SourceWarehouseId equals sourceWarehouse.Id
+                        join destinationWarehouse in dbContext.Warehouses.AsNoTracking() on transfer.DestinationWarehouseId equals destinationWarehouse.Id
+                        select new { transfer, sourceWarehouse, destinationWarehouse };
+        if (query.SourceWarehouseId is { } sourceWarehouseId)
+        {
+            transfers = transfers.Where(item => item.transfer.SourceWarehouseId == sourceWarehouseId);
+        }
+        if (query.DestinationWarehouseId is { } destinationWarehouseId)
+        {
+            transfers = transfers.Where(item => item.transfer.DestinationWarehouseId == destinationWarehouseId);
+        }
+        if (!string.IsNullOrWhiteSpace(query.Reference))
+        {
+            var reference = query.Reference.Trim();
+            transfers = transfers.Where(item => item.transfer.Reference != null && item.transfer.Reference.Contains(reference));
+        }
+        if (query.FromUtc is { } fromUtc) transfers = transfers.Where(item => item.transfer.TransferredAtUtc >= fromUtc);
+        if (query.ToUtc is { } toUtc) transfers = transfers.Where(item => item.transfer.TransferredAtUtc <= toUtc);
+
+        var totalCount = await transfers.CountAsync(cancellationToken);
+        var items = await transfers
+            .OrderByDescending(item => item.transfer.TransferredAtUtc)
+            .ThenByDescending(item => item.transfer.Id)
+            .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(item => new InventoryTransferListItemResponse(
+                item.transfer.Id,
+                item.sourceWarehouse.Id,
+                item.sourceWarehouse.Code,
+                item.sourceWarehouse.Name,
+                item.destinationWarehouse.Id,
+                item.destinationWarehouse.Code,
+                item.destinationWarehouse.Name,
+                item.transfer.Reference,
+                item.transfer.TransferredAtUtc,
+                dbContext.InventoryTransferLines.Count(line => line.InventoryTransferId == item.transfer.Id)))
+            .ToListAsync(cancellationToken);
+
+        return new PagedResult<InventoryTransferListItemResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
+    public async Task<InventoryTransferDetailResponse> GetTransferByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var header = await (from transfer in dbContext.InventoryTransfers.AsNoTracking()
+                            join sourceWarehouse in dbContext.Warehouses.AsNoTracking() on transfer.SourceWarehouseId equals sourceWarehouse.Id
+                            join destinationWarehouse in dbContext.Warehouses.AsNoTracking() on transfer.DestinationWarehouseId equals destinationWarehouse.Id
+                            where transfer.Id == id
+                            select new { transfer, sourceWarehouse, destinationWarehouse })
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? throw new InventoryTransferNotFoundException(id);
+        var lines = await (from line in dbContext.InventoryTransferLines.AsNoTracking()
+                           join product in dbContext.Products.AsNoTracking() on line.ProductId equals product.Id
+                           join transferOut in dbContext.InventoryMovements.AsNoTracking() on line.TransferOutMovementId equals transferOut.Id
+                           join transferIn in dbContext.InventoryMovements.AsNoTracking() on line.TransferInMovementId equals transferIn.Id
+                           where line.InventoryTransferId == id
+                           orderby line.LineNumber
+                           select new InventoryTransferLineResponse(
+                               line.Id,
+                               line.LineNumber,
+                               product.Id,
+                               product.Sku,
+                               product.Name,
+                               line.UnitOfMeasure,
+                               line.QuantityInUnit,
+                               line.QuantityInBaseUnit,
+                               transferOut.Id,
+                               transferOut.BalanceAfter,
+                               transferIn.Id,
+                               transferIn.BalanceAfter))
+            .ToListAsync(cancellationToken);
+        return new InventoryTransferDetailResponse(
+            header.transfer.Id,
+            header.sourceWarehouse.Id,
+            header.sourceWarehouse.Code,
+            header.sourceWarehouse.Name,
+            header.destinationWarehouse.Id,
+            header.destinationWarehouse.Code,
+            header.destinationWarehouse.Name,
+            header.transfer.Reference,
+            header.transfer.Note,
+            header.transfer.TransferredAtUtc,
+            lines);
+    }
+
     public async Task<PagedResult<InventoryMovementResponse>> GetMovementHistoryAsync(InventoryMovementListQuery query, CancellationToken cancellationToken)
     {
         var movements = from movement in dbContext.InventoryMovements.AsNoTracking()
@@ -130,7 +374,9 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                         from receipt in receipts.DefaultIfEmpty()
                         join cycleCount in dbContext.CycleCounts.AsNoTracking() on movement.CycleCountId equals cycleCount.Id into cycleCounts
                         from cycleCount in cycleCounts.DefaultIfEmpty()
-                        select new { movement, product, warehouse, adjustment, receipt, cycleCount };
+                        join transfer in dbContext.InventoryTransfers.AsNoTracking() on movement.InventoryTransferId equals transfer.Id into transfers
+                        from transfer in transfers.DefaultIfEmpty()
+                        select new { movement, product, warehouse, adjustment, receipt, cycleCount, transfer };
         if (query.ProductId is { } productId) movements = movements.Where(item => item.movement.ProductId == productId);
         if (query.WarehouseId is { } warehouseId) movements = movements.Where(item => item.movement.WarehouseId == warehouseId);
         if (query.Type is { } type) movements = movements.Where(item => item.movement.Type == type);
@@ -142,7 +388,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             movements = movements.Where(item =>
                 (item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference))
                 || (item.receipt != null && item.receipt.Number.Contains(reference))
-                || (item.cycleCount != null && item.cycleCount.Reference != null && item.cycleCount.Reference.Contains(reference)));
+                || (item.cycleCount != null && item.cycleCount.Reference != null && item.cycleCount.Reference.Contains(reference))
+                || (item.transfer != null && item.transfer.Reference != null && item.transfer.Reference.Contains(reference)));
         }
         var totalCount = await movements.CountAsync(cancellationToken);
         var items = await movements
@@ -155,6 +402,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.movement.InventoryAdjustmentId,
                 item.movement.GoodsReceiptId,
                 item.movement.CycleCountId,
+                item.movement.InventoryTransferId,
                 item.product.Id,
                 item.product.Sku,
                 item.product.Name,
@@ -164,6 +412,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.adjustment == null ? null : item.adjustment.Reference,
                 item.receipt == null ? null : item.receipt.Number,
                 item.cycleCount == null ? null : item.cycleCount.Reference,
+                item.transfer == null ? null : item.transfer.Reference,
                 item.movement.Type.ToString(),
                 item.movement.UnitOfMeasure,
                 item.movement.QuantityDeltaInUnit,

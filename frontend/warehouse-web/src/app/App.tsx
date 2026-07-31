@@ -40,6 +40,9 @@ import { InventoryOverviewPage } from "../features/inventory/pages/InventoryOver
 import { CycleCountPage } from "../features/inventory/pages/CycleCountPage";
 import { CycleCountListPage } from "../features/inventory/pages/CycleCountListPage";
 import { CycleCountDetailPage } from "../features/inventory/pages/CycleCountDetailPage";
+import { InventoryTransferPage } from "../features/inventory/pages/InventoryTransferPage";
+import { InventoryTransferListPage } from "../features/inventory/pages/InventoryTransferListPage";
+import { InventoryTransferDetailPage } from "../features/inventory/pages/InventoryTransferDetailPage";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AuthProvider } from "../features/auth/AuthContext";
@@ -148,6 +151,18 @@ export function App() {
                     <Route
                       path={inventoryRoutes.cycleCountDetailPattern}
                       element={<CycleCountDetailPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.transfersPattern}
+                      element={<InventoryTransferListPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.transferCreatePattern}
+                      element={<InventoryTransferPage />}
+                    />
+                    <Route
+                      path={inventoryRoutes.transferDetailPattern}
+                      element={<InventoryTransferDetailPage />}
                     />
                     <Route
                       path={warehouseRoutes.create}
