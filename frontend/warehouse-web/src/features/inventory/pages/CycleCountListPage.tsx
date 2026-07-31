@@ -52,6 +52,8 @@ export function CycleCountListPage() {
     {
       title: t("inventory.table.actions"),
       key: "actions",
+      fixed: "right",
+      width: 120,
       render: (_, item) => (
         <ReturnAwareLink to={inventoryRoutes.cycleCountDetail(item.id)}>
           {t("inventory.view")}
@@ -158,6 +160,7 @@ export function CycleCountListPage() {
               : false
           }
           rowKey="id"
+          scroll={{ x: 950 }}
         />
       )}
     </ListPageLayout>

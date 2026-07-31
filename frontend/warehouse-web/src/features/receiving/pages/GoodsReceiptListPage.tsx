@@ -62,6 +62,8 @@ export function GoodsReceiptListPage() {
     {
       title: t("receiving.actions"),
       key: "actions",
+      fixed: "right",
+      width: 120,
       render: (_, receipt) => (
         <ReturnAwareLink to={receivingRoutes.detail(receipt.id)}>
           {t("receiving.view")}

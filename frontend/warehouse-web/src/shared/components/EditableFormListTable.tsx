@@ -11,7 +11,9 @@ type FormListField = Pick<EditableFormListTableRow, "key"> & {
 };
 
 type EditableFormListTableProps<T extends object> = {
-  columns: (remove: (fieldName: number) => void) => ColumnsType<T & EditableFormListTableRow>;
+  columns: (
+    remove: (fieldName: number) => void,
+  ) => ColumnsType<T & EditableFormListTableRow>;
   createRow: (field: FormListField) => T;
   addLabel: string;
   addInitialValue?: unknown;
@@ -43,7 +45,13 @@ export function EditableFormListTable<T extends object>({
           ...createRow(field),
         }));
 
-        const tableColumns = columns(remove);
+        const tableColumns: ColumnsType<T & EditableFormListTableRow> = columns(
+          remove,
+        ).map((column) =>
+          column.key === "actions"
+            ? { ...column, fixed: "right", width: column.width ?? 120 }
+            : column,
+        );
 
         return (
           <Table

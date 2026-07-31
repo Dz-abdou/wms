@@ -56,6 +56,8 @@ export function UsersPage() {
     {
       title: t("administration.users.table.actions"),
       key: "actions",
+      fixed: "right",
+      width: 160,
       render: (_, user) => (
         <Space>
           <ReturnAwareLink to={administrationRoutes.userEdit(user.id)}>
@@ -137,6 +139,7 @@ export function UsersPage() {
           loading={users.isFetching}
           pagination={listQuery.toTablePagination(users.data)}
           rowKey="id"
+          scroll={{ x: 760 }}
         />
       ) : null}
     </ListPageLayout>

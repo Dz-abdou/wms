@@ -97,6 +97,8 @@ export function PurchaseOrderListPage() {
       {
         title: t("purchasing.orders.actions"),
         key: "actions",
+        fixed: "right",
+        width: 120,
         render: (_, item) => (
           <ReturnAwareLink to={purchasingRoutes.orderDetail(item.id)}>
             {t("purchasing.view")}

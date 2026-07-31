@@ -55,6 +55,8 @@ Every create/edit page finishes with the shared form action bar: Cancel is left-
 
 Use horizontal scrolling for genuinely wide operational tables rather than hiding essential fields. High-volume selectors must use server-side search rather than a fixed first-page list. For stock operations, reject or explicitly consolidate duplicate product/warehouse lines and validate the projected final quantity before committing. Frontend tests must cover adding/removing a line, line validation, derived values, and failed atomic submissions; backend tests must prove no partial persistence on failure.
 
+Every table that exposes a row-level **Actions** column—including list, detail, and create/edit line tables—must keep that column fixed on the right with an explicit width. Its table must provide an explicit `scroll.x` width so the action remains reachable while the data columns scroll within the table wrapper. Tables without row actions do not need an empty Actions column.
+
 ## Application UI/UX Consistency Standard
 
 The application must feel like one operational system rather than a collection of feature pages. This standard applies to every existing and future authenticated screen.
@@ -78,6 +80,9 @@ The application must feel like one operational system rather than a collection o
   inside the table wrapper; it must never create a page-level horizontal
   scrollbar. Set an explicit Ant Design `scroll.x` width when a feature knows
   its operational columns, and retain the shared table-wrapper containment.
+- Every row-level Actions column is fixed to the right with an explicit width.
+  Apply this equally to list tables and editable/read-only line tables; do not
+  add an empty Actions column where a table has no row action.
 - Choose filters from the operational decision, not from every visible field. Initial guidance: Products—SKU/name and active/category; Warehouses—code/name and active; Suppliers—code/name and active; Categories/Currencies—code/name and active where applicable; Supplier Catalogue—supplier/product/status/currency; Purchase Orders—supplier/status and, after hardening, warehouse/date; Adjustments—reason/date/reference; Movement History—product/warehouse/type/reference/date; Users—email/role.
 - All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
 - Before frontend completion, audit direct translation-key use against both

@@ -1,4 +1,4 @@
-import { Alert, Card, Empty, Input, Select, Spin, Table } from "antd";
+import { Alert, Empty, Input, Select, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -263,39 +263,36 @@ export function InventoryMovementHistoryPage() {
       subtitle={t("inventory.historySubtitle")}
       title={t("inventory.historyTitle")}
     >
-      <Card
-        className="inventory-history-card"
-        title={t("inventory.historyTitle")}
-      >
-        {movements.isLoading ? (
-          <Spin tip={t("inventory.loadingHistory")} />
-        ) : movements.error ? (
-          <Alert
-            message={getErrorMessage(
-              t,
-              movements.error,
-              "inventory.errors.loadHistory",
-            )}
-            showIcon
-            type="error"
-          />
-        ) : movements.data?.items.length === 0 ? (
-          <Empty description={t("inventory.emptyHistory")} />
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={movements.data?.items}
-            loading={movements.isFetching}
-            pagination={
-              movements.data
-                ? listQuery.toTablePagination(movements.data)
-                : false
-            }
-            rowKey="id"
-            scroll={{ x: 1360 }}
-          />
-        )}
-      </Card>
+      {movements.isLoading ? (
+        <Spin
+          className="page-spinner"
+          size="large"
+          tip={t("inventory.loadingHistory")}
+        />
+      ) : movements.error ? (
+        <Alert
+          message={getErrorMessage(
+            t,
+            movements.error,
+            "inventory.errors.loadHistory",
+          )}
+          showIcon
+          type="error"
+        />
+      ) : movements.data?.items.length === 0 ? (
+        <Empty description={t("inventory.emptyHistory")} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={movements.data?.items}
+          loading={movements.isFetching}
+          pagination={
+            movements.data ? listQuery.toTablePagination(movements.data) : false
+          }
+          rowKey="id"
+          scroll={{ x: 1360 }}
+        />
+      )}
     </ListPageLayout>
   );
 }

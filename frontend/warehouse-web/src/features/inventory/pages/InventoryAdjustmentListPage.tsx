@@ -47,6 +47,8 @@ export function InventoryAdjustmentListPage() {
     {
       title: t("inventory.table.actions"),
       key: "actions",
+      fixed: "right",
+      width: 120,
       render: (_, item) => (
         <ReturnAwareLink to={inventoryRoutes.adjustmentDetail(item.id)}>
           {t("inventory.view")}
@@ -154,6 +156,7 @@ export function InventoryAdjustmentListPage() {
               : false
           }
           rowKey="id"
+          scroll={{ x: 850 }}
         />
       )}
     </ListPageLayout>
