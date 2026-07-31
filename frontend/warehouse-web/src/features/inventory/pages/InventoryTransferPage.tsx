@@ -141,9 +141,19 @@ export function InventoryTransferPage() {
       width: 190,
       render: (_, row) => {
         const line = lines[row.fieldName];
-        return line?.availableQuantityInBase === undefined
-          ? "—"
-          : `${line.availableQuantityInBase} ${line.baseUnitOfMeasure}`;
+        return (
+          <>
+            <Form.Item hidden name={[row.fieldName, "availableQuantityInBase"]}>
+              <Input />
+            </Form.Item>
+            <Form.Item hidden name={[row.fieldName, "baseUnitOfMeasure"]}>
+              <Input />
+            </Form.Item>
+            {line?.availableQuantityInBase === undefined
+              ? "—"
+              : `${line.availableQuantityInBase} ${line.baseUnitOfMeasure}`}
+          </>
+        );
       },
     },
     {
@@ -286,6 +296,7 @@ export function InventoryTransferPage() {
             ]}
           >
             <Select
+              allowClear
               aria-label={t("inventory.transfers.sourceWarehouse")}
               options={warehouseOptions?.filter(
                 (warehouse) => warehouse.value !== destinationWarehouseId,
@@ -305,6 +316,7 @@ export function InventoryTransferPage() {
             ]}
           >
             <Select
+              allowClear
               aria-label={t("inventory.transfers.destinationWarehouse")}
               options={warehouseOptions?.filter(
                 (warehouse) => warehouse.value !== sourceWarehouseId,
