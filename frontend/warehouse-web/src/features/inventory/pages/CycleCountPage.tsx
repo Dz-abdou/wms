@@ -141,10 +141,11 @@ export function CycleCountPage() {
     {
       title: t("inventory.cycleCounts.systemQuantity"),
       key: "systemQuantity",
-      width: 180,
+      width: 330,
       render: (_, row) => (
         <div className={styles.systemQuantity}>
           <Form.Item
+            className={styles.systemQuantityField}
             name={[row.fieldName, "systemQuantityInBase"]}
             style={{ marginBottom: 0 }}
           >
@@ -156,6 +157,7 @@ export function CycleCountPage() {
           <Tooltip title={t("inventory.cycleCounts.reloadLine")}>
             <Button
               aria-label={t("inventory.cycleCounts.reloadLine")}
+              className={styles.reloadButton}
               disabled={!lines[row.fieldName]?.productId}
               icon={<ReloadOutlined />}
               onClick={() => {
@@ -166,6 +168,9 @@ export function CycleCountPage() {
               type="text"
             />
           </Tooltip>
+          <Form.Item hidden name={[row.fieldName, "systemBalanceVersion"]}>
+            <Input />
+          </Form.Item>
         </div>
       ),
     },
@@ -321,7 +326,7 @@ export function CycleCountPage() {
             columns={lineColumns}
             createRow={() => ({})}
             name="lines"
-            scroll={{ x: 900 }}
+            scroll={{ x: 1060 }}
           />
           <FormPageActions
             cancelLabel={t("inventory.cancel")}
