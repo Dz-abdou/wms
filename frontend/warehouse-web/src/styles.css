@@ -182,6 +182,16 @@ body {
   margin-top: 24px;
 }
 
+.cycle-count-system-quantity {
+  align-items: center;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.cycle-count-system-quantity .ant-form-item {
+  flex: 1;
+}
+
 .quantity-delta {
   font-variant-numeric: tabular-nums;
   font-weight: 600;

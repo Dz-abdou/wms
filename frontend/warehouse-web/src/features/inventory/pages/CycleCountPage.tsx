@@ -7,7 +7,9 @@ import {
   InputNumber,
   Select,
   Spin,
+  Tooltip,
 } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -140,7 +142,7 @@ export function CycleCountPage() {
       key: "systemQuantity",
       width: 180,
       render: (_, row) => (
-        <>
+        <div className="cycle-count-system-quantity">
           <Form.Item
             name={[row.fieldName, "systemQuantityInBase"]}
             style={{ marginBottom: 0 }}
@@ -150,18 +152,20 @@ export function CycleCountPage() {
               disabled
             />
           </Form.Item>
-          <Button
-            disabled={!lines[row.fieldName]?.productId}
-            onClick={() => {
-              const productId = lines[row.fieldName]?.productId;
-              if (productId) void loadCandidate(row.fieldName, productId);
-            }}
-            size="small"
-            type="link"
-          >
-            {t("inventory.cycleCounts.reloadLine")}
-          </Button>
-        </>
+          <Tooltip title={t("inventory.cycleCounts.reloadLine")}>
+            <Button
+              aria-label={t("inventory.cycleCounts.reloadLine")}
+              disabled={!lines[row.fieldName]?.productId}
+              icon={<ReloadOutlined />}
+              onClick={() => {
+                const productId = lines[row.fieldName]?.productId;
+                if (productId) void loadCandidate(row.fieldName, productId);
+              }}
+              size="small"
+              type="text"
+            />
+          </Tooltip>
+        </div>
       ),
     },
     {
