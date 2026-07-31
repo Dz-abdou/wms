@@ -1,4 +1,4 @@
-import { Alert, Card, Empty, Input, Select, Spin, Table } from "antd";
+import { Alert, Empty, Input, Select, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -70,7 +70,11 @@ export function InventoryMovementHistoryPage() {
             ? "inventory.types.increase"
             : value === "ManualDecrease"
               ? "inventory.types.decrease"
-              : "inventory.types.goodsReceipt",
+              : value === "CycleCountIncrease"
+                ? "inventory.types.cycleCountIncrease"
+                : value === "CycleCountDecrease"
+                  ? "inventory.types.cycleCountDecrease"
+                  : "inventory.types.goodsReceipt",
         ),
     },
     {
@@ -103,6 +107,12 @@ export function InventoryMovementHistoryPage() {
         ) : x.goodsReceiptId ? (
           <ReturnAwareLink to={receivingRoutes.detail(x.goodsReceiptId)}>
             {x.goodsReceiptNumber ?? t("receiving.title")}
+          </ReturnAwareLink>
+        ) : x.cycleCountId ? (
+          <ReturnAwareLink
+            to={inventoryRoutes.cycleCountDetail(x.cycleCountId)}
+          >
+            {x.cycleCountReference ?? t("inventory.cycleCounts.document")}
           </ReturnAwareLink>
         ) : (
           "—"
@@ -195,6 +205,14 @@ export function InventoryMovementHistoryPage() {
                   value: "GoodsReceipt",
                   label: t("inventory.types.goodsReceipt"),
                 },
+                {
+                  value: "CycleCountIncrease",
+                  label: t("inventory.types.cycleCountIncrease"),
+                },
+                {
+                  value: "CycleCountDecrease",
+                  label: t("inventory.types.cycleCountDecrease"),
+                },
               ]}
               placeholder={t("inventory.table.type")}
               value={listQuery.get("type")}
@@ -245,39 +263,36 @@ export function InventoryMovementHistoryPage() {
       subtitle={t("inventory.historySubtitle")}
       title={t("inventory.historyTitle")}
     >
-      <Card
-        className="inventory-history-card"
-        title={t("inventory.historyTitle")}
-      >
-        {movements.isLoading ? (
-          <Spin tip={t("inventory.loadingHistory")} />
-        ) : movements.error ? (
-          <Alert
-            message={getErrorMessage(
-              t,
-              movements.error,
-              "inventory.errors.loadHistory",
-            )}
-            showIcon
-            type="error"
-          />
-        ) : movements.data?.items.length === 0 ? (
-          <Empty description={t("inventory.emptyHistory")} />
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={movements.data?.items}
-            loading={movements.isFetching}
-            pagination={
-              movements.data
-                ? listQuery.toTablePagination(movements.data)
-                : false
-            }
-            rowKey="id"
-            scroll={{ x: 1360 }}
-          />
-        )}
-      </Card>
+      {movements.isLoading ? (
+        <Spin
+          className="page-spinner"
+          size="large"
+          tip={t("inventory.loadingHistory")}
+        />
+      ) : movements.error ? (
+        <Alert
+          message={getErrorMessage(
+            t,
+            movements.error,
+            "inventory.errors.loadHistory",
+          )}
+          showIcon
+          type="error"
+        />
+      ) : movements.data?.items.length === 0 ? (
+        <Empty description={t("inventory.emptyHistory")} />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={movements.data?.items}
+          loading={movements.isFetching}
+          pagination={
+            movements.data ? listQuery.toTablePagination(movements.data) : false
+          }
+          rowKey="id"
+          scroll={{ x: 1360 }}
+        />
+      )}
     </ListPageLayout>
   );
 }

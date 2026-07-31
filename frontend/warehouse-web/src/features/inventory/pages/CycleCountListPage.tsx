@@ -1,36 +1,37 @@
 import { Alert, Empty, Input, Select, Spin, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
+import {
+  ListFilter,
+  ListPageLayout,
+  NewPageAction,
+  ReturnAwareLink,
+} from "../../../shared/components/PageLayouts";
 import { getErrorMessage } from "../../../shared/errors/problemDetails";
 import { formatDateTime } from "../../../shared/formatting/dateTime";
 import { toAppLanguage } from "../../../shared/i18n/constants";
 import { useUrlListQuery } from "../../../shared/pagination/pagination";
-import { useInventoryAdjustments } from "../api/useInventory";
-import type { InventoryAdjustmentListItem } from "../api/inventoryTypes";
-import { inventoryRoutes } from "../inventoryConstants";
-import {
-  ListFilter,
-  ListPageLayout,
-  ReturnAwareLink,
-  NewPageAction,
-} from "../../../shared/components/PageLayouts";
+import { useWarehouses } from "../../warehouses/api/useWarehouses";
+import { useCycleCounts } from "../api/useInventory";
+import type { CycleCountListItem } from "../api/inventoryTypes";
+import { inventoryPageSize, inventoryRoutes } from "../inventoryConstants";
 
-export function InventoryAdjustmentListPage() {
+export function CycleCountListPage() {
   const { i18n, t } = useTranslation();
   const listQuery = useUrlListQuery();
-  const adjustments = useInventoryAdjustments({
+  const warehouses = useWarehouses({ page: 1, pageSize: inventoryPageSize });
+  const cycleCounts = useCycleCounts({
     ...listQuery.request,
-    reason: listQuery.get("reason") as
-      InventoryAdjustmentListItem["reason"] | undefined,
+    warehouseId: listQuery.get("warehouseId"),
     reference: listQuery.get("reference"),
     fromUtc: listQuery.get("fromUtc"),
     toUtc: listQuery.get("toUtc"),
   });
-  const columns: ColumnsType<InventoryAdjustmentListItem> = [
+  const columns: ColumnsType<CycleCountListItem> = [
     {
-      title: t("inventory.table.reason"),
-      dataIndex: "reason",
-      render: (value) => t(`inventory.reasons.${value}`),
+      title: t("inventory.table.warehouse"),
+      key: "warehouse",
+      render: (_, item) => `${item.warehouseCode} — ${item.warehouseName}`,
     },
     {
       title: t("inventory.table.reference"),
@@ -39,8 +40,12 @@ export function InventoryAdjustmentListPage() {
     },
     { title: t("inventory.table.lines"), dataIndex: "lineCount" },
     {
-      title: t("inventory.table.created"),
-      dataIndex: "createdAtUtc",
+      title: t("inventory.cycleCounts.varianceLines"),
+      dataIndex: "varianceLineCount",
+    },
+    {
+      title: t("inventory.cycleCounts.countedAt"),
+      dataIndex: "countedAtUtc",
       render: (value) =>
         formatDateTime(value, toAppLanguage(i18n.resolvedLanguage)),
     },
@@ -50,36 +55,33 @@ export function InventoryAdjustmentListPage() {
       fixed: "right",
       width: 120,
       render: (_, item) => (
-        <ReturnAwareLink to={inventoryRoutes.adjustmentDetail(item.id)}>
+        <ReturnAwareLink to={inventoryRoutes.cycleCountDetail(item.id)}>
           {t("inventory.view")}
         </ReturnAwareLink>
       ),
     },
   ];
+
   return (
     <ListPageLayout
-      actions={<NewPageAction to={inventoryRoutes.adjustmentCreate} />}
-      hasActiveFilters={listQuery.hasFilters}
-      onClearFilters={listQuery.clearFilters}
+      actions={<NewPageAction to={inventoryRoutes.cycleCountCreate} />}
       filters={
         <>
-          <ListFilter label={t("inventory.table.reason")} width="regular">
+          <ListFilter label={t("inventory.table.warehouse")} width="regular">
             <Select
               allowClear
-              aria-label={t("inventory.table.reason")}
-              onChange={(value) => listQuery.update({ reason: value })}
-              options={Object.keys({
-                StockCorrection: true,
-                Damage: true,
-                WriteOff: true,
-                FoundStock: true,
-                InitialBalance: true,
-              }).map((reason) => ({
-                value: reason,
-                label: t(`inventory.reasons.${reason}`),
-              }))}
-              placeholder={t("inventory.table.reason")}
-              value={listQuery.get("reason")}
+              aria-label={t("inventory.table.warehouse")}
+              onChange={(value) => listQuery.update({ warehouseId: value })}
+              options={warehouses.data?.items
+                .filter((warehouse) => warehouse.isActive)
+                .map((warehouse) => ({
+                  value: warehouse.id,
+                  label: `${warehouse.code} — ${warehouse.name}`,
+                }))}
+              placeholder={t("inventory.table.warehouse")}
+              showSearch
+              optionFilterProp="label"
+              value={listQuery.get("warehouseId")}
             />
           </ListFilter>
           <ListFilter label={t("inventory.table.reference")} width="regular">
@@ -124,39 +126,41 @@ export function InventoryAdjustmentListPage() {
           </ListFilter>
         </>
       }
-      subtitle={t("inventory.adjustmentsSubtitle")}
-      title={t("inventory.adjustmentsTitle")}
+      hasActiveFilters={listQuery.hasFilters}
+      onClearFilters={listQuery.clearFilters}
+      subtitle={t("inventory.cycleCounts.subtitle")}
+      title={t("inventory.cycleCounts.title")}
     >
-      {adjustments.isLoading ? (
+      {cycleCounts.isLoading || warehouses.isLoading ? (
         <Spin
           className="page-spinner"
           size="large"
-          tip={t("inventory.loadingAdjustments")}
+          tip={t("inventory.cycleCounts.loading")}
         />
-      ) : adjustments.error ? (
+      ) : cycleCounts.error || warehouses.error ? (
         <Alert
           message={getErrorMessage(
             t,
-            adjustments.error,
-            "inventory.errors.loadAdjustments",
+            cycleCounts.error ?? warehouses.error,
+            "inventory.errors.loadCycleCounts",
           )}
           showIcon
           type="error"
         />
-      ) : adjustments.data?.items.length === 0 ? (
-        <Empty description={t("inventory.emptyAdjustments")} />
+      ) : cycleCounts.data?.items.length === 0 ? (
+        <Empty description={t("inventory.cycleCounts.empty")} />
       ) : (
         <Table
           columns={columns}
-          dataSource={adjustments.data?.items}
-          loading={adjustments.isFetching}
+          dataSource={cycleCounts.data?.items}
+          loading={cycleCounts.isFetching}
           pagination={
-            adjustments.data
-              ? listQuery.toTablePagination(adjustments.data)
+            cycleCounts.data
+              ? listQuery.toTablePagination(cycleCounts.data)
               : false
           }
           rowKey="id"
-          scroll={{ x: 850 }}
+          scroll={{ x: 950 }}
         />
       )}
     </ListPageLayout>

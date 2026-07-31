@@ -128,7 +128,9 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                         from adjustment in adjustments.DefaultIfEmpty()
                         join receipt in dbContext.GoodsReceipts.AsNoTracking() on movement.GoodsReceiptId equals receipt.Id into receipts
                         from receipt in receipts.DefaultIfEmpty()
-                        select new { movement, product, warehouse, adjustment, receipt };
+                        join cycleCount in dbContext.CycleCounts.AsNoTracking() on movement.CycleCountId equals cycleCount.Id into cycleCounts
+                        from cycleCount in cycleCounts.DefaultIfEmpty()
+                        select new { movement, product, warehouse, adjustment, receipt, cycleCount };
         if (query.ProductId is { } productId) movements = movements.Where(item => item.movement.ProductId == productId);
         if (query.WarehouseId is { } warehouseId) movements = movements.Where(item => item.movement.WarehouseId == warehouseId);
         if (query.Type is { } type) movements = movements.Where(item => item.movement.Type == type);
@@ -139,7 +141,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             var reference = query.Reference.Trim();
             movements = movements.Where(item =>
                 (item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference))
-                || (item.receipt != null && item.receipt.Number.Contains(reference)));
+                || (item.receipt != null && item.receipt.Number.Contains(reference))
+                || (item.cycleCount != null && item.cycleCount.Reference != null && item.cycleCount.Reference.Contains(reference)));
         }
         var totalCount = await movements.CountAsync(cancellationToken);
         var items = await movements
@@ -151,6 +154,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.movement.Id,
                 item.movement.InventoryAdjustmentId,
                 item.movement.GoodsReceiptId,
+                item.movement.CycleCountId,
                 item.product.Id,
                 item.product.Sku,
                 item.product.Name,
@@ -159,6 +163,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.warehouse.Name,
                 item.adjustment == null ? null : item.adjustment.Reference,
                 item.receipt == null ? null : item.receipt.Number,
+                item.cycleCount == null ? null : item.cycleCount.Reference,
                 item.movement.Type.ToString(),
                 item.movement.UnitOfMeasure,
                 item.movement.QuantityDeltaInUnit,
@@ -223,6 +228,236 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         return new PagedResult<InventoryOverviewItemResponse>(items, query.Page, query.PageSize, totalCount);
     }
 
+    public async Task<CycleCountCandidateResponse> GetCycleCountCandidateAsync(
+        CycleCountCandidateQuery query,
+        CancellationToken cancellationToken)
+    {
+        if (!await dbContext.Warehouses.AnyAsync(
+                warehouse => warehouse.Id == query.WarehouseId && warehouse.IsActive,
+                cancellationToken))
+        {
+            throw new InventoryWarehouseNotFoundException(query.WarehouseId);
+        }
+
+        var product = await dbContext.Products.AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == query.ProductId && candidate.IsActive, cancellationToken)
+            ?? throw new InventoryProductNotFoundException(query.ProductId);
+        var balance = await dbContext.InventoryBalances.AsNoTracking()
+            .SingleOrDefaultAsync(candidate =>
+                candidate.ProductId == product.Id && candidate.WarehouseId == query.WarehouseId,
+                cancellationToken);
+
+        return new CycleCountCandidateResponse(
+            product.Id,
+            product.Sku,
+            product.Name,
+            product.BaseUnitOfMeasure,
+            balance?.Quantity ?? 0m,
+            balance?.Version ?? 0);
+    }
+
+    public async Task<CycleCountDetailResponse> CreateCycleCountAsync(
+        CycleCountInput input,
+        CancellationToken cancellationToken)
+    {
+        CycleCountDetailResponse? response = null;
+        try
+        {
+            await dbContext.ExecuteInTransactionAsync(async token =>
+            {
+                var now = UtcNow();
+                var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(
+                    candidate => candidate.Id == input.WarehouseId && candidate.IsActive,
+                    token) ?? throw new InventoryWarehouseNotFoundException(input.WarehouseId);
+                var count = CycleCount.Create(input.WarehouseId, input.Reference, input.Note, now, currentUser.UserId);
+                dbContext.CycleCounts.Add(count);
+                var responseLines = new List<CycleCountLineResponse>();
+
+                for (var lineIndex = 0; lineIndex < input.Lines.Count; lineIndex++)
+                {
+                    var inputLine = input.Lines[lineIndex];
+                    var product = await dbContext.Products.Include(candidate => candidate.UnitConversions)
+                        .SingleOrDefaultAsync(candidate => candidate.Id == inputLine.ProductId && candidate.IsActive, token)
+                        ?? throw new InventoryProductNotFoundException(inputLine.ProductId);
+                    var existingBalance = await dbContext.InventoryBalances.SingleOrDefaultAsync(candidate =>
+                        candidate.ProductId == product.Id && candidate.WarehouseId == warehouse.Id, token);
+                    var systemQuantity = existingBalance?.Quantity ?? 0m;
+                    var systemVersion = existingBalance?.Version ?? 0;
+                    if (systemQuantity != inputLine.SystemQuantityInBase || systemVersion != inputLine.SystemBalanceVersion)
+                    {
+                        throw new CycleCountStaleBalanceException(
+                            lineIndex,
+                            systemQuantity,
+                            product.BaseUnitOfMeasure);
+                    }
+
+                    var countedQuantityInBase = ToCountedBaseQuantity(product, inputLine);
+                    var line = CycleCountLine.Create(
+                        count.Id,
+                        lineIndex + 1,
+                        product.Id,
+                        systemQuantity,
+                        systemVersion,
+                        inputLine.CountedUnitOfMeasure,
+                        inputLine.CountedQuantityInUnit,
+                        countedQuantityInBase,
+                        now,
+                        currentUser.UserId);
+                    dbContext.CycleCountLines.Add(line);
+                    var variance = line.VarianceQuantityInBase;
+                    if (variance != 0m)
+                    {
+                        var balance = existingBalance ?? InventoryBalance.Create(product.Id, warehouse.Id, now, currentUser.UserId);
+                        if (existingBalance is null)
+                        {
+                            dbContext.InventoryBalances.Add(balance);
+                        }
+
+                        balance.ApplyAdjustment(variance, now, currentUser.UserId);
+                        var movement = InventoryMovement.CreateCycleCount(
+                            count.Id,
+                            product.Id,
+                            warehouse.Id,
+                            product.BaseUnitOfMeasure,
+                            variance,
+                            variance,
+                            balance.Quantity,
+                            now,
+                            currentUser.UserId);
+                        dbContext.InventoryMovements.Add(movement);
+                        line.LinkInventoryMovement(movement.Id);
+                    }
+
+                    responseLines.Add(ToCycleCountLineResponse(line, product));
+                }
+
+                await dbContext.SaveChangesAsync(token);
+                response = new CycleCountDetailResponse(
+                    count.Id,
+                    warehouse.Id,
+                    warehouse.Code,
+                    warehouse.Name,
+                    count.Reference,
+                    count.Note,
+                    count.CountedAtUtc,
+                    responseLines);
+            }, cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new InventoryConcurrencyException(exception);
+        }
+
+        return response ?? throw new InvalidOperationException("Cycle count did not produce a result.");
+    }
+
+    public async Task<PagedResult<CycleCountListItemResponse>> GetCycleCountsAsync(
+        CycleCountListQuery query,
+        CancellationToken cancellationToken)
+    {
+        var counts = from count in dbContext.CycleCounts.AsNoTracking()
+                     join warehouse in dbContext.Warehouses.AsNoTracking() on count.WarehouseId equals warehouse.Id
+                     select new { count, warehouse };
+        if (query.WarehouseId is { } warehouseId) counts = counts.Where(item => item.count.WarehouseId == warehouseId);
+        if (!string.IsNullOrWhiteSpace(query.Reference))
+        {
+            var reference = query.Reference.Trim();
+            counts = counts.Where(item => item.count.Reference != null && item.count.Reference.Contains(reference));
+        }
+        if (query.FromUtc is { } fromUtc) counts = counts.Where(item => item.count.CountedAtUtc >= fromUtc);
+        if (query.ToUtc is { } toUtc) counts = counts.Where(item => item.count.CountedAtUtc <= toUtc);
+        var totalCount = await counts.CountAsync(cancellationToken);
+        var items = await counts
+            .OrderByDescending(item => item.count.CountedAtUtc)
+            .ThenByDescending(item => item.count.Id)
+            .Skip((query.Page - PaginationConstants.DefaultPage) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(item => new CycleCountListItemResponse(
+                item.count.Id,
+                item.warehouse.Id,
+                item.warehouse.Code,
+                item.warehouse.Name,
+                item.count.Reference,
+                item.count.CountedAtUtc,
+                dbContext.CycleCountLines.Count(line => line.CycleCountId == item.count.Id),
+                dbContext.CycleCountLines.Count(line => line.CycleCountId == item.count.Id && line.VarianceQuantityInBase != 0m)))
+            .ToListAsync(cancellationToken);
+        return new PagedResult<CycleCountListItemResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
+    public async Task<CycleCountDetailResponse> GetCycleCountByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var header = await (from count in dbContext.CycleCounts.AsNoTracking()
+                            join warehouse in dbContext.Warehouses.AsNoTracking() on count.WarehouseId equals warehouse.Id
+                            where count.Id == id
+                            select new { count, warehouse })
+            .SingleOrDefaultAsync(cancellationToken)
+            ?? throw new CycleCountNotFoundException(id);
+        var lines = await (from line in dbContext.CycleCountLines.AsNoTracking()
+                           join product in dbContext.Products.AsNoTracking() on line.ProductId equals product.Id
+                           where line.CycleCountId == id
+                           orderby line.LineNumber
+                           select new CycleCountLineResponse(
+                               line.Id,
+                               line.LineNumber,
+                               product.Id,
+                               product.Sku,
+                               product.Name,
+                               line.SystemQuantityInBase,
+                               line.SystemBalanceVersion,
+                               product.BaseUnitOfMeasure,
+                               line.CountedUnitOfMeasure,
+                               line.CountedQuantityInUnit,
+                               line.CountedQuantityInBase,
+                               line.VarianceQuantityInBase,
+                               line.InventoryMovementId))
+            .ToListAsync(cancellationToken);
+        return new CycleCountDetailResponse(
+            header.count.Id,
+            header.warehouse.Id,
+            header.warehouse.Code,
+            header.warehouse.Name,
+            header.count.Reference,
+            header.count.Note,
+            header.count.CountedAtUtc,
+            lines);
+    }
+
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
     private static InventoryBalanceResponse ToResponse(InventoryBalance balance, string baseUnitOfMeasure) => new(balance.ProductId, balance.WarehouseId, balance.Quantity, balance.UpdatedAtUtc, baseUnitOfMeasure);
+
+    private static decimal ToCountedBaseQuantity(Product product, CycleCountLineInput line)
+    {
+        if (line.CountedQuantityInUnit == 0m)
+        {
+            if (!product.TryConvertToBaseQuantity(line.CountedUnitOfMeasure, 1m, out _))
+            {
+                throw new InventoryInvalidUnitOfMeasureException(product.Id, line.CountedUnitOfMeasure);
+            }
+
+            return 0m;
+        }
+
+        if (!product.TryConvertToBaseQuantity(line.CountedUnitOfMeasure, line.CountedQuantityInUnit, out var quantityInBase))
+        {
+            throw new InventoryInvalidUnitOfMeasureException(product.Id, line.CountedUnitOfMeasure);
+        }
+
+        return quantityInBase;
+    }
+
+    private static CycleCountLineResponse ToCycleCountLineResponse(CycleCountLine line, Product product) => new(
+        line.Id,
+        line.LineNumber,
+        product.Id,
+        product.Sku,
+        product.Name,
+        line.SystemQuantityInBase,
+        line.SystemBalanceVersion,
+        product.BaseUnitOfMeasure,
+        line.CountedUnitOfMeasure,
+        line.CountedQuantityInUnit,
+        line.CountedQuantityInBase,
+        line.VarianceQuantityInBase,
+        line.InventoryMovementId);
 }

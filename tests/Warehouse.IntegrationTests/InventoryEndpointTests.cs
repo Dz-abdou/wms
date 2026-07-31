@@ -246,6 +246,114 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(48m, movement.QuantityDelta);
     }
 
+    [Fact]
+    public async Task Cycle_count_posts_only_variances_and_links_them_to_the_ledger()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, warehouse.Id, 10m);
+        var candidate = await fixture.Client.GetFromJsonAsync<CycleCountCandidateResponse>(
+            $"/api/inventory/cycle-counts/candidate?warehouseId={warehouse.Id}&productId={product.Id}");
+
+        Assert.NotNull(candidate);
+        Assert.Equal(10m, candidate.SystemQuantityInBase);
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/cycle-counts", new CycleCountInput(
+            warehouse.Id,
+            "CC-2026-001",
+            "Monthly verification",
+            [new CycleCountLineInput(product.Id, candidate.SystemQuantityInBase, candidate.SystemBalanceVersion, "EA", 7m)]));
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var cycleCount = await response.Content.ReadFromJsonAsync<CycleCountDetailResponse>();
+        Assert.NotNull(cycleCount);
+        var line = Assert.Single(cycleCount.Lines);
+        Assert.Equal(-3m, line.VarianceQuantityInBase);
+        Assert.NotNull(line.InventoryMovementId);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        var balance = await dbContext.InventoryBalances.SingleAsync(candidate =>
+            candidate.ProductId == product.Id && candidate.WarehouseId == warehouse.Id);
+        var movement = await dbContext.InventoryMovements.SingleAsync(candidate =>
+            candidate.CycleCountId == cycleCount.Id);
+
+        Assert.Equal(7m, balance.Quantity);
+        Assert.Equal(InventoryMovementType.CycleCountDecrease, movement.Type);
+        Assert.Equal(-3m, movement.QuantityDelta);
+        Assert.Equal(cycleCount.Id, movement.CycleCountId);
+
+        var history = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryMovementResponse>>(
+            "/api/inventory/movements?type=CycleCountDecrease&reference=CC-2026-001&page=1&pageSize=20");
+        Assert.NotNull(history);
+        var historyItem = Assert.Single(history.Items.Where(item => item.CycleCountId == cycleCount.Id));
+        Assert.Equal("CC-2026-001", historyItem.CycleCountReference);
+
+        var list = await fixture.Client.GetFromJsonAsync<PagedResult<CycleCountListItemResponse>>(
+            "/api/inventory/cycle-counts?page=1&pageSize=20");
+        Assert.NotNull(list);
+        var listItem = Assert.Single(list.Items.Where(item => item.Id == cycleCount.Id));
+        Assert.Equal(1, listItem.LineCount);
+        Assert.Equal(1, listItem.VarianceLineCount);
+    }
+
+    [Fact]
+    public async Task Cycle_count_rejects_a_line_when_the_stock_snapshot_is_stale()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, warehouse.Id, 2m);
+        var candidate = await fixture.Client.GetFromJsonAsync<CycleCountCandidateResponse>(
+            $"/api/inventory/cycle-counts/candidate?warehouseId={warehouse.Id}&productId={product.Id}");
+
+        Assert.NotNull(candidate);
+        await IncreaseAsync(product.Id, warehouse.Id, 1m);
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/cycle-counts", new CycleCountInput(
+            warehouse.Id,
+            null,
+            null,
+            [new CycleCountLineInput(product.Id, candidate.SystemQuantityInBase, candidate.SystemBalanceVersion, "EA", 2m)]));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.InventoryCycleCountStaleBalance, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.InventoryCycleCountStaleBalance,
+            Assert.Single(problem.ErrorCodes!["Lines[0].SystemQuantityInBase"]));
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        Assert.False(await dbContext.CycleCounts.AnyAsync(count => count.WarehouseId == warehouse.Id));
+    }
+
+    [Fact]
+    public async Task Cycle_count_records_an_exact_count_without_a_zero_movement()
+    {
+        var product = await CreateProductAsync();
+        var warehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, warehouse.Id, 4m);
+        var candidate = await fixture.Client.GetFromJsonAsync<CycleCountCandidateResponse>(
+            $"/api/inventory/cycle-counts/candidate?warehouseId={warehouse.Id}&productId={product.Id}");
+
+        Assert.NotNull(candidate);
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/cycle-counts", new CycleCountInput(
+            warehouse.Id,
+            null,
+            null,
+            [new CycleCountLineInput(product.Id, candidate.SystemQuantityInBase, candidate.SystemBalanceVersion, "EA", 4m)]));
+
+        response.EnsureSuccessStatusCode();
+        var cycleCount = await response.Content.ReadFromJsonAsync<CycleCountDetailResponse>();
+        Assert.NotNull(cycleCount);
+        var line = Assert.Single(cycleCount.Lines);
+        Assert.Equal(0m, line.VarianceQuantityInBase);
+        Assert.Null(line.InventoryMovementId);
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        Assert.False(await dbContext.InventoryMovements.AnyAsync(movement => movement.CycleCountId == cycleCount.Id));
+    }
+
 
     private async Task<InventoryBalanceResponse> AdjustAsync(
         Guid productId,
@@ -262,6 +370,16 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         response.EnsureSuccessStatusCode();
 
         return (await response.Content.ReadFromJsonAsync<InventoryAdjustmentResponse>())!.Lines.Single();
+    }
+
+    private async Task IncreaseAsync(Guid productId, Guid warehouseId, decimal quantity)
+    {
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/adjustments", new
+        {
+            reason = InventoryAdjustmentReason.StockCorrection,
+            lines = new[] { new { productId, warehouseId, quantity, direction = InventoryAdjustmentDirection.Increase, unitOfMeasure = "EA" } }
+        });
+        response.EnsureSuccessStatusCode();
     }
 
     private async Task<InventoryAdjustmentResponse> CreateAdjustmentAsync(

@@ -78,6 +78,8 @@ export function SupplierCatalogueListPage() {
       {
         title: t("purchasing.catalogue.actions"),
         key: "actions",
+        fixed: "right",
+        width: 120,
         render: (_, item) => (
           <ReturnAwareLink to={purchasingRoutes.catalogueEdit(item.id)}>
             {t("purchasing.edit")}
@@ -192,6 +194,7 @@ export function SupplierCatalogueListPage() {
           loading={catalogue.isFetching}
           pagination={listQuery.toTablePagination(catalogue.data)}
           rowKey="id"
+          scroll={{ x: 1000 }}
         />
       ) : null}
     </ListPageLayout>

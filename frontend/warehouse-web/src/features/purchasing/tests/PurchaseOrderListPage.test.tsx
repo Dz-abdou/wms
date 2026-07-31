@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
-import { PurchaseOrderListPage } from "./PurchaseOrderListPage";
+import { PurchaseOrderListPage } from "../pages/PurchaseOrderListPage";
 
 const { usePurchaseOrdersMock, useSuppliersMock, useWarehousesMock } =
   vi.hoisted(() => ({

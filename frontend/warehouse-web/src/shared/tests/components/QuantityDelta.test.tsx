@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { QuantityDelta } from "./QuantityDelta";
+import { QuantityDelta } from "../../components/QuantityDelta";
 
 describe("QuantityDelta", () => {
   it("uses semantic direction styles for positive, negative, and zero values", () => {

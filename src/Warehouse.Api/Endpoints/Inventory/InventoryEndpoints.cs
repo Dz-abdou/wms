@@ -28,6 +28,18 @@ public static class InventoryEndpoints
         group.MapPost(InventoryApiRoutes.AdjustmentPath, AdjustAsync)
             .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
+        group.MapGet(InventoryApiRoutes.CycleCountPath, GetCycleCountsAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapGet(InventoryApiRoutes.CycleCountCandidatePath, GetCycleCountCandidateAsync)
+            .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
+        group.MapGet(InventoryApiRoutes.CycleCountByIdPath, GetCycleCountByIdAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapPost(InventoryApiRoutes.CycleCountPath, CreateCycleCountAsync)
+            .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
 
         return endpoints;
     }
@@ -77,4 +89,42 @@ public static class InventoryEndpoints
         InventoryService inventoryService,
         CancellationToken cancellationToken) =>
         Results.Ok(await inventoryService.GetAdjustmentByIdAsync(id, cancellationToken));
+
+    private static async Task<IResult> GetCycleCountsAsync(
+        [AsParameters] CycleCountListQuery query,
+        IValidator<CycleCountListQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetCycleCountsAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetCycleCountCandidateAsync(
+        [AsParameters] CycleCountCandidateQuery query,
+        IValidator<CycleCountCandidateQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetCycleCountCandidateAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetCycleCountByIdAsync(
+        Guid id,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await inventoryService.GetCycleCountByIdAsync(id, cancellationToken));
+
+    private static async Task<IResult> CreateCycleCountAsync(
+        CycleCountInput input,
+        IValidator<CycleCountInput> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(input, cancellationToken);
+        if (validationProblem is not null) return validationProblem;
+        var cycleCount = await inventoryService.CreateCycleCountAsync(input, cancellationToken);
+        return Results.Created($"{InventoryApiRoutes.CycleCountPath}/{cycleCount.Id}", cycleCount);
+    }
 }

@@ -26,6 +26,7 @@
     "inventoryOverview": "Inventory overview",
     "movementHistory": "Movement history",
     "adjustments": "Adjustments",
+    "cycleCounts": "Cycle counts",
     "users": "Users",
     "roles": "Roles",
     "masterData": "Master data",
@@ -110,7 +111,9 @@
       "admin.self_management_forbidden": "You cannot change your own account from this page.",
       "inventory.invalid_unit_of_measure": "This unit is not valid for the selected product.",
       "inventory.insufficient_stock": "The quantity exceeds available stock in {{warehouse}}. Available: {{availableQuantity}} {{baseUnitOfMeasure}}.",
-      "inventory.adjustment_not_found": "The inventory adjustment was not found."
+      "inventory.adjustment_not_found": "The inventory adjustment was not found.",
+      "inventory.cycle_count_not_found": "The cycle count was not found.",
+      "inventory.cycle_count_stale_balance": "Stock changed. Current system quantity is {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Reload this line."
     }
   },
   "products": {
@@ -586,7 +589,9 @@
     "types": {
       "increase": "Increase",
       "decrease": "Decrease",
-      "goodsReceipt": "Goods receipt"
+      "goodsReceipt": "Goods receipt",
+      "cycleCountIncrease": "Cycle count increase",
+      "cycleCountDecrease": "Cycle count decrease"
     },
     "reasons": {
       "StockCorrection": "Stock correction",
@@ -631,7 +636,32 @@
       "loadHistory": "Movement history could not be loaded.",
       "loadOverview": "Inventory overview could not be loaded.",
       "loadAdjustments": "Inventory adjustments could not be loaded.",
-      "loadAdjustment": "The inventory adjustment could not be loaded."
+      "loadAdjustment": "The inventory adjustment could not be loaded.",
+      "loadCountCandidate": "The current stock quantity could not be loaded.",
+      "createCycleCount": "The cycle count could not be posted.",
+      "loadCycleCounts": "Cycle counts could not be loaded.",
+      "loadCycleCount": "The cycle count could not be loaded."
+    },
+    "cycleCounts": {
+      "title": "Cycle counts",
+      "subtitle": "Record physical stock counts and automatically post only the resulting variances.",
+      "createTitle": "Record cycle count",
+      "createSubtitle": "Confirm the physical quantity for each selected product in one warehouse.",
+      "detailTitle": "Cycle count",
+      "document": "Cycle count",
+      "post": "Post cycle count",
+      "systemQuantity": "System quantity",
+      "reloadLine": "Reload",
+      "countedQuantity": "Counted quantity",
+      "countedQuantityRequired": "A counted quantity is required.",
+      "countedQuantityMinimum": "Counted quantity cannot be negative.",
+      "unit": "Unit",
+      "variance": "Variance",
+      "varianceLines": "Variance lines",
+      "countedAt": "Counted at",
+      "loading": "Loading cycle counts…",
+      "loadingOne": "Loading cycle count…",
+      "empty": "No cycle counts exist yet."
     }
   }
 }

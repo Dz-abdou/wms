@@ -26,6 +26,7 @@
     "inventoryOverview": "Vue d’ensemble du stock",
     "movementHistory": "Historique des mouvements",
     "adjustments": "Ajustements",
+    "cycleCounts": "Inventaires tournants",
     "users": "Utilisateurs",
     "roles": "Rôles",
     "masterData": "Données de base",
@@ -110,7 +111,9 @@
       "admin.self_management_forbidden": "Vous ne pouvez pas modifier votre propre compte depuis cette page.",
       "inventory.invalid_unit_of_measure": "Cette unité n’est pas valide pour le produit sélectionné.",
       "inventory.insufficient_stock": "La quantité dépasse le stock disponible dans {{warehouse}}. Disponible : {{availableQuantity}} {{baseUnitOfMeasure}}.",
-      "inventory.adjustment_not_found": "L’ajustement de stock est introuvable."
+      "inventory.adjustment_not_found": "L’ajustement de stock est introuvable.",
+      "inventory.cycle_count_not_found": "L’inventaire tournant est introuvable.",
+      "inventory.cycle_count_stale_balance": "Le stock a changé. La quantité système actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Rechargez cette ligne."
     }
   },
   "products": {
@@ -588,7 +591,9 @@
     "types": {
       "increase": "Entrée",
       "decrease": "Sortie",
-      "goodsReceipt": "Réception de marchandises"
+      "goodsReceipt": "Réception de marchandises",
+      "cycleCountIncrease": "Entrée d’inventaire tournant",
+      "cycleCountDecrease": "Sortie d’inventaire tournant"
     },
     "reasons": {
       "StockCorrection": "Correction de stock",
@@ -633,7 +638,32 @@
       "loadHistory": "L’historique des mouvements n’a pas pu être chargé.",
       "loadOverview": "La vue d’ensemble du stock n’a pas pu être chargée.",
       "loadAdjustments": "Les ajustements de stock n’ont pas pu être chargés.",
-      "loadAdjustment": "L’ajustement de stock n’a pas pu être chargé."
+      "loadAdjustment": "L’ajustement de stock n’a pas pu être chargé.",
+      "loadCountCandidate": "La quantité de stock actuelle n’a pas pu être chargée.",
+      "createCycleCount": "L’inventaire tournant n’a pas pu être validé.",
+      "loadCycleCounts": "Les inventaires tournants n’ont pas pu être chargés.",
+      "loadCycleCount": "L’inventaire tournant n’a pas pu être chargé."
+    },
+    "cycleCounts": {
+      "title": "Inventaires tournants",
+      "subtitle": "Enregistrez les comptages physiques et validez uniquement les écarts de stock.",
+      "createTitle": "Enregistrer un inventaire tournant",
+      "createSubtitle": "Confirmez la quantité physique de chaque produit sélectionné dans un seul entrepôt.",
+      "detailTitle": "Inventaire tournant",
+      "document": "Inventaire tournant",
+      "post": "Valider l’inventaire",
+      "systemQuantity": "Quantité système",
+      "reloadLine": "Recharger",
+      "countedQuantity": "Quantité comptée",
+      "countedQuantityRequired": "Une quantité comptée est obligatoire.",
+      "countedQuantityMinimum": "La quantité comptée ne peut pas être négative.",
+      "unit": "Unité",
+      "variance": "Écart",
+      "varianceLines": "Lignes avec écart",
+      "countedAt": "Compté le",
+      "loading": "Chargement des inventaires tournants…",
+      "loadingOne": "Chargement de l’inventaire tournant…",
+      "empty": "Aucun inventaire tournant n’existe encore."
     }
   }
 }

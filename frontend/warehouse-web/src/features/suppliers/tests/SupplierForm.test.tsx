@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../../../shared/api/apiClient";
 import { i18n } from "../../../shared/i18n/i18n";
-import { SupplierForm } from "./SupplierForm";
+import { SupplierForm } from "../components/SupplierForm";
 
 const { usePurchasingCurrenciesMock } = vi.hoisted(() => ({
   usePurchasingCurrenciesMock: vi.fn(),

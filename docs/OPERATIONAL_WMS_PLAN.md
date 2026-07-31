@@ -10,7 +10,7 @@ This is the business-design companion to [the implementation roadmap](ROADMAP.md
 
 Before an agent implements a phase, it must compare the relevant priority below with the current code and create or refresh the matching `docs/features/` specification. That specification records the approved vertical-slice boundary, exclusions, API contract, acceptance criteria, and tests. If this plan and a current feature specification differ, the conflict must be made explicit and resolved before code changes.
 
-**Current next business priority:** the purchase-order hardening and goods-receipt slices are complete. Implement Priority 4 incrementally, beginning with the read-only Inventory Overview described in `docs/features/inventory-overview.md`; do not combine it with cycle counts, transfers, reservations, or reorder planning.
+**Current next business priority:** the inventory overview, movement ledger, adjustment-document, and cycle-count slices are complete. Continue Priority 4 incrementally with an inter-warehouse transfer workflow; do not combine it with reservations or reorder planning.
 
 ## Guiding Decisions
 
@@ -24,19 +24,19 @@ Before an agent implements a phase, it must compare the relevant priority below 
    reason and a bounded lock lifecycle.
 5. Inventory movements are an append-only operational ledger. Each movement carries a source document and reason.
 6. Product master data stays pragmatic. Lot, expiry, serial, and bin controls are opt-in business capabilities rather than defaults.
-6. A business document is entered as a header plus a line table, not as a stack of repeated cards or form rows. The header owns shared fields; each line exposes only the inputs and operational context needed for that line.
-7. A multi-line inventory action is all-or-nothing. Its API validates all lines and writes all balances/movements in one database transaction; the frontend must never emulate a batch operation with sequential single-line requests.
+7. A business document is entered as a header plus a line table, not as a stack of repeated cards or form rows. The header owns shared fields; each line exposes only the inputs and operational context needed for that line.
+8. A multi-line inventory action is all-or-nothing. Its API validates all lines and writes all balances/movements in one database transaction; the frontend must never emulate a batch operation with sequential single-line requests.
 
 ## Transactional Form and Table Standard
 
 Apply this standard whenever a phase introduces purchase orders, receipts, orders, adjustments, counts, transfers, picks, shipments, or a repeatable product configuration such as UoM conversions.
 
-| Screen state | Required structure |
-|---|---|
-| Create/edit document | Header form, then editable Ant Design Table for lines. Use `Form.List` for dynamic line state and Ant Design form controls inside cells. |
-| Read-only detail | Header/summary, read-only line table, totals when applicable, and status/audit timeline for stateful documents. |
+| Screen state               | Required structure                                                                                                                                                                            |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create/edit document       | Header form, then editable Ant Design Table for lines. Use `Form.List` for dynamic line state and Ant Design form controls inside cells.                                                      |
+| Read-only detail           | Header/summary, read-only line table, totals when applicable, and status/audit timeline for stateful documents.                                                                               |
 | Multi-line stock operation | Header includes reason and optional reference/note; lines include product, warehouse/location when applicable, direction, UoM, and quantity. One API command commits or rejects the full set. |
-| UoM/package configuration | An editable table with UoM, base quantity, fractional-quantity rule, and remove action. |
+| UoM/package configuration  | An editable table with UoM, base quantity, fractional-quantity rule, and remove action.                                                                                                       |
 
 The line-table specification must identify its editable columns, read-only derived columns, remove/add behavior, validation, server errors, and how each selected line is constrained by master data. Typical context includes product/SKU, supplier SKU, UoM, MOQ, available/outstanding quantity, currency, unit price, and line amount. The reusable editable-table component exposes one full-width table-footer row with an accessible `+ Add line` action; the row action column remains reserved for actions on that row, such as Remove. It must not render a detached add button below the table or repeat the add action in every row.
 
@@ -54,6 +54,8 @@ Client validation should use the selected master-data context to prevent obvious
 Every create/edit page finishes with the shared form action bar: Cancel is left-aligned and returns to the relevant list or read-only detail route, while the primary Create/Save action is right-aligned. This is part of the page contract, not a feature-specific layout decision.
 
 Use horizontal scrolling for genuinely wide operational tables rather than hiding essential fields. High-volume selectors must use server-side search rather than a fixed first-page list. For stock operations, reject or explicitly consolidate duplicate product/warehouse lines and validate the projected final quantity before committing. Frontend tests must cover adding/removing a line, line validation, derived values, and failed atomic submissions; backend tests must prove no partial persistence on failure.
+
+Every table that exposes a row-level **Actions** column—including list, detail, and create/edit line tables—must keep that column fixed on the right with an explicit width. Its table must provide an explicit `scroll.x` width so the action remains reachable while the data columns scroll within the table wrapper. Tables without row actions do not need an empty Actions column.
 
 ## Application UI/UX Consistency Standard
 
@@ -78,6 +80,9 @@ The application must feel like one operational system rather than a collection o
   inside the table wrapper; it must never create a page-level horizontal
   scrollbar. Set an explicit Ant Design `scroll.x` width when a feature knows
   its operational columns, and retain the shared table-wrapper containment.
+- Every row-level Actions column is fixed to the right with an explicit width.
+  Apply this equally to list tables and editable/read-only line tables; do not
+  add an empty Actions column where a table has no row action.
 - Choose filters from the operational decision, not from every visible field. Initial guidance: Products—SKU/name and active/category; Warehouses—code/name and active; Suppliers—code/name and active; Categories/Currencies—code/name and active where applicable; Supplier Catalogue—supplier/product/status/currency; Purchase Orders—supplier/status and, after hardening, warehouse/date; Adjustments—reason/date/reference; Movement History—product/warehouse/type/reference/date; Users—email/role.
 - All copy, accessible labels, empty states, error states, and confirmation text use English/French translation keys.
 - Before frontend completion, audit direct translation-key use against both
@@ -85,6 +90,12 @@ The application must feel like one operational system rather than a collection o
 - Every changed frontend file is formatted with the repository formatter before
   review; linting is an additional verification step, not a substitute for
   formatting.
+- Feature-specific styles live in a CSS module beside the owning page or
+  component. Global `styles.css` is reserved for shared application layout,
+  reusable primitives, and responsive foundations.
+- Frontend tests never sit beside production pages, components, or API modules.
+  Store them in a dedicated directory matching ownership: `app/tests/`,
+  `shared/tests/<area>/`, or `features/<feature>/tests/`.
 
 ### Navigation and visual foundations
 
@@ -100,34 +111,34 @@ Every feature specification must state its page type, return target/fallback, ac
 
 ### Purchase Order Header
 
-| Field | Required | Reason |
-|---|---:|---|
-| `PurchaseOrderNumber` | Yes | Human-readable, unique document reference such as `PO-2026-000123`. |
-| `SupplierId` | Yes | Supplier account being ordered from. |
-| `DestinationWarehouseId` | Yes | Determines the intended receiving location. |
-| `CurrencyCode` | Yes | Enforces one currency and meaningful totals per order. |
-| `OrderDate` | Yes | Commercial document date. |
-| `ExpectedDeliveryDate` | No | Supports inbound planning and overdue reporting. |
-| `SupplierReference` | No | Supplier acknowledgement/reference number. |
-| `BuyerUserId` | Yes | Responsible purchaser. |
-| `Notes` | No | Delivery instructions or internal notes. |
-| `SubmittedAtUtc` | No | Records when the supplier-facing document became final. |
-| `Version` | Yes | Optimistic concurrency for draft edits. |
+| Field                    | Required | Reason                                                              |
+| ------------------------ | -------: | ------------------------------------------------------------------- |
+| `PurchaseOrderNumber`    |      Yes | Human-readable, unique document reference such as `PO-2026-000123`. |
+| `SupplierId`             |      Yes | Supplier account being ordered from.                                |
+| `DestinationWarehouseId` |      Yes | Determines the intended receiving location.                         |
+| `CurrencyCode`           |      Yes | Enforces one currency and meaningful totals per order.              |
+| `OrderDate`              |      Yes | Commercial document date.                                           |
+| `ExpectedDeliveryDate`   |       No | Supports inbound planning and overdue reporting.                    |
+| `SupplierReference`      |       No | Supplier acknowledgement/reference number.                          |
+| `BuyerUserId`            |      Yes | Responsible purchaser.                                              |
+| `Notes`                  |       No | Delivery instructions or internal notes.                            |
+| `SubmittedAtUtc`         |       No | Records when the supplier-facing document became final.             |
+| `Version`                |      Yes | Optimistic concurrency for draft edits.                             |
 
 ### Purchase Order Line
 
-| Field | Required | Reason |
-|---|---:|---|
-| `LineNumber` | Yes | Stable reference for supplier and receipt documents. |
-| `SupplierProductId` | Yes | Catalogue item selected at the time of ordering. |
-| Product SKU/name/supplier SKU | Yes | Immutable display snapshots. |
-| Purchase UoM | Yes | Unit ordered from the supplier. |
-| `QuantityInBaseUnit` | Yes | Immutable conversion factor; prevents later product-UoM edits from changing receipt quantity. |
-| `OrderedQuantity` / `OrderedQuantityInBaseUnit` | Yes | Original commitment in both document and stock units. |
-| `UnitPrice`, `CurrencyCode` | Yes | Commercial snapshot. |
-| `LineAmount` | Yes | Stored or deterministically calculated with documented rounding. |
-| `ReceivedQuantity` / `OutstandingQuantity` | Later Phase 5 | Enables partial receipt and over-receipt prevention. |
-| Line note | No | Supplier or receiving clarification. |
+| Field                                           |      Required | Reason                                                                                        |
+| ----------------------------------------------- | ------------: | --------------------------------------------------------------------------------------------- |
+| `LineNumber`                                    |           Yes | Stable reference for supplier and receipt documents.                                          |
+| `SupplierProductId`                             |           Yes | Catalogue item selected at the time of ordering.                                              |
+| Product SKU/name/supplier SKU                   |           Yes | Immutable display snapshots.                                                                  |
+| Purchase UoM                                    |           Yes | Unit ordered from the supplier.                                                               |
+| `QuantityInBaseUnit`                            |           Yes | Immutable conversion factor; prevents later product-UoM edits from changing receipt quantity. |
+| `OrderedQuantity` / `OrderedQuantityInBaseUnit` |           Yes | Original commitment in both document and stock units.                                         |
+| `UnitPrice`, `CurrencyCode`                     |           Yes | Commercial snapshot.                                                                          |
+| `LineAmount`                                    |           Yes | Stored or deterministically calculated with documented rounding.                              |
+| `ReceivedQuantity` / `OutstandingQuantity`      | Later Phase 5 | Enables partial receipt and over-receipt prevention.                                          |
+| Line note                                       |            No | Supplier or receiving clarification.                                                          |
 
 ### Status and Audit
 
@@ -261,13 +272,13 @@ Inbound stock is only useful when the warehouse can commit and issue it safely. 
 
 ### Customer Account
 
-| Field or relationship | Required | Reason |
-|---|---:|---|
-| `CustomerCode`, legal/trading name, status | Yes | Identifies the selling account and prevents new orders for blocked customers. |
-| Default currency and payment terms | No | Commercial defaults; accounting remains out of scope. |
-| `CustomerContact` records | No | Sales, delivery, and accounts contacts are normally different people. |
-| `CustomerAddress` records | Yes for an order | A customer may have multiple shipping and billing addresses; snapshot the selected address on the sales order. |
-| Delivery instructions and service notes | No | Supports gate, time-window, handling, and carrier instructions. |
+| Field or relationship                      |         Required | Reason                                                                                                         |
+| ------------------------------------------ | ---------------: | -------------------------------------------------------------------------------------------------------------- |
+| `CustomerCode`, legal/trading name, status |              Yes | Identifies the selling account and prevents new orders for blocked customers.                                  |
+| Default currency and payment terms         |               No | Commercial defaults; accounting remains out of scope.                                                          |
+| `CustomerContact` records                  |               No | Sales, delivery, and accounts contacts are normally different people.                                          |
+| `CustomerAddress` records                  | Yes for an order | A customer may have multiple shipping and billing addresses; snapshot the selected address on the sales order. |
+| Delivery instructions and service notes    |               No | Supports gate, time-window, handling, and carrier instructions.                                                |
 
 Do not make contact email or phone unique: shared inboxes, central switchboards, and a single contact serving more than one account are normal.
 
@@ -349,17 +360,17 @@ The purchase-order list should show number, supplier, status, order date, expect
 
 The supplier-catalogue list should expose supplier, product, status, and currency filters.
 
-| Screen | Essential information and actions |
-|---|---|
-| Product detail | UoMs/conversions, active state, supplier options, warehouse stock, movement shortcut, optional traceability controls. |
-| Inventory overview | On-hand, reserved, available, incoming, low-stock indicator; filter and drill down to movement history. |
-| Adjustment / count / transfer | Reason, source/destination, quantity in clear UoM, document reference, review/confirm action, and immutable result history. |
-| Goods receipt detail | PO progress, accepted/damaged/rejected quantity, delivery-note reference, receipt timeline, and printable receipt. |
-| Customer detail | Contacts, shipping addresses, sales-order history, active/blocked state, and delivery notes. |
-| Sales-order list/detail | Order number, customer, dates, status, allocation/pick/ship progress, shortages, address snapshot, and shipment links. |
-| Picking workspace | Warehouse/zone, product/location, requested and picked quantity, exception reason, and scan-friendly future layout. |
-| Shipment detail | Customer/address, carrier/tracking, lines and quantities, document timeline, confirm/cancel controls, and print/export action. |
-| Dashboard | A small set of queue counts with deep links; it is not a replacement for operational lists. |
+| Screen                        | Essential information and actions                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Product detail                | UoMs/conversions, active state, supplier options, warehouse stock, movement shortcut, optional traceability controls.          |
+| Inventory overview            | On-hand, reserved, available, incoming, low-stock indicator; filter and drill down to movement history.                        |
+| Adjustment / count / transfer | Reason, source/destination, quantity in clear UoM, document reference, review/confirm action, and immutable result history.    |
+| Goods receipt detail          | PO progress, accepted/damaged/rejected quantity, delivery-note reference, receipt timeline, and printable receipt.             |
+| Customer detail               | Contacts, shipping addresses, sales-order history, active/blocked state, and delivery notes.                                   |
+| Sales-order list/detail       | Order number, customer, dates, status, allocation/pick/ship progress, shortages, address snapshot, and shipment links.         |
+| Picking workspace             | Warehouse/zone, product/location, requested and picked quantity, exception reason, and scan-friendly future layout.            |
+| Shipment detail               | Customer/address, carrier/tracking, lines and quantities, document timeline, confirm/cancel controls, and print/export action. |
+| Dashboard                     | A small set of queue counts with deep links; it is not a replacement for operational lists.                                    |
 
 Every list page needs loading, empty, error, and success states; server-side pagination; stable saved/filterable query parameters; and URL-accessible filters where practical. Forms need a clear read-only view after submission, server validation shown beside fields, confirmation for irreversible actions, and translated error-code feedback.
 

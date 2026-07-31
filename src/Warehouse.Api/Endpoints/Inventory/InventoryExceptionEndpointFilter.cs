@@ -50,6 +50,26 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status404NotFound, "Inventory adjustment not found.", exception.Message, ApiErrorCodes.InventoryAdjustmentNotFound);
         }
+        catch (CycleCountNotFoundException exception)
+        {
+            return Problem(StatusCodes.Status404NotFound, "Cycle count not found.", exception.Message, ApiErrorCodes.InventoryCycleCountNotFound);
+        }
+        catch (CycleCountStaleBalanceException exception)
+        {
+            return Results.ValidationProblem(
+                errors: new Dictionary<string, string[]> { [exception.PropertyName] = [exception.Message] },
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Cycle count data is invalid.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = ApiErrorCodes.InventoryCycleCountStaleBalance,
+                    ["errorCodes"] = new Dictionary<string, string[]> { [exception.PropertyName] = [ApiErrorCodes.InventoryCycleCountStaleBalance] },
+                    ["errorParameters"] = new Dictionary<string, object?[]>
+                    {
+                        [exception.PropertyName] = [new { exception.CurrentQuantityInBase, exception.BaseUnitOfMeasure }]
+                    }
+                });
+        }
     }
 
     private static IResult Problem(int statusCode, string title, string detail, string code) => Results.Problem(

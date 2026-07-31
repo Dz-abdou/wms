@@ -48,6 +48,8 @@ export function SupplierListPage() {
       {
         title: t("suppliers.table.actions"),
         key: "actions",
+        fixed: "right",
+        width: 120,
         render: (_, supplier) => (
           <ReturnAwareLink to={supplierRoutes.detail(supplier.id)}>
             {t("suppliers.view")}
@@ -117,6 +119,7 @@ export function SupplierListPage() {
           loading={isFetching}
           pagination={listQuery.toTablePagination(data)}
           rowKey="id"
+          scroll={{ x: 800 }}
         />
       ) : null}
     </ListPageLayout>

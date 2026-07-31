@@ -43,6 +43,8 @@ export function WarehouseListPage() {
       {
         title: t("warehouses.table.actions"),
         key: "actions",
+        fixed: "right",
+        width: 120,
         render: (_, warehouse) => (
           <ReturnAwareLink to={warehouseRoutes.detail(warehouse.id)}>
             {t("warehouses.view")}
@@ -112,6 +114,7 @@ export function WarehouseListPage() {
           loading={isFetching}
           pagination={listQuery.toTablePagination(data)}
           rowKey="id"
+          scroll={{ x: 700 }}
         />
       ) : null}
     </ListPageLayout>

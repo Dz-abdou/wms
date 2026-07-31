@@ -1,0 +1,21 @@
+.systemQuantity {
+  position: relative;
+}
+
+.systemQuantityField {
+  min-width: 0;
+}
+
+.systemQuantityField :global(.ant-input-number) {
+  width: 112px;
+}
+
+.reloadButton {
+  left: 112px;
+  position: absolute;
+  top: 4px;
+}
+
+.reloadButton:not(:disabled) {
+  color: var(--ant-color-primary);
+}

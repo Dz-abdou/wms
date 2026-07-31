@@ -42,19 +42,23 @@ export function ApplicationLayout() {
                     : location.pathname.startsWith(inventoryRoutes.adjustments)
                       ? "inventory-adjustments"
                       : location.pathname.startsWith(
-                            inventoryRoutes.movementHistory,
-                          ) ||
-                          location.pathname.startsWith(inventoryRoutes.root)
-                        ? "inventory-movements"
+                            inventoryRoutes.cycleCounts,
+                          )
+                        ? "inventory-cycle-counts"
                         : location.pathname.startsWith(
-                              administrationRoutes.users,
-                            )
-                          ? "users"
+                              inventoryRoutes.movementHistory,
+                            ) ||
+                            location.pathname.startsWith(inventoryRoutes.root)
+                          ? "inventory-movements"
                           : location.pathname.startsWith(
-                                administrationRoutes.roles,
+                                administrationRoutes.users,
                               )
-                            ? "roles"
-                            : "home";
+                            ? "users"
+                            : location.pathname.startsWith(
+                                  administrationRoutes.roles,
+                                )
+                              ? "roles"
+                              : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -168,6 +172,14 @@ export function ApplicationLayout() {
                   label: (
                     <Link to={inventoryRoutes.adjustments}>
                       {t("navigation.adjustments")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "inventory-cycle-counts",
+                  label: (
+                    <Link to={inventoryRoutes.cycleCounts}>
+                      {t("navigation.cycleCounts")}
                     </Link>
                   ),
                 },

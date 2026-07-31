@@ -2,15 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
-import { InventoryMovementHistoryPage } from "./InventoryMovementHistoryPage";
+import { InventoryMovementHistoryPage } from "../pages/InventoryMovementHistoryPage";
 
-const { useProductsMock, useWarehousesMock, useMovementHistoryMock } = vi.hoisted(
-  () => ({
+const { useProductsMock, useWarehousesMock, useMovementHistoryMock } =
+  vi.hoisted(() => ({
     useProductsMock: vi.fn(),
     useWarehousesMock: vi.fn(),
     useMovementHistoryMock: vi.fn(),
-  }),
-);
+  }));
 
 vi.mock("../../products/api/useProducts", () => ({
   useProducts: useProductsMock,
@@ -52,7 +51,9 @@ describe("InventoryMovementHistoryPage", () => {
     expect(
       screen.getByRole("heading", { name: "Movement history" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("No inventory movements exist for this selection.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No inventory movements exist for this selection."),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Record adjustment" }),
     ).toBeInTheDocument();

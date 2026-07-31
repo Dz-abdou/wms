@@ -59,3 +59,49 @@ public sealed class InventoryOverviewQueryValidator : PagedRequestValidator<Inve
         RuleFor(query => query.Search).MaximumLength(200);
     }
 }
+
+public sealed class CycleCountInputValidator : AbstractValidator<CycleCountInput>
+{
+    public CycleCountInputValidator()
+    {
+        RuleFor(input => input.WarehouseId).NotEmpty();
+        RuleFor(input => input.Reference).MaximumLength(CycleCountRules.MaxReferenceLength);
+        RuleFor(input => input.Note).MaximumLength(CycleCountRules.MaxNoteLength);
+        RuleFor(input => input.Lines).NotEmpty();
+        RuleForEach(input => input.Lines).SetValidator(new CycleCountLineInputValidator());
+        RuleFor(input => input.Lines)
+            .Must(lines => lines.Select(line => line.ProductId).Distinct().Count() == lines.Count)
+            .WithMessage("Each product can appear only once in a cycle count.");
+    }
+}
+
+public sealed class CycleCountLineInputValidator : AbstractValidator<CycleCountLineInput>
+{
+    public CycleCountLineInputValidator()
+    {
+        RuleFor(input => input.ProductId).NotEmpty();
+        RuleFor(input => input.SystemQuantityInBase).GreaterThanOrEqualTo(0m);
+        RuleFor(input => input.SystemBalanceVersion).GreaterThanOrEqualTo(0);
+        RuleFor(input => input.CountedUnitOfMeasure).NotEmpty();
+        RuleFor(input => input.CountedQuantityInUnit).GreaterThanOrEqualTo(0m);
+    }
+}
+
+public sealed class CycleCountCandidateQueryValidator : AbstractValidator<CycleCountCandidateQuery>
+{
+    public CycleCountCandidateQueryValidator()
+    {
+        RuleFor(query => query.WarehouseId).NotEmpty();
+        RuleFor(query => query.ProductId).NotEmpty();
+    }
+}
+
+public sealed class CycleCountListQueryValidator : PagedRequestValidator<CycleCountListQuery>
+{
+    public CycleCountListQueryValidator()
+    {
+        RuleFor(query => query.Reference).MaximumLength(CycleCountRules.MaxReferenceLength);
+        RuleFor(query => query.ToUtc).GreaterThanOrEqualTo(query => query.FromUtc)
+            .When(query => query.FromUtc.HasValue && query.ToUtc.HasValue);
+    }
+}

@@ -46,6 +46,8 @@ export function ProductListPage() {
       {
         title: t("products.table.actions"),
         key: "actions",
+        fixed: "right",
+        width: 120,
         render: (_, product) => (
           <ReturnAwareLink to={productRoutes.detail(product.id)}>
             {t("products.view")}
@@ -128,6 +130,7 @@ export function ProductListPage() {
           loading={isFetching}
           pagination={listQuery.toTablePagination(data)}
           rowKey="id"
+          scroll={{ x: 700 }}
         />
       ) : null}
     </ListPageLayout>

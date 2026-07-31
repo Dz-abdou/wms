@@ -120,6 +120,9 @@ export function CurrencyListPage() {
             },
             {
               title: t("masterData.actions"),
+              key: "actions",
+              fixed: "right",
+              width: 280,
               render: (_, x) => (
                 <>
                   <ReturnAwareLink to={purchasingRoutes.currencyEdit(x.id)}>
@@ -149,6 +152,7 @@ export function CurrencyListPage() {
               ),
             },
           ]}
+          scroll={{ x: 940 }}
         />
       ) : null}
     </ListPageLayout>

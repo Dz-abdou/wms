@@ -73,6 +73,9 @@ export function ProductCategoryListPage() {
             { title: t("masterData.name"), dataIndex: "name" },
             {
               title: t("masterData.actions"),
+              key: "actions",
+              fixed: "right",
+              width: 120,
               render: (_, item) => (
                 <ReturnAwareLink to={productRoutes.categoryEdit(item.id)}>
                   {t("masterData.edit")}
@@ -80,6 +83,7 @@ export function ProductCategoryListPage() {
               ),
             },
           ]}
+          scroll={{ x: 600 }}
         />
       ) : null}
     </ListPageLayout>

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
-import { InventoryAdjustmentPage } from "./InventoryAdjustmentPage";
+import { InventoryAdjustmentPage } from "../pages/InventoryAdjustmentPage";
 
 const { useProductsMock, useWarehousesMock, useAdjustInventoryMock } =
   vi.hoisted(() => ({
