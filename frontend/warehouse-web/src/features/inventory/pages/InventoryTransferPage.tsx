@@ -149,9 +149,16 @@ export function InventoryTransferPage() {
             <Form.Item hidden name={[row.fieldName, "baseUnitOfMeasure"]}>
               <Input />
             </Form.Item>
-            {line?.availableQuantityInBase === undefined
-              ? "—"
-              : `${line.availableQuantityInBase} ${line.baseUnitOfMeasure}`}
+            <Input
+              aria-label={t("inventory.transfers.availableAtSource")}
+              disabled
+              placeholder="—"
+              value={
+                line?.availableQuantityInBase === undefined
+                  ? undefined
+                  : `${line.availableQuantityInBase} ${line.baseUnitOfMeasure}`
+              }
+            />
           </>
         );
       },

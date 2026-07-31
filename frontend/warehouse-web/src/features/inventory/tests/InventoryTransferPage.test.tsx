@@ -129,6 +129,6 @@ describe("InventoryTransferPage", () => {
     await user.click(screen.getByLabelText("Product"));
     await user.click(await screen.findByText("EA-001 — Eaches"));
 
-    expect(await screen.findByText("7 EA")).toBeInTheDocument();
+    expect(await screen.findByDisplayValue("7 EA")).toBeDisabled();
   }, 20_000);
 });
