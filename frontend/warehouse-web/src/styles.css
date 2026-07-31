@@ -182,24 +182,6 @@ body {
   margin-top: 24px;
 }
 
-.cycle-count-system-quantity {
-  align-items: center;
-  display: flex;
-  gap: 0;
-}
-
-.cycle-count-system-quantity .ant-form-item {
-  flex: none;
-}
-
-.cycle-count-system-quantity .ant-input-number {
-  width: 112px;
-}
-
-.cycle-count-system-quantity .ant-btn:not(:disabled) {
-  color: var(--ant-color-primary);
-}
-
 .quantity-delta {
   font-variant-numeric: tabular-nums;
   font-weight: 600;

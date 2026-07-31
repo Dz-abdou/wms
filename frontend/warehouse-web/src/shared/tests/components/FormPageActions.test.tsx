@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { FormEvent } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { FormPageActions } from "./FormPageActions";
+import { FormPageActions } from "../../components/FormPageActions";
 
 describe("FormPageActions", () => {
   it("places cancel and submit actions in the shared form footer", async () => {

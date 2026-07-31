@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
-import { InventoryOverviewPage } from "./InventoryOverviewPage";
+import { InventoryOverviewPage } from "../pages/InventoryOverviewPage";
 
 const {
   useProductCategoriesMock,

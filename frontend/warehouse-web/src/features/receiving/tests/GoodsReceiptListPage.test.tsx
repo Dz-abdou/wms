@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
-import { GoodsReceiptListPage } from "./GoodsReceiptListPage";
+import { GoodsReceiptListPage } from "../pages/GoodsReceiptListPage";
 
 const { useReceiptsMock, useWarehousesMock } = vi.hoisted(() => ({
   useReceiptsMock: vi.fn(),

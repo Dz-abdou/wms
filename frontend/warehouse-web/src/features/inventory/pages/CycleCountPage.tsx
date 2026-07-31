@@ -37,6 +37,7 @@ import {
   inventoryPageSize,
   inventoryRoutes,
 } from "../inventoryConstants";
+import styles from "./CycleCountPage.module.css";
 
 type CycleCountRow = object;
 
@@ -142,7 +143,7 @@ export function CycleCountPage() {
       key: "systemQuantity",
       width: 180,
       render: (_, row) => (
-        <div className="cycle-count-system-quantity">
+        <div className={styles.systemQuantity}>
           <Form.Item
             name={[row.fieldName, "systemQuantityInBase"]}
             style={{ marginBottom: 0 }}

@@ -1,0 +1,17 @@
+.systemQuantity {
+  align-items: center;
+  display: flex;
+  gap: 0;
+}
+
+.systemQuantity :global(.ant-form-item) {
+  flex: none;
+}
+
+.systemQuantity :global(.ant-input-number) {
+  width: 112px;
+}
+
+.systemQuantity :global(.ant-btn:not(:disabled)) {
+  color: var(--ant-color-primary);
+}

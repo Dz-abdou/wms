@@ -1,8 +1,8 @@
 import type { FormInstance } from "antd";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "../api/apiClient";
-import { i18n } from "../i18n/i18n";
-import { applyServerFieldErrors } from "./serverFieldErrors";
+import { ApiError } from "../../api/apiClient";
+import { i18n } from "../../i18n/i18n";
+import { applyServerFieldErrors } from "../../errors/serverFieldErrors";
 
 describe("applyServerFieldErrors", () => {
   beforeEach(async () => {

@@ -3,7 +3,7 @@ import {
   clearAccessToken,
   getAccessToken,
   refreshAccessToken,
-} from "./authApi";
+} from "../api/authApi";
 
 describe("refreshAccessToken", () => {
   afterEach(() => {

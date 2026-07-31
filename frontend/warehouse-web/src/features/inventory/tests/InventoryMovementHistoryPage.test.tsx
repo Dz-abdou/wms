@@ -2,13 +2,13 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { i18n } from "../../../shared/i18n/i18n";
-import { CycleCountPage } from "./CycleCountPage";
+import { InventoryMovementHistoryPage } from "../pages/InventoryMovementHistoryPage";
 
-const { useProductsMock, useWarehousesMock, useCreateCycleCountMock } =
+const { useProductsMock, useWarehousesMock, useMovementHistoryMock } =
   vi.hoisted(() => ({
     useProductsMock: vi.fn(),
     useWarehousesMock: vi.fn(),
-    useCreateCycleCountMock: vi.fn(),
+    useMovementHistoryMock: vi.fn(),
   }));
 
 vi.mock("../../products/api/useProducts", () => ({
@@ -18,10 +18,10 @@ vi.mock("../../warehouses/api/useWarehouses", () => ({
   useWarehouses: useWarehousesMock,
 }));
 vi.mock("../api/useInventory", () => ({
-  useCreateCycleCount: useCreateCycleCountMock,
+  useMovementHistory: useMovementHistoryMock,
 }));
 
-describe("CycleCountPage", () => {
+describe("InventoryMovementHistoryPage", () => {
   beforeEach(async () => {
     await i18n.changeLanguage("en");
     useProductsMock.mockReturnValue({
@@ -34,22 +34,28 @@ describe("CycleCountPage", () => {
       error: null,
       isLoading: false,
     });
-    useCreateCycleCountMock.mockReturnValue({
-      isPending: false,
-      mutateAsync: vi.fn(),
+    useMovementHistoryMock.mockReturnValue({
+      data: { items: [], page: 1, pageSize: 20, totalCount: 0 },
+      error: null,
+      isLoading: false,
     });
   });
 
-  it("requires a warehouse before count lines can be added", () => {
+  it("keeps history investigation separate from the adjustment workflow", () => {
     render(
       <MemoryRouter>
-        <CycleCountPage />
+        <InventoryMovementHistoryPage />
       </MemoryRouter>,
     );
 
     expect(
-      screen.getByRole("heading", { name: "Record cycle count" }),
+      screen.getByRole("heading", { name: "Movement history" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add line" })).toBeDisabled();
+    expect(
+      screen.getByText("No inventory movements exist for this selection."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Record adjustment" }),
+    ).toBeInTheDocument();
   });
 });

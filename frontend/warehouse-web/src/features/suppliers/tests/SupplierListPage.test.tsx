@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
-import { SupplierListPage } from "./SupplierListPage";
+import { SupplierListPage } from "../pages/SupplierListPage";
 
 const { useSuppliersMock } = vi.hoisted(() => ({ useSuppliersMock: vi.fn() }));
 
@@ -29,7 +29,11 @@ describe("SupplierListPage", () => {
       isFetching: false,
       isLoading: false,
     });
-    rerender(<MemoryRouter><SupplierListPage /></MemoryRouter>);
+    rerender(
+      <MemoryRouter>
+        <SupplierListPage />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("No suppliers exist yet.")).toBeInTheDocument();
 
     useSuppliersMock.mockReturnValue({
@@ -38,22 +42,30 @@ describe("SupplierListPage", () => {
       isFetching: false,
       isLoading: false,
     });
-    rerender(<MemoryRouter><SupplierListPage /></MemoryRouter>);
-    expect(screen.getByText("Suppliers could not be loaded.")).toBeInTheDocument();
+    rerender(
+      <MemoryRouter>
+        <SupplierListPage />
+      </MemoryRouter>,
+    );
+    expect(
+      screen.getByText("Suppliers could not be loaded."),
+    ).toBeInTheDocument();
 
     useSuppliersMock.mockReturnValue({
       data: {
-        items: [{
-          id: "a",
-          code: "ACME-01",
-          name: "Acme Supplies",
-          email: null,
-          phoneNumber: null,
-          address: null,
-          isActive: true,
-          createdAtUtc: "2026-07-25T10:00:00Z",
-          updatedAtUtc: "2026-07-25T10:00:00Z",
-        }],
+        items: [
+          {
+            id: "a",
+            code: "ACME-01",
+            name: "Acme Supplies",
+            email: null,
+            phoneNumber: null,
+            address: null,
+            isActive: true,
+            createdAtUtc: "2026-07-25T10:00:00Z",
+            updatedAtUtc: "2026-07-25T10:00:00Z",
+          },
+        ],
         page: 1,
         pageSize: 20,
         totalCount: 1,
@@ -62,11 +74,19 @@ describe("SupplierListPage", () => {
       isFetching: false,
       isLoading: false,
     });
-    rerender(<MemoryRouter><SupplierListPage /></MemoryRouter>);
+    rerender(
+      <MemoryRouter>
+        <SupplierListPage />
+      </MemoryRouter>,
+    );
     expect(screen.getByText("ACME-01")).toBeInTheDocument();
   });
 });
 
 function renderPage() {
-  return render(<MemoryRouter><SupplierListPage /></MemoryRouter>);
+  return render(
+    <MemoryRouter>
+      <SupplierListPage />
+    </MemoryRouter>,
+  );
 }

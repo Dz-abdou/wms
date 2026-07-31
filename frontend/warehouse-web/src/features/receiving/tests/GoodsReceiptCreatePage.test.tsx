@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { ApiError } from "../../../shared/api/apiClient";
-import { GoodsReceiptCreatePage } from "./GoodsReceiptCreatePage";
+import { GoodsReceiptCreatePage } from "../pages/GoodsReceiptCreatePage";
 
 const {
   createReceiptMock,
