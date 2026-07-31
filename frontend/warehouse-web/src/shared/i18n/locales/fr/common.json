@@ -115,7 +115,8 @@
       "inventory.adjustment_not_found": "L’ajustement de stock est introuvable.",
       "inventory.cycle_count_not_found": "L’inventaire tournant est introuvable.",
       "inventory.cycle_count_stale_balance": "Le stock a changé. La quantité système actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Rechargez cette ligne.",
-      "inventory.transfer_not_found": "Le transfert de stock est introuvable."
+      "inventory.transfer_not_found": "Le transfert de stock est introuvable.",
+      "inventory.transfer_stale_balance": "Le stock source a changé. La disponibilité actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}} dans {{warehouse}}. Rechargez cette ligne."
     }
   },
   "products": {
@@ -686,6 +687,7 @@
       "sourceRequired": "Un entrepôt source est obligatoire.",
       "destinationRequired": "Un entrepôt de destination est obligatoire.",
       "availableAtSource": "Disponible à la source",
+      "reloadLine": "Recharger la disponibilité",
       "quantity": "Quantité à transférer",
       "baseQuantity": "Quantité de base",
       "sourceBalanceAfter": "Stock source après transfert",

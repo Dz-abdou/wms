@@ -56,6 +56,8 @@ public sealed class InventoryTransferLineInputValidator : AbstractValidator<Inve
         RuleFor(input => input.ProductId).NotEmpty();
         RuleFor(input => input.Quantity).GreaterThan(0m);
         RuleFor(input => input.UnitOfMeasure).NotEmpty();
+        RuleFor(input => input.SourceQuantityInBase).GreaterThanOrEqualTo(0m);
+        RuleFor(input => input.SourceBalanceVersion).GreaterThanOrEqualTo(0);
     }
 }
 

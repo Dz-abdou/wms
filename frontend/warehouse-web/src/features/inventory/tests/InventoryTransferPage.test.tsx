@@ -110,6 +110,7 @@ describe("InventoryTransferPage", () => {
       availableQuantityInBase: 7,
       baseUnitOfMeasure: "EA",
       productId: "product-1",
+      sourceBalanceVersion: 4,
     });
 
     render(

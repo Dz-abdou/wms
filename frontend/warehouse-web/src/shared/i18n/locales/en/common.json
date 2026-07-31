@@ -115,7 +115,8 @@
       "inventory.adjustment_not_found": "The inventory adjustment was not found.",
       "inventory.cycle_count_not_found": "The cycle count was not found.",
       "inventory.cycle_count_stale_balance": "Stock changed. Current system quantity is {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Reload this line.",
-      "inventory.transfer_not_found": "The inventory transfer was not found."
+      "inventory.transfer_not_found": "The inventory transfer was not found.",
+      "inventory.transfer_stale_balance": "Source stock changed. Current availability is {{currentQuantityInBase}} {{baseUnitOfMeasure}} in {{warehouse}}. Reload this line."
     }
   },
   "products": {
@@ -684,6 +685,7 @@
       "sourceRequired": "A source warehouse is required.",
       "destinationRequired": "A destination warehouse is required.",
       "availableAtSource": "Available at source",
+      "reloadLine": "Reload availability",
       "quantity": "Transfer quantity",
       "baseQuantity": "Base quantity",
       "sourceBalanceAfter": "Source balance after",

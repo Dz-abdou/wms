@@ -362,13 +362,21 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         var sourceWarehouse = await CreateWarehouseAsync();
         var destinationWarehouse = await CreateWarehouseAsync();
         await IncreaseAsync(product.Id, sourceWarehouse.Id, 10m);
+        var candidate = await fixture.Client.GetFromJsonAsync<InventoryTransferCandidateResponse>(
+            $"/api/inventory/transfers/candidate?sourceWarehouseId={sourceWarehouse.Id}&productId={product.Id}");
+        Assert.NotNull(candidate);
 
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/transfers", new InventoryTransferInput(
             sourceWarehouse.Id,
             destinationWarehouse.Id,
             "TR-2026-001",
             "Replenish the destination warehouse",
-            [new InventoryTransferLineInput(product.Id, 3m, "EA")]));
+            [new InventoryTransferLineInput(
+                product.Id,
+                3m,
+                "EA",
+                candidate.AvailableQuantityInBase,
+                candidate.SourceBalanceVersion)]));
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var transfer = await response.Content.ReadFromJsonAsync<InventoryTransferDetailResponse>();
@@ -417,6 +425,12 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         var sourceWarehouse = await CreateWarehouseAsync();
         var destinationWarehouse = await CreateWarehouseAsync();
         await IncreaseAsync(stockedProduct.Id, sourceWarehouse.Id, 2m);
+        var stockedCandidate = await fixture.Client.GetFromJsonAsync<InventoryTransferCandidateResponse>(
+            $"/api/inventory/transfers/candidate?sourceWarehouseId={sourceWarehouse.Id}&productId={stockedProduct.Id}");
+        var unavailableCandidate = await fixture.Client.GetFromJsonAsync<InventoryTransferCandidateResponse>(
+            $"/api/inventory/transfers/candidate?sourceWarehouseId={sourceWarehouse.Id}&productId={unavailableProduct.Id}");
+        Assert.NotNull(stockedCandidate);
+        Assert.NotNull(unavailableCandidate);
 
         var response = await fixture.Client.PostAsJsonAsync("/api/inventory/transfers", new InventoryTransferInput(
             sourceWarehouse.Id,
@@ -424,8 +438,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             null,
             null,
             [
-                new InventoryTransferLineInput(stockedProduct.Id, 1m, "EA"),
-                new InventoryTransferLineInput(unavailableProduct.Id, 1m, "EA")
+                new InventoryTransferLineInput(stockedProduct.Id, 1m, "EA", stockedCandidate.AvailableQuantityInBase, stockedCandidate.SourceBalanceVersion),
+                new InventoryTransferLineInput(unavailableProduct.Id, 1m, "EA", unavailableCandidate.AvailableQuantityInBase, unavailableCandidate.SourceBalanceVersion)
             ]));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
@@ -442,9 +456,52 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             balance.ProductId == stockedProduct.Id && balance.WarehouseId == sourceWarehouse.Id);
         Assert.Equal(2m, sourceBalance.Quantity);
         Assert.False(await dbContext.InventoryBalances.AnyAsync(balance => balance.WarehouseId == destinationWarehouse.Id));
-        Assert.False(await dbContext.InventoryTransfers.AnyAsync());
+        Assert.False(await dbContext.InventoryTransfers.AnyAsync(transfer =>
+            transfer.SourceWarehouseId == sourceWarehouse.Id &&
+            transfer.DestinationWarehouseId == destinationWarehouse.Id));
         Assert.False(await dbContext.InventoryMovements.AnyAsync(movement =>
             movement.InventoryTransferId != null));
+    }
+
+    [Fact]
+    public async Task Transfer_requires_reloading_a_source_balance_that_changed_after_loading()
+    {
+        var product = await CreateProductAsync();
+        var sourceWarehouse = await CreateWarehouseAsync();
+        var destinationWarehouse = await CreateWarehouseAsync();
+        await IncreaseAsync(product.Id, sourceWarehouse.Id, 4m);
+        var candidate = await fixture.Client.GetFromJsonAsync<InventoryTransferCandidateResponse>(
+            $"/api/inventory/transfers/candidate?sourceWarehouseId={sourceWarehouse.Id}&productId={product.Id}");
+        Assert.NotNull(candidate);
+        await IncreaseAsync(product.Id, sourceWarehouse.Id, 1m);
+
+        var response = await fixture.Client.PostAsJsonAsync("/api/inventory/transfers", new InventoryTransferInput(
+            sourceWarehouse.Id,
+            destinationWarehouse.Id,
+            null,
+            null,
+            [new InventoryTransferLineInput(
+                product.Id,
+                2m,
+                "EA",
+                candidate.AvailableQuantityInBase,
+                candidate.SourceBalanceVersion)]));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var problem = await response.Content.ReadFromJsonAsync<ProblemResponse>();
+        Assert.NotNull(problem);
+        Assert.Equal(ApiErrorCodes.InventoryTransferStaleBalance, problem.Code);
+        Assert.Equal(
+            ApiErrorCodes.InventoryTransferStaleBalance,
+            Assert.Single(problem.ErrorCodes!["Lines[0].Quantity"]));
+
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        Assert.False(await dbContext.InventoryTransfers.AnyAsync(transfer =>
+            transfer.SourceWarehouseId == sourceWarehouse.Id &&
+            transfer.DestinationWarehouseId == destinationWarehouse.Id));
+        Assert.False(await dbContext.InventoryMovements.AnyAsync(movement =>
+            movement.InventoryTransferId != null && movement.ProductId == product.Id));
     }
 
     private async Task<InventoryBalanceResponse> AdjustAsync(

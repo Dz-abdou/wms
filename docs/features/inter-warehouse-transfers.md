@@ -27,7 +27,7 @@ Let an inventory operator move stock between two active warehouses while preserv
 
 1. A transfer has one active source warehouse and one different active destination warehouse.
 2. Each product appears at most once in a transfer, and quantity must be positive in a valid product UoM.
-3. The command converts the entered quantity to the product base UoM, validates sufficient source stock, then atomically applies the source decrease and destination increase.
+3. Loading a product line snapshots the source balance quantity/version. Posting rechecks that snapshot before converting the entered quantity and applying the source decrease/destination increase. A changed source balance is a localized field error on that line; the operator reloads its availability before posting again.
 4. Every successful transfer line creates exactly two linked inventory movements: `TransferOut` and `TransferIn`. They share the transfer ID and use the same base quantity/UoM.
 5. A failure on any line, including insufficient source stock, invalid UoM, inactive master data, or a concurrency conflict, rolls back the entire document, both balances, and all movements.
 6. The transfer document and its lines are immutable after posting. The first release is immediately completed; a later phase may add in-transit receipt states without changing these posted snapshots.
@@ -68,5 +68,6 @@ Let an inventory operator move stock between two active warehouses while preserv
 - [ ] Post a transfer and verify the source quantity decreases while the destination quantity increases by exactly the same base quantity.
 - [ ] Open the transfer detail and confirm the reference, both warehouses, quantity, and resulting balances are preserved.
 - [ ] Open movement history, filter by **Transfer out** or **Transfer in**, and confirm both rows link back to the transfer document.
+- [ ] Change source stock after loading a transfer line; confirm the quantity cell shows the localized stale-stock error, reload availability, then post successfully.
 - [ ] Attempt to transfer more than the available source stock; confirm the quantity cell shows the localized error and no balances or transfer document change.
 - [ ] Switch the source or destination warehouse after adding lines; confirm the lines reset before posting.

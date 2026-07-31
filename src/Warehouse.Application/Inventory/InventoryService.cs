@@ -158,7 +158,18 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
 
                     var sourceBalance = await dbContext.InventoryBalances.SingleOrDefaultAsync(balance =>
                         balance.ProductId == product.Id && balance.WarehouseId == sourceWarehouse.Id, token);
-                    if (sourceBalance is null || sourceBalance.Quantity < quantityInBaseUnit)
+                    var sourceQuantity = sourceBalance?.Quantity ?? 0m;
+                    var sourceVersion = sourceBalance?.Version ?? 0;
+                    if (sourceQuantity != inputLine.SourceQuantityInBase ||
+                        sourceVersion != inputLine.SourceBalanceVersion)
+                    {
+                        throw new InventoryTransferStaleBalanceException(
+                            lineIndex,
+                            sourceQuantity,
+                            product.BaseUnitOfMeasure,
+                            $"{sourceWarehouse.Code} — {sourceWarehouse.Name}");
+                    }
+                    if (sourceBalance is null || sourceQuantity < quantityInBaseUnit)
                     {
                         throw new InsufficientInventoryException(
                             lineIndex,
@@ -271,7 +282,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         return new InventoryTransferCandidateResponse(
             product.Id,
             product.BaseUnitOfMeasure,
-            balance?.Quantity ?? 0m);
+            balance?.Quantity ?? 0m,
+            balance?.Version ?? 0);
     }
 
     public async Task<PagedResult<InventoryTransferListItemResponse>> GetTransfersAsync(

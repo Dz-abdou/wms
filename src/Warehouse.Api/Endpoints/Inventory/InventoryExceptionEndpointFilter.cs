@@ -58,6 +58,31 @@ public sealed class InventoryExceptionEndpointFilter : IEndpointFilter
         {
             return Problem(StatusCodes.Status404NotFound, "Inventory transfer not found.", exception.Message, ApiErrorCodes.InventoryTransferNotFound);
         }
+        catch (InventoryTransferStaleBalanceException exception)
+        {
+            return Results.ValidationProblem(
+                errors: new Dictionary<string, string[]> { [exception.PropertyName] = [exception.Message] },
+                statusCode: StatusCodes.Status422UnprocessableEntity,
+                title: "Inventory transfer data is invalid.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = ApiErrorCodes.InventoryTransferStaleBalance,
+                    ["errorCodes"] = new Dictionary<string, string[]>
+                    {
+                        [exception.PropertyName] = [ApiErrorCodes.InventoryTransferStaleBalance]
+                    },
+                    ["errorParameters"] = new Dictionary<string, object?[]>
+                    {
+                        [exception.PropertyName] =
+                        [new
+                        {
+                            exception.CurrentQuantityInBase,
+                            exception.BaseUnitOfMeasure,
+                            exception.Warehouse
+                        }]
+                    }
+                });
+        }
         catch (CycleCountStaleBalanceException exception)
         {
             return Results.ValidationProblem(

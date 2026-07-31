@@ -27,7 +27,9 @@ public sealed record InventoryAdjustmentInput(
 public sealed record InventoryTransferLineInput(
     Guid ProductId,
     decimal Quantity,
-    string? UnitOfMeasure);
+    string? UnitOfMeasure,
+    decimal SourceQuantityInBase,
+    int SourceBalanceVersion);
 
 public sealed record InventoryTransferInput(
     Guid SourceWarehouseId,
@@ -43,7 +45,8 @@ public sealed record InventoryTransferCandidateQuery(
 public sealed record InventoryTransferCandidateResponse(
     Guid ProductId,
     string BaseUnitOfMeasure,
-    decimal AvailableQuantityInBase);
+    decimal AvailableQuantityInBase,
+    int SourceBalanceVersion);
 
 public sealed record InventoryBalanceResponse(
     Guid ProductId,

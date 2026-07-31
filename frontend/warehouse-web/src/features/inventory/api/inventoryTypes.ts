@@ -229,6 +229,8 @@ export type InventoryTransferLineInput = {
   productId: string;
   quantity: number;
   unitOfMeasure: string;
+  sourceQuantityInBase: number;
+  sourceBalanceVersion: number;
 };
 
 export type InventoryTransferInput = {
@@ -243,6 +245,7 @@ export type InventoryTransferCandidate = {
   productId: string;
   baseUnitOfMeasure: string;
   availableQuantityInBase: number;
+  sourceBalanceVersion: number;
 };
 
 export type InventoryTransferListQuery = {

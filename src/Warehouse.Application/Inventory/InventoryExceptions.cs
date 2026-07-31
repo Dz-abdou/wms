@@ -40,6 +40,22 @@ public sealed class CycleCountNotFoundException(Guid cycleCountId)
 public sealed class InventoryTransferNotFoundException(Guid inventoryTransferId)
     : Exception($"Inventory transfer '{inventoryTransferId}' was not found.");
 
+public sealed class InventoryTransferStaleBalanceException(
+    int lineIndex,
+    decimal currentQuantityInBase,
+    string baseUnitOfMeasure,
+    string warehouse)
+    : Exception("Source inventory changed after this transfer line was loaded.")
+{
+    public string PropertyName => $"Lines[{lineIndex}].Quantity";
+
+    public decimal CurrentQuantityInBase { get; } = currentQuantityInBase;
+
+    public string BaseUnitOfMeasure { get; } = baseUnitOfMeasure;
+
+    public string Warehouse { get; } = warehouse;
+}
+
 public sealed class CycleCountStaleBalanceException(
     int lineIndex,
     decimal currentQuantityInBase,

@@ -6,8 +6,11 @@ import {
   Input,
   InputNumber,
   Select,
+  Space,
   Spin,
+  Tooltip,
 } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +40,6 @@ import {
 } from "../inventoryConstants";
 
 type TransferFormLine = InventoryTransferLineInput & {
-  availableQuantityInBase?: number;
   baseUnitOfMeasure?: string;
 };
 type TransferFormInput = Omit<InventoryTransferInput, "lines"> & {
@@ -80,13 +82,18 @@ export function InventoryTransferPage() {
       );
       form.setFields([
         {
-          name: ["lines", rowIndex, "availableQuantityInBase"],
+          name: ["lines", rowIndex, "sourceQuantityInBase"],
           value: candidate.availableQuantityInBase,
           errors: [],
         },
         {
           name: ["lines", rowIndex, "baseUnitOfMeasure"],
           value: candidate.baseUnitOfMeasure,
+          errors: [],
+        },
+        {
+          name: ["lines", rowIndex, "sourceBalanceVersion"],
+          value: candidate.sourceBalanceVersion,
           errors: [],
         },
         {
@@ -143,22 +150,39 @@ export function InventoryTransferPage() {
         const line = lines[row.fieldName];
         return (
           <>
-            <Form.Item hidden name={[row.fieldName, "availableQuantityInBase"]}>
+            <Form.Item hidden name={[row.fieldName, "sourceQuantityInBase"]}>
               <Input />
             </Form.Item>
             <Form.Item hidden name={[row.fieldName, "baseUnitOfMeasure"]}>
               <Input />
             </Form.Item>
-            <Input
-              aria-label={t("inventory.transfers.availableAtSource")}
-              disabled
-              placeholder="—"
-              value={
-                line?.availableQuantityInBase === undefined
-                  ? undefined
-                  : `${line.availableQuantityInBase} ${line.baseUnitOfMeasure}`
-              }
-            />
+            <Form.Item hidden name={[row.fieldName, "sourceBalanceVersion"]}>
+              <Input />
+            </Form.Item>
+            <Space.Compact block>
+              <Input
+                aria-label={t("inventory.transfers.availableAtSource")}
+                disabled
+                placeholder="—"
+                value={
+                  line?.sourceQuantityInBase === undefined
+                    ? undefined
+                    : `${line.sourceQuantityInBase} ${line.baseUnitOfMeasure}`
+                }
+              />
+              <Tooltip title={t("inventory.transfers.reloadLine")}>
+                <Button
+                  aria-label={t("inventory.transfers.reloadLine")}
+                  disabled={!line?.productId}
+                  icon={<ReloadOutlined />}
+                  onClick={() => {
+                    if (line?.productId) {
+                      void loadAvailability(row.fieldName, line.productId);
+                    }
+                  }}
+                />
+              </Tooltip>
+            </Space.Compact>
           </>
         );
       },
@@ -230,11 +254,21 @@ export function InventoryTransferPage() {
   async function submit(input: TransferFormInput) {
     const transferInput: InventoryTransferInput = {
       ...input,
-      lines: input.lines.map(({ productId, quantity, unitOfMeasure }) => ({
-        productId,
-        quantity,
-        unitOfMeasure,
-      })),
+      lines: input.lines.map(
+        ({
+          productId,
+          quantity,
+          unitOfMeasure,
+          sourceQuantityInBase,
+          sourceBalanceVersion,
+        }) => ({
+          productId,
+          quantity,
+          unitOfMeasure,
+          sourceQuantityInBase,
+          sourceBalanceVersion,
+        }),
+      ),
     };
     try {
       const result = await createTransfer.mutateAsync(transferInput);
