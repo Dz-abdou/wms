@@ -10,6 +10,7 @@ public sealed class InventoryMovement : PersistentEntity
         Guid? inventoryAdjustmentId,
         Guid? goodsReceiptId,
         Guid? cycleCountId,
+        Guid? inventoryTransferId,
         Guid productId,
         Guid warehouseId,
         InventoryMovementType type,
@@ -26,6 +27,7 @@ public sealed class InventoryMovement : PersistentEntity
         InventoryAdjustmentId = inventoryAdjustmentId;
         GoodsReceiptId = goodsReceiptId;
         CycleCountId = cycleCountId;
+        InventoryTransferId = inventoryTransferId;
         ProductId = productId;
         WarehouseId = warehouseId;
         Type = type;
@@ -42,6 +44,8 @@ public sealed class InventoryMovement : PersistentEntity
     public Guid? GoodsReceiptId { get; private set; }
 
     public Guid? CycleCountId { get; private set; }
+
+    public Guid? InventoryTransferId { get; private set; }
 
     public Guid WarehouseId { get; private set; }
 
@@ -83,6 +87,7 @@ public sealed class InventoryMovement : PersistentEntity
             inventoryAdjustmentId,
             null,
             null,
+            null,
             productId,
             warehouseId,
             quantityDelta > 0m ? InventoryMovementType.ManualIncrease : InventoryMovementType.ManualDecrease,
@@ -114,6 +119,7 @@ public sealed class InventoryMovement : PersistentEntity
             Guid.NewGuid(),
             null,
             goodsReceiptId,
+            null,
             null,
             productId,
             warehouseId,
@@ -154,6 +160,7 @@ public sealed class InventoryMovement : PersistentEntity
             null,
             null,
             cycleCountId,
+            null,
             productId,
             warehouseId,
             quantityDelta > 0m
@@ -165,6 +172,91 @@ public sealed class InventoryMovement : PersistentEntity
             balanceAfter,
             countedAtUtc,
             countedAtUtc,
+            actorUserId,
+            actorUserId);
+    }
+
+    public static InventoryMovement CreateTransferOut(
+        Guid inventoryTransferId,
+        Guid productId,
+        Guid warehouseId,
+        string? unitOfMeasure,
+        decimal quantityInUnit,
+        decimal quantityInBaseUnit,
+        decimal balanceAfter,
+        DateTime transferredAtUtc,
+        Guid? actorUserId = null) =>
+        CreateTransferMovement(
+            inventoryTransferId,
+            productId,
+            warehouseId,
+            unitOfMeasure,
+            -quantityInUnit,
+            -quantityInBaseUnit,
+            balanceAfter,
+            transferredAtUtc,
+            actorUserId,
+            InventoryMovementType.TransferOut);
+
+    public static InventoryMovement CreateTransferIn(
+        Guid inventoryTransferId,
+        Guid productId,
+        Guid warehouseId,
+        string? unitOfMeasure,
+        decimal quantityInUnit,
+        decimal quantityInBaseUnit,
+        decimal balanceAfter,
+        DateTime transferredAtUtc,
+        Guid? actorUserId = null) =>
+        CreateTransferMovement(
+            inventoryTransferId,
+            productId,
+            warehouseId,
+            unitOfMeasure,
+            quantityInUnit,
+            quantityInBaseUnit,
+            balanceAfter,
+            transferredAtUtc,
+            actorUserId,
+            InventoryMovementType.TransferIn);
+
+    private static InventoryMovement CreateTransferMovement(
+        Guid inventoryTransferId,
+        Guid productId,
+        Guid warehouseId,
+        string? unitOfMeasure,
+        decimal quantityDeltaInUnit,
+        decimal quantityDelta,
+        decimal balanceAfter,
+        DateTime transferredAtUtc,
+        Guid? actorUserId,
+        InventoryMovementType type)
+    {
+        if (inventoryTransferId == Guid.Empty || quantityDeltaInUnit == 0m || quantityDelta == 0m)
+        {
+            throw new ArgumentOutOfRangeException(nameof(quantityDelta));
+        }
+
+        if ((quantityDeltaInUnit < 0m) != (quantityDelta < 0m))
+        {
+            throw new ArgumentException("Quantity deltas must have the same direction.", nameof(quantityDeltaInUnit));
+        }
+
+        return new InventoryMovement(
+            Guid.NewGuid(),
+            null,
+            null,
+            null,
+            inventoryTransferId,
+            productId,
+            warehouseId,
+            type,
+            ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure),
+            quantityDeltaInUnit,
+            quantityDelta,
+            balanceAfter,
+            transferredAtUtc,
+            transferredAtUtc,
             actorUserId,
             actorUserId);
     }

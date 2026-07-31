@@ -6,5 +6,7 @@ public enum InventoryMovementType
     ManualDecrease,
     GoodsReceipt,
     CycleCountIncrease,
-    CycleCountDecrease
+    CycleCountDecrease,
+    TransferOut,
+    TransferIn
 }

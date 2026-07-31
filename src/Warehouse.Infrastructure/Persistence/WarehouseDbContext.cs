@@ -43,6 +43,10 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 
     public DbSet<CycleCountLine> CycleCountLines => Set<CycleCountLine>();
 
+    public DbSet<InventoryTransfer> InventoryTransfers => Set<InventoryTransfer>();
+
+    public DbSet<InventoryTransferLine> InventoryTransferLines => Set<InventoryTransferLine>();
+
     public DbSet<InventoryMovement> InventoryMovements => Set<InventoryMovement>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

@@ -24,6 +24,10 @@ public interface IWarehouseDbContext
     DbSet<CycleCount> CycleCounts { get; }
 
     DbSet<CycleCountLine> CycleCountLines { get; }
+
+    DbSet<InventoryTransfer> InventoryTransfers { get; }
+
+    DbSet<InventoryTransferLine> InventoryTransferLines { get; }
     DbSet<Supplier> Suppliers { get; }
 
     DbSet<SupplierProduct> SupplierProducts { get; }
