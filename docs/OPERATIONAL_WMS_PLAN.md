@@ -10,7 +10,7 @@ This is the business-design companion to [the implementation roadmap](ROADMAP.md
 
 Before an agent implements a phase, it must compare the relevant priority below with the current code and create or refresh the matching `docs/features/` specification. That specification records the approved vertical-slice boundary, exclusions, API contract, acceptance criteria, and tests. If this plan and a current feature specification differ, the conflict must be made explicit and resolved before code changes.
 
-**Current next business priority:** Purchase Order Hardening, Goods Receipts, and Priority 4 Inventory Control Operations are complete, including inter-warehouse transfers. Finish the active master-detail detail-normalization branch, then begin Priority 6 Outbound Fulfilment with a focused Customer management workflow. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
+**Current next business priority:** Purchase Order Hardening, Goods Receipts, Priority 4 Inventory Control Operations, and master-detail detail normalization are complete. Finish, verify, and merge the focused Customer-management workflow, then deliver the shared Identifier and Document Numbering Foundation before Sales Orders. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
 
 ## Guiding Decisions
 
@@ -26,6 +26,34 @@ Before an agent implements a phase, it must compare the relevant priority below 
 6. Product master data stays pragmatic. Lot, expiry, serial, and bin controls are opt-in business capabilities rather than defaults.
 7. A business document is entered as a header plus a line table, not as a stack of repeated cards or form rows. The header owns shared fields; each line exposes only the inputs and operational context needed for that line.
 8. A multi-line inventory action is all-or-nothing. Its API validates all lines and writes all balances/movements in one database transaction; the frontend must never emulate a batch operation with sequential single-line requests.
+
+## Business Identifier and Document Numbering Standard
+
+Use one vocabulary and one rule set throughout the WMS. UUIDs remain technical keys and are not a replacement for the operational identifiers users search, quote, print, and discuss.
+
+| Record kind | Required business identifier | Notes |
+| --- | --- | --- |
+| Master data | Required unique `Code` and required readable `Name`/designation. | `Product.Sku` is the product code. Customer legal/trading names remain legal-entity-specific display fields. |
+| Operational document | Required immutable, automatic `Number`. | Unique and generated transactionally from the shared document-numbering foundation. |
+| External-party/user reference | Optional `Reference`/`ExternalReference`. | Never treat it as the internal document number or require it for normal posting. |
+| Master-detail line | Stable one-based `LineNumber`. | Unique within its document; never reused once downstream-referenced/finalized. |
+| Join/detail record | No independent code by default. | Add one only for an explicit business/integration requirement. |
+
+Master-data codes are manual and required by default; auto-generation needs an explicit business or integration justification. Use **Name** in domain code, with the correct English/French label (**Name** / **Désignation**) in the UI. Document numbers are automatic and immutable by default. A manual override can only be enabled per document type through a documented policy with duplicate validation and audit history.
+
+### Identifier and Document Numbering Foundation
+
+Deliver this cross-cutting foundation after Customer management and before Sales Orders:
+
+1. Add configurable `DocumentNumberDefinition` records: document-type code, localized description, prefix/template, digit count, reset period, active state, and manual-entry policy.
+2. Add transactional `DocumentNumberSeries` records keyed by definition, reset period, and scope. Scope is global initially; company/site context is deliberately deferred until the WMS models those concepts.
+3. Add one `DocumentNumberService` that allocates inside the caller's persistence transaction, makes duplicate allocation impossible, and produces stable errors for inactive/missing/exhausted definitions.
+4. Replace the hard-coded PO and Goods Receipt sequence implementations with the shared service while retaining the existing public formats unless a reviewed definition changes them.
+5. Add generated, required, unique document numbers to inventory adjustments, cycle counts, and transfers. Their existing optional `Reference` fields remain external references.
+6. Register future definitions before their features are built: Sales Order (`SO`), Shipment (`SH`), customer return, supplier return, and any new operational document type.
+7. Test allocation under concurrency, uniqueness, period reset, missing/inactive definitions, manual override policy, rollback/gap behaviour, and frontend localization/display.
+
+Do not promise gap-free numbering for ordinary WMS documents. Allocate as late as practical inside the successful persistence workflow; statutory/fiscal numbering requires a separately scoped compliance design.
 
 ## Transactional Form and Table Standard
 
@@ -413,6 +441,7 @@ The relationship map is intentionally lean: the supplier catalogue guides purcha
 4. Inventory overview, adjustment reasons, cycle counts, and transfers.
 5. Master-data extensions driven by real operational needs.
 6. Customer accounts and controlled sales-order entry.
-7. Atomic reservations, then picking and shipment confirmation.
-8. Operational dashboard, audit/history views, exports, and document settings.
-9. Traceability, returns, and bin locations only where the business case requires them.
+7. Shared identifier and document-numbering foundation.
+8. Atomic reservations, then picking and shipment confirmation.
+9. Operational dashboard, audit/history views, exports, and document settings.
+10. Traceability, returns, and bin locations only where the business case requires them.
