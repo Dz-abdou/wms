@@ -47,7 +47,17 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                     }
                     var quantityDeltaInUnit = line.Direction == InventoryAdjustmentDirection.Increase ? line.Quantity : -line.Quantity;
                     balance.ApplyAdjustment(delta, timestamp, currentUser.UserId);
-                    dbContext.InventoryMovements.Add(InventoryMovement.CreateManualAdjustment(line.ProductId, line.WarehouseId, ProductUnitOfMeasure.NormalizeUnitOfMeasure(line.UnitOfMeasure), quantityDeltaInUnit, delta, balance.Quantity, timestamp, currentUser.UserId, adjustment.Id));
+                    dbContext.InventoryMovements.Add(InventoryMovement.CreateManualAdjustment(
+                        line.ProductId,
+                        line.WarehouseId,
+                        ProductUnitOfMeasure.NormalizeUnitOfMeasure(line.UnitOfMeasure),
+                        quantityDeltaInUnit,
+                        delta,
+                        balance.Quantity,
+                        timestamp,
+                        currentUser.UserId,
+                        adjustment.Id,
+                        lineIndex + 1));
                     results.Add(ToResponse(balance, product.BaseUnitOfMeasure));
                 }
                 await dbContext.SaveChangesAsync(token);
@@ -108,9 +118,15 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                                 movement.QuantityDeltaInUnit,
                                 movement.QuantityDelta,
                                 movement.BalanceAfter,
-                                movement.CreatedAtUtc))
+                                movement.CreatedAtUtc)
+                            {
+                                LineNumber = movement.LineNumber ?? 0,
+                            })
             .ToListAsync(cancellationToken))
-            .Select((line, index) => line with { LineNumber = index + 1 })
+            .Select((line, index) => line with
+            {
+                LineNumber = line.LineNumber > 0 ? line.LineNumber : index + 1,
+            })
             .ToList();
         return new InventoryAdjustmentDetailResponse(
             adjustment.Id,

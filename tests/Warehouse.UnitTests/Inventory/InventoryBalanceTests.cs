@@ -45,7 +45,8 @@ public sealed class InventoryBalanceTests
             -2m,
             3m,
             CreatedAtUtc,
-            Guid.NewGuid());
+            Guid.NewGuid(),
+            lineNumber: 1);
 
         Assert.Equal(productId, movement.ProductId);
         Assert.Equal(warehouseId, movement.WarehouseId);
@@ -54,5 +55,6 @@ public sealed class InventoryBalanceTests
         Assert.Equal("EA", movement.UnitOfMeasure);
         Assert.Equal(-2m, movement.QuantityDeltaInUnit);
         Assert.Equal(3m, movement.BalanceAfter);
+        Assert.Equal(1, movement.LineNumber);
     }
 }

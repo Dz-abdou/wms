@@ -201,6 +201,11 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(warehouse.Name, movement.WarehouseName);
         Assert.Equal("COUNT-2026-001", movement.AdjustmentReference);
 
+        using var scope = fixture.Factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
+        var storedMovement = await dbContext.InventoryMovements.SingleAsync(candidate => candidate.Id == line.MovementId);
+        Assert.Equal(1, storedMovement.LineNumber);
+
         var missing = await fixture.Client.GetAsync($"/api/inventory/adjustments/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
         var problem = await missing.Content.ReadFromJsonAsync<ProblemResponse>();
