@@ -43,11 +43,13 @@ The line-table specification must identify its editable columns, read-only deriv
 Every operational document line has a stable, one-based `LineNumber` (`#1`,
 `#2`, and so on), unique within its parent document. It identifies that exact
 line in receipts, exceptions, audit records, integrations, and support
-conversations; use it as a line reference, never as a quantity. Once a line is
-referenced by a downstream document or the parent is final, do not reuse its
-number for a different line. A document list may instead show a **Line count**:
-the aggregate number of lines on the document. Label that summary explicitly
-as `Line count` / `Nombre de lignes`, not `Line number` or `Lines`.
+conversations; use it as a line reference, never as a quantity. Render it as
+the first **Line number** (`#`) column in every create/edit and read-only
+master-detail line table. Once a line is referenced by a downstream document
+or the parent is final, do not reuse its number for a different line. A
+document list may instead show a **Line count**: the aggregate number of lines
+on the document. Label that summary explicitly as `Line count` / `Nombre de
+lignes`, not `Line number` or `Lines`.
 
 Client validation should use the selected master-data context to prevent obvious invalid entries immediately (for example, a quantity below catalogue MOQ). The backend must repeat those checks immediately before persistence. If a line fails, it returns a 4xx validation Problem Details response containing `errors` and stable `errorCodes` for the exact nested field, such as `Lines[0].Quantity`; the frontend maps the nested property to its `Form.List` field path, translates the code, and displays the message beside that cell. A generic toast is reserved for non-field errors only.
 
@@ -65,7 +67,7 @@ The application must feel like one operational system rather than a collection o
 
 - A list page has a consistent title/subtitle area, one shared primary `New` action when creation is available, an optional filter toolbar, and explicit loading, empty, error, and populated states. The title provides the object context; do not repeat it in the button.
 - A create/edit page has a visible `Back to …` link above its heading, grouped form sections where the form is long, and the standard Cancel/Create or Save action bar at the bottom. The top return link and bottom Cancel action target the same safe route.
-- A detail page has `Back to …`, title/status, contextual actions, a summary area, and related tables/timeline sections. A detail action must preserve the document's read-only/status rules.
+- A detail page has `Back to …`, title/status, contextual actions, a summary area, and related tables/timeline sections. For a master-detail document, the Purchase Order detail is the layout reference: summary first, then the primary line table directly in the page content. Do not put that table in an extra generic card headed `Lines`; cards are reserved for genuinely separate sections such as totals, history, or exceptions. A detail action must preserve the document's read-only/status rules.
 - Back must be an explicit known route, never blind browser history. Links from a list preserve that list's current path and URL query; direct navigation or a refreshed page uses the safe feature-list fallback. A dirty form warns before leaving.
 - Every create and edit workflow has a dedicated route-level page, including master data and administration. Do not use a modal as a substitute for a create/edit page.
 
