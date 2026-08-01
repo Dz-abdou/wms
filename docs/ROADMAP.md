@@ -80,7 +80,7 @@ Every authenticated screen must use the shared application layout and one of the
 
 Supplier management, Purchase Order Operational Hardening, Goods Receipts, Inventory Control Operations, and Master-Detail Detail Normalization are complete. This includes operational PO snapshots/concurrency/status history, partial receiving, inventory overview, adjustment documents, movement history, cycle counts, inter-warehouse transfers, and consistent document detail pages.
 
-The active branch is **Customer management**, the first focused slice of Phase 6. After its review, manual testing, and merge, complete the planned **Identifier and Document Numbering Foundation** cross-cutting slice before beginning Sales Orders. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
+Customer management is complete. The active branch is **Document Numbering / Counter Foundation**, the required cross-cutting slice before Sales Orders. Its scope and verification record are maintained in [document-numbering-foundation.md](features/document-numbering-foundation.md). Priority 5 master-data additions remain demand-driven and are not a prerequisite for Sales Orders.
 
 The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
 

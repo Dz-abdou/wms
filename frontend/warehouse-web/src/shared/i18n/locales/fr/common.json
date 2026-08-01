@@ -53,6 +53,8 @@
     "codes": {
       "system.unexpected": "Une erreur inattendue s’est produite. Veuillez réessayer.",
       "validation.failed": "Veuillez corriger les champs mis en évidence.",
+      "document_number.definition_unavailable": "Un numéro de document ne peut pas être généré. Contactez un administrateur.",
+      "document_number.capacity_exceeded": "La capacité de numérotation des documents est épuisée. Contactez un administrateur.",
       "validation.required": "Ce champ est obligatoire.",
       "validation.max_length": "Cette valeur est trop longue.",
       "validation.invalid": "Cette valeur n’est pas valide.",
@@ -690,7 +692,8 @@
       "category": "Catégorie",
       "status": "Statut du produit",
       "fromDate": "Date de début",
-      "toDate": "Date de fin"
+      "toDate": "Date de fin",
+      "documentSearch": "N° de document ou référence externe"
     },
     "lines": "Lignes",
     "types": {
@@ -715,7 +718,8 @@
       "product": "Produit",
       "warehouse": "Entrepôt",
       "reason": "Motif",
-      "reference": "Référence",
+      "number": "N° de document",
+      "externalReference": "Référence externe",
       "lines": "Lignes",
       "delta": "Variation",
       "onHand": "Stock disponible",
@@ -730,7 +734,7 @@
       "warehouse": "Entrepôt",
       "direction": "Sens",
       "reason": "Motif",
-      "reference": "Référence",
+      "reference": "Référence externe",
       "note": "Note",
       "quantity": "Quantité",
       "unitOfMeasure": "Unité de mesure",

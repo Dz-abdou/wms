@@ -53,6 +53,8 @@
     "codes": {
       "system.unexpected": "An unexpected error occurred. Please try again.",
       "validation.failed": "Please correct the highlighted fields.",
+      "document_number.definition_unavailable": "A document number cannot be generated. Contact an administrator.",
+      "document_number.capacity_exceeded": "The document-number capacity has been exhausted. Contact an administrator.",
       "validation.required": "This field is required.",
       "validation.max_length": "This value is too long.",
       "validation.invalid": "This value is invalid.",
@@ -688,7 +690,8 @@
       "category": "Category",
       "status": "Product status",
       "fromDate": "From date",
-      "toDate": "To date"
+      "toDate": "To date",
+      "documentSearch": "Document number or external reference"
     },
     "lines": "Lines",
     "types": {
@@ -713,7 +716,8 @@
       "product": "Product",
       "warehouse": "Warehouse",
       "reason": "Reason",
-      "reference": "Reference",
+      "number": "Document number",
+      "externalReference": "External reference",
       "lines": "Lines",
       "delta": "Change",
       "onHand": "On hand",
@@ -728,7 +732,7 @@
       "warehouse": "Warehouse",
       "direction": "Direction",
       "reason": "Reason",
-      "reference": "Reference",
+      "reference": "External reference",
       "note": "Note",
       "quantity": "Quantity",
       "unitOfMeasure": "Unit of measure",

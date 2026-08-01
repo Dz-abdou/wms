@@ -98,6 +98,11 @@ export function InventoryAdjustmentDetailPage() {
             children: t(`inventory.reasons.${item.reason}`),
           },
           {
+            key: "number",
+            label: t("inventory.table.number"),
+            children: item.number,
+          },
+          {
             key: "reference",
             label: t("inventory.form.reference"),
             children: item.reference ?? "—",

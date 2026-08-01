@@ -28,12 +28,16 @@ export function InventoryAdjustmentListPage() {
   });
   const columns: ColumnsType<InventoryAdjustmentListItem> = [
     {
+      title: t("inventory.table.number"),
+      dataIndex: "number",
+    },
+    {
       title: t("inventory.table.reason"),
       dataIndex: "reason",
       render: (value) => t(`inventory.reasons.${value}`),
     },
     {
-      title: t("inventory.table.reference"),
+      title: t("inventory.table.externalReference"),
       dataIndex: "reference",
       render: (value) => value ?? "—",
     },
@@ -82,16 +86,19 @@ export function InventoryAdjustmentListPage() {
               value={listQuery.get("reason")}
             />
           </ListFilter>
-          <ListFilter label={t("inventory.table.reference")} width="regular">
+          <ListFilter
+            label={t("inventory.filters.documentSearch")}
+            width="regular"
+          >
             <Input
               allowClear
-              aria-label={t("inventory.table.reference")}
+              aria-label={t("inventory.filters.documentSearch")}
               defaultValue={listQuery.get("reference")}
               key={listQuery.get("reference") ?? "reference"}
               onPressEnter={(event) =>
                 listQuery.update({ reference: event.currentTarget.value })
               }
-              placeholder={t("inventory.table.reference")}
+              placeholder={t("inventory.filters.documentSearch")}
             />
           </ListFilter>
           <ListFilter label={t("inventory.filters.fromDate")} width="compact">

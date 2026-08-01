@@ -98,35 +98,41 @@ export function InventoryMovementHistoryPage() {
       width: 150,
     },
     {
-      title: t("inventory.table.reference"),
-      key: "reference",
+      title: t("inventory.table.number"),
+      key: "number",
       width: 170,
       render: (_, x) =>
         x.inventoryAdjustmentId ? (
           <ReturnAwareLink
             to={inventoryRoutes.adjustmentDetail(x.inventoryAdjustmentId)}
           >
-            {x.adjustmentReference ?? t("inventory.adjustment")}
+            {x.documentNumber ?? t("inventory.adjustment")}
           </ReturnAwareLink>
         ) : x.goodsReceiptId ? (
           <ReturnAwareLink to={receivingRoutes.detail(x.goodsReceiptId)}>
-            {x.goodsReceiptNumber ?? t("receiving.title")}
+            {x.documentNumber ?? t("receiving.title")}
           </ReturnAwareLink>
         ) : x.cycleCountId ? (
           <ReturnAwareLink
             to={inventoryRoutes.cycleCountDetail(x.cycleCountId)}
           >
-            {x.cycleCountReference ?? t("inventory.cycleCounts.document")}
+            {x.documentNumber ?? t("inventory.cycleCounts.document")}
           </ReturnAwareLink>
         ) : x.inventoryTransferId ? (
           <ReturnAwareLink
             to={inventoryRoutes.transferDetail(x.inventoryTransferId)}
           >
-            {x.transferReference ?? t("inventory.transfers.document")}
+            {x.documentNumber ?? t("inventory.transfers.document")}
           </ReturnAwareLink>
         ) : (
           "—"
         ),
+    },
+    {
+      title: t("inventory.table.externalReference"),
+      dataIndex: "externalReference",
+      width: 170,
+      render: (value) => value ?? "—",
     },
     {
       title: t("inventory.table.created"),
@@ -236,16 +242,19 @@ export function InventoryMovementHistoryPage() {
               value={listQuery.get("type")}
             />
           </ListFilter>
-          <ListFilter label={t("inventory.table.reference")} width="regular">
+          <ListFilter
+            label={t("inventory.filters.documentSearch")}
+            width="regular"
+          >
             <Input
               allowClear
-              aria-label={t("inventory.table.reference")}
+              aria-label={t("inventory.filters.documentSearch")}
               defaultValue={listQuery.get("reference")}
               key={listQuery.get("reference") ?? "reference"}
               onPressEnter={(event) =>
                 listQuery.update({ reference: event.currentTarget.value })
               }
-              placeholder={t("inventory.table.reference")}
+              placeholder={t("inventory.filters.documentSearch")}
             />
           </ListFilter>
           <ListFilter label={t("inventory.filters.fromDate")} width="compact">
@@ -308,7 +317,7 @@ export function InventoryMovementHistoryPage() {
             movements.data ? listQuery.toTablePagination(movements.data) : false
           }
           rowKey="id"
-          scroll={{ x: 1360 }}
+          scroll={{ x: 1530 }}
         />
       )}
     </ListPageLayout>

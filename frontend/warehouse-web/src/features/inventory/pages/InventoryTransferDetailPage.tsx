@@ -94,8 +94,13 @@ export function InventoryTransferDetailPage() {
             children: `${item.destinationWarehouseCode} — ${item.destinationWarehouseName}`,
           },
           {
+            key: "number",
+            label: t("inventory.table.number"),
+            children: item.number,
+          },
+          {
             key: "reference",
-            label: t("inventory.table.reference"),
+            label: t("inventory.table.externalReference"),
             children: item.reference ?? "—",
           },
           {
