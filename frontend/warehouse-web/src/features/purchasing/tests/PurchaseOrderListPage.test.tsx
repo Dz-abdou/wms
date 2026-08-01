@@ -76,7 +76,7 @@ describe("PurchaseOrderListPage", () => {
             supplierId: "supplier",
             supplierCode: "ACME",
             supplierName: "Acme Supplies",
-            status: 0,
+            status: "Draft",
             lines: [],
             createdAtUtc: "2026-07-25T10:00:00Z",
             updatedAtUtc: "2026-07-25T10:00:00Z",

@@ -71,25 +71,26 @@ export type SupplierProductListQuery = {
   currencyCode?: string;
 };
 
-export type PurchaseOrderStatus = 0 | 1 | 2 | 3 | 4;
+export type PurchaseOrderStatus =
+  "Draft" | "Submitted" | "PartiallyReceived" | "Received" | "Cancelled";
 
 export const purchaseOrderStatusTranslationKeys: Record<
   PurchaseOrderStatus,
   string
 > = {
-  0: "purchasing.status.draft",
-  1: "purchasing.status.submitted",
-  2: "purchasing.status.partiallyReceived",
-  3: "purchasing.status.received",
-  4: "purchasing.status.cancelled",
+  Draft: "purchasing.status.draft",
+  Submitted: "purchasing.status.submitted",
+  PartiallyReceived: "purchasing.status.partiallyReceived",
+  Received: "purchasing.status.received",
+  Cancelled: "purchasing.status.cancelled",
 };
 
 export const purchaseOrderStatusColors: Record<PurchaseOrderStatus, string> = {
-  0: "gold",
-  1: "blue",
-  2: "cyan",
-  3: "green",
-  4: "default",
+  Draft: "gold",
+  Submitted: "blue",
+  PartiallyReceived: "cyan",
+  Received: "green",
+  Cancelled: "default",
 };
 
 export type PurchaseOrderLineInput = {
