@@ -19,6 +19,7 @@ using Warehouse.Api.Endpoints.Purchasing;
 using Warehouse.Api.Endpoints.Currencies;
 using Warehouse.Api.Endpoints.Receiving;
 using Warehouse.Api.Endpoints.Customers;
+using Warehouse.Api.Endpoints.Sales;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -51,6 +52,7 @@ app.MapCustomerEndpoints();
 app.MapCurrencyEndpoints();
 app.MapSupplierProductEndpoints();
 app.MapPurchaseOrderEndpoints();
+app.MapSalesOrderEndpoints();
 app.MapGoodsReceiptEndpoints();
 if (app.Environment.IsDevelopment()) { using var scope = app.Services.CreateScope(); await scope.ServiceProvider.GetRequiredService<Warehouse.Infrastructure.Identity.IdentityBootstrapper>().SeedDevelopmentAdminAsync(); }
 app.MapGet("/", () => Results.Ok(new { service = "Warehouse API", status = "ready" }));

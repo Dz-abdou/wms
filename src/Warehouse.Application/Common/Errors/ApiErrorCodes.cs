@@ -69,6 +69,16 @@ public static class ApiErrorCodes
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
     public const string PurchaseOrderInvalidTransition = "purchase_order.invalid_transition";
+    public const string SalesOrderNotFound = "sales_order.not_found";
+    public const string SalesOrderCustomerUnavailable = "sales_order.customer_unavailable";
+    public const string SalesOrderShippingAddressUnavailable = "sales_order.shipping_address_unavailable";
+    public const string SalesOrderCurrencyUnavailable = "sales_order.currency_unavailable";
+    public const string SalesOrderProductUnavailable = "sales_order.product_unavailable";
+    public const string SalesOrderDuplicateProduct = "sales_order.duplicate_product";
+    public const string SalesOrderQuantityUnitInvalid = "sales_order.quantity_unit_invalid";
+    public const string SalesOrderImmutable = "sales_order.immutable";
+    public const string SalesOrderConcurrencyConflict = "sales_order.concurrency_conflict";
+    public const string SalesOrderInvalidTransition = "sales_order.invalid_transition";
     public const string GoodsReceiptPurchaseOrderUnavailable = "goods_receipt.purchase_order_unavailable";
     public const string GoodsReceiptNotFound = "goods_receipt.not_found";
     public const string GoodsReceiptPurchaseOrderConcurrencyConflict = "goods_receipt.purchase_order_concurrency_conflict";

@@ -8,6 +8,7 @@ using Warehouse.Domain.Currencies;
 using Warehouse.Domain.Receiving;
 using Warehouse.Domain.Customers;
 using Warehouse.Domain.Numbering;
+using Warehouse.Domain.Sales;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -39,6 +40,8 @@ public interface IWarehouseDbContext
     DbSet<CustomerContact> CustomerContacts { get; }
 
     DbSet<CustomerAddress> CustomerAddresses { get; }
+
+    DbSet<SalesOrder> SalesOrders { get; }
 
     DbSet<DocumentNumberDefinition> DocumentNumberDefinitions { get; }
 

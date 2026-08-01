@@ -10,7 +10,7 @@ This is the business-design companion to [the implementation roadmap](ROADMAP.md
 
 Before an agent implements a phase, it must compare the relevant priority below with the current code and create or refresh the matching `docs/features/` specification. That specification records the approved vertical-slice boundary, exclusions, API contract, acceptance criteria, and tests. If this plan and a current feature specification differ, the conflict must be made explicit and resolved before code changes.
 
-**Current next business priority:** Purchase Order Hardening, Goods Receipts, Priority 4 Inventory Control Operations, master-detail detail normalization, and Customer management are complete. Finish, verify, and merge the shared Identifier and Document Numbering Foundation before Sales Orders. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Sales Orders.
+**Current next business priority:** Purchase Order Hardening, Goods Receipts, Priority 4 Inventory Control Operations, master-detail detail normalization, Customer management, and the shared Identifier and Document Numbering Foundation are complete. Sales Orders are now being delivered as the first outbound capture slice: draft, submit, cancel, customer/address snapshots, product/UoM/quantity snapshots, and optimistic concurrency. Priority 5 master-data additions remain demand-driven and are not a prerequisite for this slice.
 
 ## Guiding Decisions
 
