@@ -35,6 +35,8 @@
     "categories": "Product categories",
     "currencies": "Currencies",
     "inbound": "Inbound",
+    "outbound": "Outbound",
+    "salesOrders": "Sales orders",
     "administration": "Administration"
   },
   "language": {
@@ -124,7 +126,17 @@
       "inventory.cycle_count_not_found": "The cycle count was not found.",
       "inventory.cycle_count_stale_balance": "Stock changed. Current system quantity is {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Reload this line.",
       "inventory.transfer_not_found": "The inventory transfer was not found.",
-      "inventory.transfer_stale_balance": "Source stock changed. Current availability is {{currentQuantityInBase}} {{baseUnitOfMeasure}} in {{warehouse}}. Reload this line."
+      "inventory.transfer_stale_balance": "Source stock changed. Current availability is {{currentQuantityInBase}} {{baseUnitOfMeasure}} in {{warehouse}}. Reload this line.",
+      "sales_order.not_found": "The sales order was not found.",
+      "sales_order.customer_unavailable": "Select an active customer.",
+      "sales_order.shipping_address_unavailable": "Select a shipping address belonging to the selected customer.",
+      "sales_order.currency_unavailable": "Select an active currency.",
+      "sales_order.product_unavailable": "Select an active product.",
+      "sales_order.duplicate_product": "A product can only appear once on a sales order.",
+      "sales_order.quantity_unit_invalid": "The quantity or unit of measure is invalid for this product.",
+      "sales_order.immutable": "Only draft sales orders can be changed.",
+      "sales_order.concurrency_conflict": "This sales order was changed by another user. Refresh it before trying again.",
+      "sales_order.invalid_transition": "This sales order cannot make that status change."
     }
   },
   "products": {
@@ -592,6 +604,66 @@
       "parent": "Parent category",
       "parentHelp": "Optional. Use it only to place this category under a broader category.",
       "errors": { "save": "The product category could not be saved." }
+    }
+  },
+  "sales": {
+    "view": "View",
+    "edit": "Edit",
+    "status": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "cancelled": "Cancelled"
+    },
+    "orders": {
+      "title": "Sales orders",
+      "subtitle": "Record customer orders before future allocation and shipping workflows.",
+      "createTitle": "Create sales order",
+      "editTitle": "Edit sales order",
+      "detailTitle": "Sales order",
+      "create": "Create sales order",
+      "number": "Number",
+      "customer": "Customer",
+      "shippingAddress": "Shipping address",
+      "currency": "Currency",
+      "orderDate": "Order date",
+      "requestedShipDate": "Requested ship date",
+      "customerReference": "Customer reference",
+      "deliveryInstructions": "Delivery instructions",
+      "status": "Status",
+      "lineCount": "Lines",
+      "lines": "Lines",
+      "lineNumber": "Line",
+      "product": "Product",
+      "unit": "Unit",
+      "quantity": "Quantity",
+      "baseQuantity": "Base quantity",
+      "actions": "Actions",
+      "fromDate": "From date",
+      "toDate": "To date",
+      "customerRequired": "A customer is required.",
+      "shippingAddressRequired": "A shipping address is required.",
+      "productRequired": "A product is required.",
+      "unitRequired": "A unit of measure is required.",
+      "quantityRequired": "A quantity is required.",
+      "addLine": "Add line",
+      "removeLine": "Remove",
+      "submit": "Submit",
+      "submitTitle": "Submit sales order",
+      "submitDescription": "Submit this sales order for the next fulfilment stage?",
+      "cancelOrder": "Cancel sales order",
+      "submittedReadOnly": "Submitted and cancelled sales orders are read-only.",
+      "refresh": "Refresh",
+      "concurrencyHint": "Reload the latest version, then reapply your changes.",
+      "loading": "Loading sales orders…",
+      "loadingOne": "Loading sales order…",
+      "empty": "No sales orders exist yet.",
+      "errors": {
+        "load": "Sales orders could not be loaded.",
+        "create": "The sales order could not be created.",
+        "update": "The sales order could not be updated.",
+        "submit": "The sales order could not be submitted.",
+        "cancel": "The sales order could not be cancelled."
+      }
     }
   },
   "administration": {

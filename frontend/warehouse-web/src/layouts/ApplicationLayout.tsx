@@ -12,6 +12,7 @@ import { supplierRoutes } from "../features/suppliers/supplierConstants";
 import { customerRoutes } from "../features/customers/customerConstants";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { receivingRoutes } from "../features/receiving/receivingConstants";
+import { salesRoutes } from "../features/sales/salesConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
 import { useAuth } from "../features/auth/AuthContext";
 
@@ -37,39 +38,42 @@ export function ApplicationLayout() {
                 ? "currencies"
                 : location.pathname.startsWith(purchasingRoutes.orders)
                   ? "purchase-orders"
-                  : location.pathname.startsWith(receivingRoutes.list)
-                    ? "goods-receipts"
-                    : location.pathname.startsWith(inventoryRoutes.overview) ||
-                        location.pathname === inventoryRoutes.root
-                      ? "inventory-overview"
+                  : location.pathname.startsWith(salesRoutes.orders)
+                    ? "sales-orders"
+                    : location.pathname.startsWith(receivingRoutes.list)
+                      ? "goods-receipts"
                       : location.pathname.startsWith(
-                            inventoryRoutes.adjustments,
-                          )
-                        ? "inventory-adjustments"
+                            inventoryRoutes.overview,
+                          ) || location.pathname === inventoryRoutes.root
+                        ? "inventory-overview"
                         : location.pathname.startsWith(
-                              inventoryRoutes.transfers,
+                              inventoryRoutes.adjustments,
                             )
-                          ? "inventory-transfers"
+                          ? "inventory-adjustments"
                           : location.pathname.startsWith(
-                                inventoryRoutes.cycleCounts,
+                                inventoryRoutes.transfers,
                               )
-                            ? "inventory-cycle-counts"
+                            ? "inventory-transfers"
                             : location.pathname.startsWith(
-                                  inventoryRoutes.movementHistory,
-                                ) ||
-                                location.pathname.startsWith(
-                                  inventoryRoutes.root,
+                                  inventoryRoutes.cycleCounts,
                                 )
-                              ? "inventory-movements"
+                              ? "inventory-cycle-counts"
                               : location.pathname.startsWith(
-                                    administrationRoutes.users,
+                                    inventoryRoutes.movementHistory,
+                                  ) ||
+                                  location.pathname.startsWith(
+                                    inventoryRoutes.root,
                                   )
-                                ? "users"
+                                ? "inventory-movements"
                                 : location.pathname.startsWith(
-                                      administrationRoutes.roles,
+                                      administrationRoutes.users,
                                     )
-                                  ? "roles"
-                                  : "home";
+                                  ? "users"
+                                  : location.pathname.startsWith(
+                                        administrationRoutes.roles,
+                                      )
+                                    ? "roles"
+                                    : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -161,6 +165,20 @@ export function ApplicationLayout() {
                   label: (
                     <Link to={receivingRoutes.list}>
                       {t("navigation.goodsReceipts")}
+                    </Link>
+                  ),
+                },
+              ],
+            },
+            {
+              key: "outbound",
+              label: t("navigation.outbound"),
+              children: [
+                {
+                  key: "sales-orders",
+                  label: (
+                    <Link to={salesRoutes.orders}>
+                      {t("navigation.salesOrders")}
                     </Link>
                   ),
                 },
