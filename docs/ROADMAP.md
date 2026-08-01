@@ -331,7 +331,7 @@ Make product quantities unambiguous before purchase orders and goods receipts in
 
 ### Deliverables
 
-- Supplier management
+- Supplier management, including normalized supplier contacts and ordering/remittance, dispatch, and return addresses (matching the customer relationship model)
 - Supplier product catalogue: a many-to-many supplier/product relationship with supplier-specific SKU, preferred-supplier selection, lead time, minimum order quantity, valid purchase unit, and price/currency history or effective price.
 - Draft purchase order
 - Purchase order lines

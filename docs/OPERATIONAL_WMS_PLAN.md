@@ -192,16 +192,16 @@ Maintain `PurchaseOrderStatusHistory` with previous/new status, timestamp, user,
 
 ### Supplier Account
 
-Keep the existing code/name/contact fields. Add only when operationally needed:
+Supplier contact and address data must be normalized in the same way as Customer management: a supplier owns zero or more `SupplierContact` and `SupplierAddress` records. Do not extend the current header-level `Email`, `PhoneNumber`, or `Address` fields for new behaviour; treat them as temporary legacy summary data until the supplier-contact/address slice migrates the UI and API.
 
 - Legal name and trading name
 - Tax/VAT registration number
 - Status with a reason: active, blocked, pending approval
 - Default currency, payment terms, default lead time, and notes
-- `SupplierContact` records: name, role, email, phone, preferred flag
-- `SupplierAddress` records: ordering/remittance, dispatch, and return address types
+- `SupplierContact` records: name, role, email, phone, preferred flag, active state
+- `SupplierAddress` records: ordering/remittance, dispatch, and return address types, preferred flag, and active state
 
-Email and phone numbers should not be database-unique; shared purchasing addresses and switchboards are normal. Validate email format when it is present.
+Email and phone numbers should not be database-unique; shared purchasing addresses and switchboards are normal. Validate email format when it is present. A future PO/receipt workflow selects the relevant supplier contact and ordering/remittance address and snapshots it when a business document must preserve the communicated details.
 
 ### Supplier Product Catalogue
 
@@ -411,7 +411,9 @@ The create/edit view uses a header form followed by an editable line table. The 
 ## Core Relationship Map
 
 ```text
-Supplier ──< SupplierProduct >── Product ──< ProductWarehouse >── Warehouse
+Supplier ──< SupplierContact
+         └──< SupplierAddress
+         └──< SupplierProduct >── Product ──< ProductWarehouse >── Warehouse
                   │                  │
                   └──< PurchaseOrderLine >── PurchaseOrder ──< GoodsReceipt
                                                     │
