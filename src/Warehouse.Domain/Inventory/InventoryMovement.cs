@@ -18,6 +18,7 @@ public sealed class InventoryMovement : PersistentEntity
         decimal quantityDeltaInUnit,
         decimal quantityDelta,
         decimal balanceAfter,
+        int? lineNumber,
         DateTime createdAtUtc,
         DateTime updatedAtUtc,
         Guid? createdByUserId,
@@ -35,6 +36,7 @@ public sealed class InventoryMovement : PersistentEntity
         QuantityDeltaInUnit = quantityDeltaInUnit;
         QuantityDelta = quantityDelta;
         BalanceAfter = balanceAfter;
+        LineNumber = lineNumber;
     }
 
     public Guid ProductId { get; private set; }
@@ -59,6 +61,8 @@ public sealed class InventoryMovement : PersistentEntity
 
     public decimal BalanceAfter { get; private set; }
 
+    public int? LineNumber { get; private set; }
+
     public static InventoryMovement CreateManualAdjustment(
         Guid productId,
         Guid warehouseId,
@@ -68,7 +72,8 @@ public sealed class InventoryMovement : PersistentEntity
         decimal balanceAfter,
         DateTime createdAtUtc,
         Guid? actorUserId = null,
-        Guid? inventoryAdjustmentId = null)
+        Guid? inventoryAdjustmentId = null,
+        int? lineNumber = null)
     {
         if (quantityDeltaInUnit == 0m || quantityDelta == 0m)
         {
@@ -78,6 +83,11 @@ public sealed class InventoryMovement : PersistentEntity
         if ((quantityDeltaInUnit < 0m) != (quantityDelta < 0m))
         {
             throw new ArgumentException("Quantity deltas must have the same direction.", nameof(quantityDeltaInUnit));
+        }
+
+        if (lineNumber is <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(lineNumber));
         }
 
         var normalizedUnitOfMeasure = ProductUnitOfMeasure.NormalizeUnitOfMeasure(unitOfMeasure);
@@ -95,6 +105,7 @@ public sealed class InventoryMovement : PersistentEntity
             quantityDeltaInUnit,
             quantityDelta,
             balanceAfter,
+            lineNumber,
             createdAtUtc,
             createdAtUtc,
             actorUserId,
@@ -128,6 +139,7 @@ public sealed class InventoryMovement : PersistentEntity
             quantityReceivedInUnit,
             quantityReceivedInBaseUnit,
             balanceAfter,
+            null,
             receivedAtUtc,
             receivedAtUtc,
             actorUserId,
@@ -170,6 +182,7 @@ public sealed class InventoryMovement : PersistentEntity
             quantityDeltaInUnit,
             quantityDelta,
             balanceAfter,
+            null,
             countedAtUtc,
             countedAtUtc,
             actorUserId,
@@ -255,6 +268,7 @@ public sealed class InventoryMovement : PersistentEntity
             quantityDeltaInUnit,
             quantityDelta,
             balanceAfter,
+            null,
             transferredAtUtc,
             transferredAtUtc,
             actorUserId,

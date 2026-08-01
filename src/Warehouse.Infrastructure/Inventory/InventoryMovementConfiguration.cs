@@ -14,12 +14,14 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         {
             tableBuilder.HasCheckConstraint("CK_InventoryMovements_QuantityDelta_NonZero", "\"QuantityDelta\" <> 0");
             tableBuilder.HasCheckConstraint("CK_InventoryMovements_QuantityDeltaInUnit_NonZero", "\"QuantityDeltaInUnit\" <> 0");
+            tableBuilder.HasCheckConstraint("CK_InventoryMovements_LineNumber_Positive", "\"LineNumber\" IS NULL OR \"LineNumber\" > 0");
         });
         builder.HasKey(movement => movement.Id);
         builder.Property(movement => movement.InventoryAdjustmentId).HasColumnType("uuid");
         builder.Property(movement => movement.GoodsReceiptId).HasColumnType("uuid");
         builder.Property(movement => movement.CycleCountId).HasColumnType("uuid");
         builder.Property(movement => movement.InventoryTransferId).HasColumnType("uuid");
+        builder.Property(movement => movement.LineNumber);
         builder.Property(movement => movement.ProductId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.WarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(movement => movement.UnitOfMeasure).HasMaxLength(ProductUnitOfMeasure.MaxCodeLength).IsRequired();
@@ -33,6 +35,7 @@ public sealed class InventoryMovementConfiguration : IEntityTypeConfiguration<In
         builder.Property(movement => movement.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(movement => new { movement.ProductId, movement.WarehouseId, movement.CreatedAtUtc });
         builder.HasIndex(movement => movement.InventoryAdjustmentId);
+        builder.HasIndex(movement => new { movement.InventoryAdjustmentId, movement.LineNumber }).IsUnique();
         builder.HasIndex(movement => movement.GoodsReceiptId);
         builder.HasIndex(movement => movement.CycleCountId);
         builder.HasIndex(movement => movement.InventoryTransferId);
