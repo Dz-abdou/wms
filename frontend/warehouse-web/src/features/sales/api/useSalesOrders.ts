@@ -3,6 +3,7 @@ import {
   cancelSalesOrder,
   createSalesOrder,
   getSalesOrder,
+  getSalesOrderAvailability,
   getSalesOrders,
   submitSalesOrder,
   updateSalesOrder,
@@ -30,6 +31,27 @@ export function useSalesOrder(id: string | undefined) {
     queryKey: salesOrderKeys.detail(id ?? ""),
     queryFn: ({ signal }) => getSalesOrder(id ?? "", signal),
     enabled: Boolean(id),
+  });
+}
+export function useSalesOrderAvailability(
+  fulfillmentWarehouseId: string | undefined,
+  productIds: string[],
+) {
+  const uniqueProductIds = [...new Set(productIds)].sort();
+  return useQuery({
+    queryKey: [
+      ...salesOrderKeys.all,
+      "availability",
+      fulfillmentWarehouseId,
+      uniqueProductIds,
+    ],
+    queryFn: ({ signal }) =>
+      getSalesOrderAvailability(
+        fulfillmentWarehouseId ?? "",
+        uniqueProductIds,
+        signal,
+      ),
+    enabled: Boolean(fulfillmentWarehouseId) && uniqueProductIds.length > 0,
   });
 }
 export function useCreateSalesOrder() {

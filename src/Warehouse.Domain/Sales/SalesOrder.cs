@@ -15,6 +15,9 @@ public sealed class SalesOrder : PersistentEntity
         string customerCode,
         string customerName,
         Guid shippingAddressId,
+        Guid fulfillmentWarehouseId,
+        string fulfillmentWarehouseCode,
+        string fulfillmentWarehouseName,
         string currencyCode,
         DateOnly orderDate,
         DateOnly? requestedShipDate,
@@ -29,6 +32,9 @@ public sealed class SalesOrder : PersistentEntity
         CustomerCode = NormalizeRequired(customerCode, SalesOrderRules.MaxCustomerCodeLength, nameof(customerCode)).ToUpperInvariant();
         CustomerName = NormalizeRequired(customerName, SalesOrderRules.MaxCustomerNameLength, nameof(customerName));
         ShippingAddressId = RequireId(shippingAddressId, nameof(shippingAddressId));
+        FulfillmentWarehouseId = RequireId(fulfillmentWarehouseId, nameof(fulfillmentWarehouseId));
+        FulfillmentWarehouseCode = NormalizeRequired(fulfillmentWarehouseCode, SalesOrderRules.MaxWarehouseCodeLength, nameof(fulfillmentWarehouseCode)).ToUpperInvariant();
+        FulfillmentWarehouseName = NormalizeRequired(fulfillmentWarehouseName, SalesOrderRules.MaxWarehouseNameLength, nameof(fulfillmentWarehouseName));
         CurrencyCode = NormalizeCurrencyCode(currencyCode);
         OrderDate = orderDate;
         RequestedShipDate = ValidateRequestedShipDate(orderDate, requestedShipDate);
@@ -43,6 +49,9 @@ public sealed class SalesOrder : PersistentEntity
     public string CustomerCode { get; private set; } = null!;
     public string CustomerName { get; private set; } = null!;
     public Guid ShippingAddressId { get; private set; }
+    public Guid FulfillmentWarehouseId { get; private set; }
+    public string FulfillmentWarehouseCode { get; private set; } = null!;
+    public string FulfillmentWarehouseName { get; private set; } = null!;
     public SalesOrderShippingAddress ShippingAddress { get; private set; } = null!;
     public string Number { get; private set; } = null!;
     public string CurrencyCode { get; private set; } = null!;
@@ -63,6 +72,9 @@ public sealed class SalesOrder : PersistentEntity
         string customerCode,
         string customerName,
         Guid shippingAddressId,
+        Guid fulfillmentWarehouseId,
+        string fulfillmentWarehouseCode,
+        string fulfillmentWarehouseName,
         SalesOrderShippingAddress shippingAddress,
         string currencyCode,
         DateOnly orderDate,
@@ -72,7 +84,7 @@ public sealed class SalesOrder : PersistentEntity
         Guid ownerUserId,
         DateTime createdAtUtc)
     {
-        var order = new SalesOrder(Guid.NewGuid(), number, customerId, customerCode, customerName, shippingAddressId, currencyCode, orderDate, requestedShipDate, customerReference, deliveryInstructions, ownerUserId, createdAtUtc)
+        var order = new SalesOrder(Guid.NewGuid(), number, customerId, customerCode, customerName, shippingAddressId, fulfillmentWarehouseId, fulfillmentWarehouseCode, fulfillmentWarehouseName, currencyCode, orderDate, requestedShipDate, customerReference, deliveryInstructions, ownerUserId, createdAtUtc)
         {
             ShippingAddress = shippingAddress ?? throw new ArgumentNullException(nameof(shippingAddress))
         };
@@ -84,6 +96,9 @@ public sealed class SalesOrder : PersistentEntity
         string customerCode,
         string customerName,
         Guid shippingAddressId,
+        Guid fulfillmentWarehouseId,
+        string fulfillmentWarehouseCode,
+        string fulfillmentWarehouseName,
         SalesOrderShippingAddress shippingAddress,
         string currencyCode,
         DateOnly orderDate,
@@ -102,6 +117,9 @@ public sealed class SalesOrder : PersistentEntity
         CustomerCode = NormalizeRequired(customerCode, SalesOrderRules.MaxCustomerCodeLength, nameof(customerCode)).ToUpperInvariant();
         CustomerName = NormalizeRequired(customerName, SalesOrderRules.MaxCustomerNameLength, nameof(customerName));
         ShippingAddressId = RequireId(shippingAddressId, nameof(shippingAddressId));
+        FulfillmentWarehouseId = RequireId(fulfillmentWarehouseId, nameof(fulfillmentWarehouseId));
+        FulfillmentWarehouseCode = NormalizeRequired(fulfillmentWarehouseCode, SalesOrderRules.MaxWarehouseCodeLength, nameof(fulfillmentWarehouseCode)).ToUpperInvariant();
+        FulfillmentWarehouseName = NormalizeRequired(fulfillmentWarehouseName, SalesOrderRules.MaxWarehouseNameLength, nameof(fulfillmentWarehouseName));
         ShippingAddress = shippingAddress ?? throw new ArgumentNullException(nameof(shippingAddress));
         CurrencyCode = NormalizeCurrencyCode(currencyCode);
         OrderDate = orderDate;
@@ -240,6 +258,8 @@ public static class SalesOrderRules
     public const int MaxNumberLength = 32;
     public const int MaxCustomerCodeLength = 32;
     public const int MaxCustomerNameLength = 200;
+    public const int MaxWarehouseCodeLength = 32;
+    public const int MaxWarehouseNameLength = 200;
     public const int MaxCustomerReferenceLength = 100;
     public const int MaxDeliveryInstructionsLength = 1000;
     public const int MaxStatusReasonLength = 500;

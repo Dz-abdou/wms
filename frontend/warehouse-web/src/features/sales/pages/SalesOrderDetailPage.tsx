@@ -150,6 +150,9 @@ export function SalesOrderDetailPage() {
           {address.label} — {address.addressLine1}, {address.city},{" "}
           {address.countryCode}
         </Descriptions.Item>
+        <Descriptions.Item label={t("sales.orders.fulfillmentWarehouse")}>
+          {order.fulfillmentWarehouseCode} — {order.fulfillmentWarehouseName}
+        </Descriptions.Item>
         <Descriptions.Item label={t("sales.orders.currency")}>
           {order.currencyCode}
         </Descriptions.Item>

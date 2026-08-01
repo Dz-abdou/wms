@@ -3,6 +3,7 @@ export const salesApiPaths = {
   orderById: (id: string) => `/api/sales-orders/${id}`,
   submit: (id: string) => `/api/sales-orders/${id}/submit`,
   cancel: (id: string) => `/api/sales-orders/${id}/cancel`,
+  availability: "/api/sales-orders/availability",
 } as const;
 
 export const salesRoutes = {

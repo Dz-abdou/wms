@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Warehouse.Domain.Customers;
 using Warehouse.Domain.Products;
 using Warehouse.Domain.Sales;
+using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 
 namespace Warehouse.Infrastructure.Sales;
 
@@ -22,6 +23,9 @@ public sealed class SalesOrderConfiguration : IEntityTypeConfiguration<SalesOrde
         builder.Property(order => order.CustomerCode).HasMaxLength(SalesOrderRules.MaxCustomerCodeLength).IsRequired();
         builder.Property(order => order.CustomerName).HasMaxLength(SalesOrderRules.MaxCustomerNameLength).IsRequired();
         builder.Property(order => order.ShippingAddressId).HasColumnType("uuid").IsRequired();
+        builder.Property(order => order.FulfillmentWarehouseId).HasColumnType("uuid").IsRequired();
+        builder.Property(order => order.FulfillmentWarehouseCode).HasMaxLength(SalesOrderRules.MaxWarehouseCodeLength).IsRequired();
+        builder.Property(order => order.FulfillmentWarehouseName).HasMaxLength(SalesOrderRules.MaxWarehouseNameLength).IsRequired();
         builder.Property(order => order.CurrencyCode).HasMaxLength(SalesOrderRules.CurrencyCodeLength).IsRequired();
         builder.Property(order => order.OrderDate).HasColumnType("date").IsRequired();
         builder.Property(order => order.RequestedShipDate).HasColumnType("date");
@@ -37,8 +41,10 @@ public sealed class SalesOrderConfiguration : IEntityTypeConfiguration<SalesOrde
         builder.Property(order => order.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(order => order.Number).IsUnique();
         builder.HasIndex(order => new { order.CustomerId, order.Status });
+        builder.HasIndex(order => new { order.FulfillmentWarehouseId, order.Status });
         builder.HasOne<Customer>().WithMany().HasForeignKey(order => order.CustomerId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<CustomerAddress>().WithMany().HasForeignKey(order => order.ShippingAddressId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<WarehouseEntity>().WithMany().HasForeignKey(order => order.FulfillmentWarehouseId).OnDelete(DeleteBehavior.Restrict);
 
         builder.OwnsOne(order => order.ShippingAddress, address =>
         {

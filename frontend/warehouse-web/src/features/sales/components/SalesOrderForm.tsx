@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Button, Form, Input, InputNumber, Select } from "antd";
+import { Button, Form, Input, InputNumber, Select, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,8 +12,10 @@ import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import { useCustomer, useCustomers } from "../../customers/api/useCustomers";
 import { useProducts } from "../../products/api/useProducts";
 import { usePurchasingCurrencies } from "../../purchasing/api/usePurchasing";
+import { useWarehouses } from "../../warehouses/api/useWarehouses";
 import type { Product } from "../../products/api/productTypes";
 import type { SalesOrderInput } from "../api/salesTypes";
+import { useSalesOrderAvailability } from "../api/useSalesOrders";
 
 type Props = {
   initialValues?: SalesOrderInput;
@@ -39,11 +41,17 @@ export function SalesOrderForm({
   const { t } = useTranslation();
   const feedback = useApiFeedback();
   const customerId = Form.useWatch("customerId", form);
+  const fulfillmentWarehouseId = Form.useWatch("fulfillmentWarehouseId", form);
   const lines = Form.useWatch("lines", form);
   const customers = useCustomers({ page: 1, pageSize: 100 });
   const customer = useCustomer(customerId);
   const products = useProducts({ page: 1, pageSize: 100, isActive: true });
   const currencies = usePurchasingCurrencies();
+  const warehouses = useWarehouses({ page: 1, pageSize: 100 });
+  const availability = useSalesOrderAvailability(
+    fulfillmentWarehouseId,
+    (lines ?? []).flatMap((line) => (line.productId ? [line.productId] : [])),
+  );
 
   async function submit(values: SalesOrderInput) {
     try {
@@ -148,6 +156,48 @@ export function SalesOrderForm({
       ),
     },
     {
+      title: t("sales.orders.availableAtWarehouse"),
+      key: "availableAtWarehouse",
+      width: 190,
+      render: (_, row) => {
+        const product = row.product;
+        const line = lines?.[row.fieldName];
+        const candidate = availability.data?.find(
+          (item) => item.productId === product?.id,
+        );
+        if (!product || !candidate) return "—";
+        const factor =
+          line?.unitOfMeasure === product.baseUnitOfMeasure
+            ? 1
+            : product.unitConversions.find(
+                (conversion) =>
+                  conversion.unitOfMeasure === line?.unitOfMeasure,
+              )?.quantityInBaseUnit;
+        const requestedInBase =
+          typeof line?.quantity === "number" && factor
+            ? line.quantity * factor
+            : undefined;
+        const shortage =
+          requestedInBase !== undefined &&
+          requestedInBase > candidate.availableQuantityInBase;
+        return (
+          <>
+            <div>
+              {candidate.availableQuantityInBase} {candidate.baseUnitOfMeasure}
+            </div>
+            {shortage ? (
+              <Typography.Text type="danger">
+                {t("sales.orders.shortage", {
+                  quantity: requestedInBase - candidate.availableQuantityInBase,
+                  unit: candidate.baseUnitOfMeasure,
+                })}
+              </Typography.Text>
+            ) : null}
+          </>
+        );
+      },
+    },
+    {
       title: t("sales.orders.actions"),
       key: "actions",
       fixed: "right",
@@ -176,6 +226,19 @@ export function SalesOrderForm({
             currencyCode: selected?.defaultCurrencyCode ?? undefined,
           });
         }
+        changed.lines?.forEach(
+          (line: { productId?: string } | undefined, index: number) => {
+            if (!line?.productId) return;
+            const product = products.data?.items.find(
+              (item) => item.id === line.productId,
+            );
+            if (product)
+              form.setFieldValue(
+                ["lines", index, "unitOfMeasure"],
+                product.baseUnitOfMeasure,
+              );
+          },
+        );
       }}
     >
       <Form.Item
@@ -213,6 +276,25 @@ export function SalesOrderForm({
             .map((address) => ({
               value: address.id,
               label: `${address.label} — ${address.addressLine1}, ${address.city}`,
+            }))}
+        />
+      </Form.Item>
+      <Form.Item
+        label={t("sales.orders.fulfillmentWarehouse")}
+        name="fulfillmentWarehouseId"
+        rules={[
+          {
+            required: true,
+            message: t("sales.orders.fulfillmentWarehouseRequired"),
+          },
+        ]}
+      >
+        <Select
+          options={warehouses.data?.items
+            .filter((warehouse) => warehouse.isActive)
+            .map((warehouse) => ({
+              value: warehouse.id,
+              label: `${warehouse.code} — ${warehouse.name}`,
             }))}
         />
       </Form.Item>
@@ -265,7 +347,7 @@ export function SalesOrderForm({
           return { product };
         }}
         name="lines"
-        scroll={{ x: 900 }}
+        scroll={{ x: 1080 }}
       />
       <FormPageActions
         cancelLabel={cancelLabel}

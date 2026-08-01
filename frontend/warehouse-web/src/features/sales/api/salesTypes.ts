@@ -22,6 +22,7 @@ export type SalesOrderLineInput = {
 export type SalesOrderInput = {
   customerId: string;
   shippingAddressId: string;
+  fulfillmentWarehouseId: string;
   currencyCode: string;
   orderDate: string;
   requestedShipDate?: string;
@@ -67,6 +68,9 @@ export type SalesOrder = {
   customerName: string;
   shippingAddressId: string;
   shippingAddress: SalesOrderAddress;
+  fulfillmentWarehouseId: string;
+  fulfillmentWarehouseCode: string;
+  fulfillmentWarehouseName: string;
   currencyCode: string;
   orderDate: string;
   requestedShipDate: string | null;
@@ -80,6 +84,12 @@ export type SalesOrder = {
   statusHistory: SalesOrderStatusHistory[];
   createdAtUtc: string;
   updatedAtUtc: string;
+};
+
+export type SalesOrderAvailability = {
+  productId: string;
+  baseUnitOfMeasure: string;
+  availableQuantityInBase: number;
 };
 
 export type SalesOrderListQuery = {

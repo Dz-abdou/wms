@@ -124,6 +124,7 @@ public static class ApiErrorCodes
     public const string SalesOrderNotFound = "sales_order.not_found";
     public const string SalesOrderCustomerUnavailable = "sales_order.customer_unavailable";
     public const string SalesOrderShippingAddressUnavailable = "sales_order.shipping_address_unavailable";
+    public const string SalesOrderFulfillmentWarehouseUnavailable = "sales_order.fulfillment_warehouse_unavailable";
     public const string SalesOrderCurrencyUnavailable = "sales_order.currency_unavailable";
     public const string SalesOrderProductUnavailable = "sales_order.product_unavailable";
     public const string SalesOrderDuplicateProduct = "sales_order.duplicate_product";

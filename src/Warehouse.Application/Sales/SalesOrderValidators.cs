@@ -19,6 +19,7 @@ public sealed class SalesOrderInputValidator : AbstractValidator<SalesOrderInput
     {
         RuleFor(input => input.CustomerId).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired);
         RuleFor(input => input.ShippingAddressId).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired);
+        RuleFor(input => input.FulfillmentWarehouseId).NotEmpty().WithErrorCode(ApiErrorCodes.ValidationRequired);
         RuleFor(input => input.CurrencyCode).NotEmpty().Length(SalesOrderRules.CurrencyCodeLength).Must(value => value is not null && value.Trim().All(char.IsAsciiLetter)).WithErrorCode(ApiErrorCodes.ValidationInvalid);
         RuleFor(input => input.RequestedShipDate).GreaterThanOrEqualTo(input => input.OrderDate).When(input => input.RequestedShipDate.HasValue).WithErrorCode(ApiErrorCodes.ValidationInvalid);
         RuleFor(input => input.Version).GreaterThanOrEqualTo(0).When(input => input.Version.HasValue).WithErrorCode(ApiErrorCodes.ValidationInvalid);

@@ -97,6 +97,7 @@ export function SalesOrderEditPage() {
           initialValues={{
             customerId: order.customerId,
             shippingAddressId: order.shippingAddressId,
+            fulfillmentWarehouseId: order.fulfillmentWarehouseId,
             currencyCode: order.currencyCode,
             orderDate: order.orderDate,
             requestedShipDate: order.requestedShipDate ?? undefined,

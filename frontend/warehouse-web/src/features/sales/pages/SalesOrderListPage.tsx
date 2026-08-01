@@ -45,6 +45,12 @@ export function SalesOrderListPage() {
         render: (_, order) => `${order.customerCode} — ${order.customerName}`,
       },
       {
+        title: t("sales.orders.fulfillmentWarehouse"),
+        key: "fulfillmentWarehouse",
+        render: (_, order) =>
+          `${order.fulfillmentWarehouseCode} — ${order.fulfillmentWarehouseName}`,
+      },
+      {
         title: t("sales.orders.orderDate"),
         dataIndex: "orderDate",
         key: "orderDate",

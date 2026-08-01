@@ -2,6 +2,7 @@ import { requestJson } from "../../../shared/api/apiClient";
 import { salesApiPaths } from "../salesConstants";
 import type {
   SalesOrder,
+  SalesOrderAvailability,
   SalesOrderInput,
   SalesOrderListQuery,
   SalesOrderListResult,
@@ -26,6 +27,18 @@ export function getSalesOrders(
 }
 export function getSalesOrder(id: string, signal?: AbortSignal) {
   return requestJson<SalesOrder>(salesApiPaths.orderById(id), { signal });
+}
+export function getSalesOrderAvailability(
+  fulfillmentWarehouseId: string,
+  productIds: string[],
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams({ fulfillmentWarehouseId });
+  productIds.forEach((productId) => parameters.append("productIds", productId));
+  return requestJson<SalesOrderAvailability[]>(
+    `${salesApiPaths.availability}?${parameters}`,
+    { signal },
+  );
 }
 export function createSalesOrder(input: SalesOrderInput) {
   return requestJson<SalesOrder>(

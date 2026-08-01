@@ -8,6 +8,7 @@ using Warehouse.Application.Common.Persistence;
 using Warehouse.Domain.Customers;
 using Warehouse.Domain.Numbering;
 using Warehouse.Domain.Sales;
+using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 
 namespace Warehouse.Application.Sales;
 
@@ -27,6 +28,28 @@ public sealed class SalesOrderService(IWarehouseDbContext dbContext, TimeProvide
 
     public async Task<SalesOrderResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken) => ToResponse(await FindAsync(id, true, cancellationToken));
 
+    public async Task<IReadOnlyList<SalesOrderAvailabilityResponse>> GetAvailabilityAsync(
+        SalesOrderAvailabilityQuery query,
+        CancellationToken cancellationToken)
+    {
+        await EnsureFulfillmentWarehouseAsync(query.FulfillmentWarehouseId, cancellationToken);
+        var productIds = query.ProductIds.Distinct().Where(id => id != Guid.Empty).ToArray();
+        if (productIds.Length == 0) return [];
+
+        var products = await dbContext.Products.AsNoTracking()
+            .Where(product => productIds.Contains(product.Id) && product.IsActive)
+            .Select(product => new { product.Id, product.BaseUnitOfMeasure })
+            .ToListAsync(cancellationToken);
+        var quantities = await dbContext.InventoryBalances.AsNoTracking()
+            .Where(balance => balance.WarehouseId == query.FulfillmentWarehouseId && productIds.Contains(balance.ProductId))
+            .ToDictionaryAsync(balance => balance.ProductId, balance => balance.Quantity, cancellationToken);
+
+        return products.Select(product => new SalesOrderAvailabilityResponse(
+            product.Id,
+            product.BaseUnitOfMeasure,
+            quantities.GetValueOrDefault(product.Id))).ToList();
+    }
+
     public async Task<SalesOrderResponse> CreateAsync(SalesOrderInput input, CancellationToken cancellationToken)
     {
         SalesOrderResponse? response = null;
@@ -34,11 +57,12 @@ public sealed class SalesOrderService(IWarehouseDbContext dbContext, TimeProvide
         {
             var customer = await EnsureCustomerAsync(input.CustomerId, token);
             var address = await EnsureShippingAddressAsync(input.CustomerId, input.ShippingAddressId, token);
+            var warehouse = await EnsureFulfillmentWarehouseAsync(input.FulfillmentWarehouseId, token);
             var currencyCode = await EnsureCurrencyAsync(input.CurrencyCode, token);
             var lines = await ResolveLinesAsync(input.Lines ?? [], token);
             var now = UtcNow();
             var actor = currentUser.UserId ?? throw new SalesOrderFieldValidationException("OwnerUserId", ApiErrorCodes.ValidationRequired, "An authenticated sales owner is required.");
-            var order = SalesOrder.Create(await documentNumbers.AllocateAsync(DocumentNumberCodes.SalesOrder, now, token), customer.Id, customer.Code, customer.TradingName ?? customer.LegalName, address.Id, ToSnapshot(address), currencyCode, input.OrderDate, input.RequestedShipDate, input.CustomerReference, input.DeliveryInstructions ?? address.DeliveryInstructions ?? customer.DeliveryInstructions, actor, now);
+            var order = SalesOrder.Create(await documentNumbers.AllocateAsync(DocumentNumberCodes.SalesOrder, now, token), customer.Id, customer.Code, customer.TradingName ?? customer.LegalName, address.Id, warehouse.Id, warehouse.Code, warehouse.Name, ToSnapshot(address), currencyCode, input.OrderDate, input.RequestedShipDate, input.CustomerReference, input.DeliveryInstructions ?? address.DeliveryInstructions ?? customer.DeliveryInstructions, actor, now);
             order.ReplaceLines(lines, now, actor);
             dbContext.SalesOrders.Add(order);
             await SaveAsync(order.Id, token);
@@ -55,10 +79,11 @@ public sealed class SalesOrderService(IWarehouseDbContext dbContext, TimeProvide
         if (version != order.Version) throw new SalesOrderConcurrencyException(id);
         var customer = await EnsureCustomerAsync(input.CustomerId, cancellationToken);
         var address = await EnsureShippingAddressAsync(input.CustomerId, input.ShippingAddressId, cancellationToken);
+        var warehouse = await EnsureFulfillmentWarehouseAsync(input.FulfillmentWarehouseId, cancellationToken);
         var lines = await ResolveLinesAsync(input.Lines ?? [], cancellationToken);
         var now = UtcNow();
         var actor = currentUser.UserId ?? throw new SalesOrderFieldValidationException("OwnerUserId", ApiErrorCodes.ValidationRequired, "An authenticated sales owner is required.");
-        order.UpdateDraft(customer.Id, customer.Code, customer.TradingName ?? customer.LegalName, address.Id, ToSnapshot(address), await EnsureCurrencyAsync(input.CurrencyCode, cancellationToken), input.OrderDate, input.RequestedShipDate, input.CustomerReference, input.DeliveryInstructions ?? address.DeliveryInstructions ?? customer.DeliveryInstructions, version, now, actor);
+        order.UpdateDraft(customer.Id, customer.Code, customer.TradingName ?? customer.LegalName, address.Id, warehouse.Id, warehouse.Code, warehouse.Name, ToSnapshot(address), await EnsureCurrencyAsync(input.CurrencyCode, cancellationToken), input.OrderDate, input.RequestedShipDate, input.CustomerReference, input.DeliveryInstructions ?? address.DeliveryInstructions ?? customer.DeliveryInstructions, version, now, actor);
         order.ReplaceLines(lines, now, actor);
         await SaveAsync(id, cancellationToken);
         return ToResponse(order);
@@ -93,6 +118,11 @@ public sealed class SalesOrderService(IWarehouseDbContext dbContext, TimeProvide
         return customer;
     }
     private async Task<CustomerAddress> EnsureShippingAddressAsync(Guid customerId, Guid addressId, CancellationToken token) => await dbContext.CustomerAddresses.SingleOrDefaultAsync(item => item.CustomerId == customerId && item.Id == addressId && item.IsShippingAddress, token) ?? throw new SalesOrderFieldValidationException("ShippingAddressId", ApiErrorCodes.SalesOrderShippingAddressUnavailable, "Select a shipping address for the selected customer.");
+    private async Task<WarehouseEntity> EnsureFulfillmentWarehouseAsync(Guid id, CancellationToken token)
+    {
+        var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(item => item.Id == id && item.IsActive, token);
+        return warehouse ?? throw new SalesOrderFieldValidationException("FulfillmentWarehouseId", ApiErrorCodes.SalesOrderFulfillmentWarehouseUnavailable, "Select an active fulfilment warehouse.");
+    }
     private async Task<string> EnsureCurrencyAsync(string? currencyCode, CancellationToken token)
     {
         var normalized = currencyCode?.Trim().ToUpperInvariant();
@@ -115,6 +145,6 @@ public sealed class SalesOrderService(IWarehouseDbContext dbContext, TimeProvide
     }
     private async Task SaveAsync(Guid id, CancellationToken token) { try { await dbContext.SaveChangesAsync(token); } catch (DbUpdateConcurrencyException exception) { throw new SalesOrderConcurrencyException(id, exception); } }
     private static SalesOrderShippingAddress ToSnapshot(CustomerAddress address) => new(address.Label, address.AddressLine1, address.AddressLine2, address.City, address.PostalCode, address.CountryCode, address.DeliveryInstructions);
-    private static SalesOrderResponse ToResponse(SalesOrder order) => new(order.Id, order.Number, order.CustomerId, order.CustomerCode, order.CustomerName, order.ShippingAddressId, new SalesOrderAddressResponse(order.ShippingAddress.Label, order.ShippingAddress.AddressLine1, order.ShippingAddress.AddressLine2, order.ShippingAddress.City, order.ShippingAddress.PostalCode, order.ShippingAddress.CountryCode, order.ShippingAddress.DeliveryInstructions), order.CurrencyCode, order.OrderDate, order.RequestedShipDate, order.CustomerReference, order.DeliveryInstructions, order.OwnerUserId, order.Status, order.Lines.Select(line => new SalesOrderLineResponse(line.Id, line.LineNumber, line.ProductId, line.ProductSku, line.ProductName, line.UnitOfMeasure, line.Quantity, line.QuantityInBaseUnit, line.ConversionFactorToBaseUnit)).ToList(), order.Version, order.SubmittedAtUtc, order.StatusHistory.Select(item => new SalesOrderStatusHistoryResponse(item.Id, item.PreviousStatus, item.Status, item.ChangedAtUtc, item.ActorUserId, item.Reason)).ToList(), order.CreatedAtUtc, order.UpdatedAtUtc);
+    private static SalesOrderResponse ToResponse(SalesOrder order) => new(order.Id, order.Number, order.CustomerId, order.CustomerCode, order.CustomerName, order.ShippingAddressId, new SalesOrderAddressResponse(order.ShippingAddress.Label, order.ShippingAddress.AddressLine1, order.ShippingAddress.AddressLine2, order.ShippingAddress.City, order.ShippingAddress.PostalCode, order.ShippingAddress.CountryCode, order.ShippingAddress.DeliveryInstructions), order.FulfillmentWarehouseId, order.FulfillmentWarehouseCode, order.FulfillmentWarehouseName, order.CurrencyCode, order.OrderDate, order.RequestedShipDate, order.CustomerReference, order.DeliveryInstructions, order.OwnerUserId, order.Status, order.Lines.Select(line => new SalesOrderLineResponse(line.Id, line.LineNumber, line.ProductId, line.ProductSku, line.ProductName, line.UnitOfMeasure, line.Quantity, line.QuantityInBaseUnit, line.ConversionFactorToBaseUnit)).ToList(), order.Version, order.SubmittedAtUtc, order.StatusHistory.Select(item => new SalesOrderStatusHistoryResponse(item.Id, item.PreviousStatus, item.Status, item.ChangedAtUtc, item.ActorUserId, item.Reason)).ToList(), order.CreatedAtUtc, order.UpdatedAtUtc);
     private DateTime UtcNow() => timeProvider.GetUtcNow().UtcDateTime;
 }
