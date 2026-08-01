@@ -9,6 +9,7 @@ import { warehouseRoutes } from "../features/warehouses/warehouseConstants";
 import { productRoutes } from "../features/products/productConstants";
 import { inventoryRoutes } from "../features/inventory/inventoryConstants";
 import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { customerRoutes } from "../features/customers/customerConstants";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
 import { receivingRoutes } from "../features/receiving/receivingConstants";
 import { LanguageSelector } from "../shared/components/LanguageSelector";
@@ -28,39 +29,47 @@ export function ApplicationLayout() {
         ? "warehouses"
         : location.pathname.startsWith(supplierRoutes.list)
           ? "suppliers"
-          : location.pathname.startsWith(purchasingRoutes.catalogue)
-            ? "catalogue"
-            : location.pathname.startsWith(purchasingRoutes.currencies)
-              ? "currencies"
-              : location.pathname.startsWith(purchasingRoutes.orders)
-                ? "purchase-orders"
-                : location.pathname.startsWith(receivingRoutes.list)
-                  ? "goods-receipts"
-                  : location.pathname.startsWith(inventoryRoutes.overview) ||
-                      location.pathname === inventoryRoutes.root
-                    ? "inventory-overview"
-                    : location.pathname.startsWith(inventoryRoutes.adjustments)
-                      ? "inventory-adjustments"
-                      : location.pathname.startsWith(inventoryRoutes.transfers)
-                        ? "inventory-transfers"
+          : location.pathname.startsWith(customerRoutes.list)
+            ? "customers"
+            : location.pathname.startsWith(purchasingRoutes.catalogue)
+              ? "catalogue"
+              : location.pathname.startsWith(purchasingRoutes.currencies)
+                ? "currencies"
+                : location.pathname.startsWith(purchasingRoutes.orders)
+                  ? "purchase-orders"
+                  : location.pathname.startsWith(receivingRoutes.list)
+                    ? "goods-receipts"
+                    : location.pathname.startsWith(inventoryRoutes.overview) ||
+                        location.pathname === inventoryRoutes.root
+                      ? "inventory-overview"
+                      : location.pathname.startsWith(
+                            inventoryRoutes.adjustments,
+                          )
+                        ? "inventory-adjustments"
                         : location.pathname.startsWith(
-                              inventoryRoutes.cycleCounts,
+                              inventoryRoutes.transfers,
                             )
-                          ? "inventory-cycle-counts"
+                          ? "inventory-transfers"
                           : location.pathname.startsWith(
-                                inventoryRoutes.movementHistory,
-                              ) ||
-                              location.pathname.startsWith(inventoryRoutes.root)
-                            ? "inventory-movements"
+                                inventoryRoutes.cycleCounts,
+                              )
+                            ? "inventory-cycle-counts"
                             : location.pathname.startsWith(
-                                  administrationRoutes.users,
+                                  inventoryRoutes.movementHistory,
+                                ) ||
+                                location.pathname.startsWith(
+                                  inventoryRoutes.root,
                                 )
-                              ? "users"
+                              ? "inventory-movements"
                               : location.pathname.startsWith(
-                                    administrationRoutes.roles,
+                                    administrationRoutes.users,
                                   )
-                                ? "roles"
-                                : "home";
+                                ? "users"
+                                : location.pathname.startsWith(
+                                      administrationRoutes.roles,
+                                    )
+                                  ? "roles"
+                                  : "home";
   const isAdministrator = session?.roles.includes(administratorRole);
 
   return (
@@ -106,6 +115,14 @@ export function ApplicationLayout() {
                   label: (
                     <Link to={supplierRoutes.list}>
                       {t("navigation.suppliers")}
+                    </Link>
+                  ),
+                },
+                {
+                  key: "customers",
+                  label: (
+                    <Link to={customerRoutes.list}>
+                      {t("navigation.customers")}
                     </Link>
                   ),
                 },

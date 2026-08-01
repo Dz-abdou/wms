@@ -9,6 +9,7 @@ using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Currencies;
 using Warehouse.Domain.Suppliers;
 using Warehouse.Domain.Receiving;
+using Warehouse.Domain.Customers;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
 
@@ -26,6 +27,12 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
     public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     public DbSet<SupplierProduct> SupplierProducts => Set<SupplierProduct>();
+
+    public DbSet<Customer> Customers => Set<Customer>();
+
+    public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
+
+    public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
 
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
 

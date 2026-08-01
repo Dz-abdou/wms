@@ -18,6 +18,7 @@ using Warehouse.Api.Endpoints.Suppliers;
 using Warehouse.Api.Endpoints.Purchasing;
 using Warehouse.Api.Endpoints.Currencies;
 using Warehouse.Api.Endpoints.Receiving;
+using Warehouse.Api.Endpoints.Customers;
 using Warehouse.Api.Middleware;
 using Warehouse.Application;
 using Warehouse.Infrastructure;
@@ -46,6 +47,7 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.C
 builder.Services.AddHealthChecks().AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"]).AddDbContextCheck<WarehouseDbContext>("postgresql", tags: ["ready"]);
 var app = builder.Build();
 app.MapSupplierEndpoints();
+app.MapCustomerEndpoints();
 app.MapCurrencyEndpoints();
 app.MapSupplierProductEndpoints();
 app.MapPurchaseOrderEndpoints();

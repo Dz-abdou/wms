@@ -6,6 +6,7 @@ using Warehouse.Application.Warehouses;
 using Warehouse.Application.Suppliers;
 using Warehouse.Application.Purchasing;
 using Warehouse.Application.Currencies;
+using Warehouse.Application.Customers;
 
 namespace Warehouse.Application;
 
@@ -18,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<WarehouseService>();
         services.AddScoped<ProductCategoryService>();
         services.AddScoped<SupplierService>();
+        services.AddScoped<CustomerService>();
         services.AddScoped<SupplierProductService>();
         services.AddScoped<PurchaseOrderService>();
         services.AddScoped<CurrencyService>();
