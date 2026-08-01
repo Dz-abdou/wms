@@ -4,6 +4,8 @@ export const inventoryApiPaths = {
   overview: "/api/inventory/overview",
   cycleCounts: "/api/inventory/cycle-counts",
   cycleCountCandidate: "/api/inventory/cycle-counts/candidate",
+  transfers: "/api/inventory/transfers",
+  transferCandidate: "/api/inventory/transfers/candidate",
 } as const;
 
 export const inventoryRoutes = {
@@ -25,6 +27,12 @@ export const inventoryRoutes = {
   cycleCountCreatePattern: "inventory/cycle-counts/new",
   cycleCountDetail: (id: string) => `/inventory/cycle-counts/${id}`,
   cycleCountDetailPattern: "inventory/cycle-counts/:id",
+  transfers: "/inventory/transfers",
+  transfersPattern: "inventory/transfers",
+  transferCreate: "/inventory/transfers/new",
+  transferCreatePattern: "inventory/transfers/new",
+  transferDetail: (id: string) => `/inventory/transfers/${id}`,
+  transferDetailPattern: "inventory/transfers/:id",
 } as const;
 
 export const inventoryPageSize = 100;

@@ -12,6 +12,8 @@ Every future business document or multi-line warehouse operation must be designe
 
 - A document create/edit screen uses a small header form for shared data, followed by an editable Ant Design Table for its lines. `Form.List` remains the form-state owner; table cells contain the relevant Ant Design input controls.
 - A document detail screen uses the same conceptual layout: read-only header/summary, read-only line table, totals where commercial values apply, and a status/history timeline when the document changes state.
+- Every master-detail document detail page follows the Purchase Order detail pattern: the shared detail layout, summary, then the line table directly in the page content. Do not add a redundant generic card or a `Lines` heading around that table; use a separate card only when it contains a distinct business section such as totals, history, or exceptions.
+- The first column of every master-detail line table is the stable one-based **Line number** (`#`). It is shown on create/edit and read-only detail pages for purchase orders, goods receipts, adjustments, cycle counts, transfers, sales orders, picks, shipments, and later document types. A document list may show the aggregate **Line count** instead.
 - The editable table must show the user-input fields plus the operational context needed to make a safe decision: product/reference, UoM, available or outstanding quantity when relevant, price/currency/line amount when relevant, and an explicit remove action. Derived values are read-only.
 - The shared editable-table component must provide its add-row action inside the table as a full-width footer row with an accessible `+ Add line` control. Keep each data row's action column reserved for row-specific actions such as Remove; do not place a separate add button beneath the table or repeat add controls on every row.
 - Validate a selected line against its applicable master-data constraints before submission (for example MOQ, available quantity, permitted UoM, or outstanding quantity). The API remains authoritative and must return any revalidation failure as a 4xx validation Problem Details response keyed to the exact nested field (for example `Lines[2].Quantity`), with a stable field error code. The frontend must translate that code and display it on the corresponding table cell rather than only showing a generic notification.
@@ -50,6 +52,16 @@ The supplier-management and core purchase-order slices are merged. They establis
 The active branch is the approved cross-cutting **UI/UX Consistency** slice. It applies the Application UI/UX Standard to the existing completed screens without changing business workflow sequencing, APIs, or data models. Once it is merged, the next business workflow is **Phase 4.1 — Purchase Order Operational Hardening**. Phase 5 must not start until Phase 4.1 exit criteria pass.
 
 The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
+
+### Next Cross-Cutting UI/UX Follow-Up — Master-Detail Detail Normalization
+
+After the current inter-warehouse-transfer branch is merged and before the next new master-detail workflow starts, complete one focused UI/UX consistency PR that normalizes existing master-detail detail pages to the Purchase Order pattern. It includes cycle counts, transfers, goods receipts, purchase orders, and any other existing document detail page with lines.
+
+- Remove redundant `Lines` card wrappers/headings around the primary line table.
+- Add the stable **Line number** (`#`) column where it is missing, including cycle-count and transfer detail tables.
+- Retain separate summary, totals, timeline, history, and exception sections only where they convey distinct information.
+- Verify each normalized table at narrow widths and keep an existing row-level Actions column fixed right when one exists.
+- Add/adjust frontend regression tests for the common structure before treating the consistency work as complete.
 
 ## Phase 0 — Foundation
 

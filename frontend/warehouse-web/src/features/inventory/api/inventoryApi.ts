@@ -15,6 +15,11 @@ import type {
   PagedCycleCounts,
   PagedInventoryMovements,
   PagedInventoryOverview,
+  InventoryTransferInput,
+  InventoryTransferListQuery,
+  InventoryTransferDetail,
+  PagedInventoryTransfers,
+  InventoryTransferCandidate,
 } from "./inventoryTypes";
 
 export function adjustInventory(input: InventoryAdjustmentInput) {
@@ -111,6 +116,47 @@ export function createCycleCount(input: CycleCountInput) {
 export function getCycleCount(id: string, signal?: AbortSignal) {
   return requestJson<CycleCountDetail>(
     `${inventoryApiPaths.cycleCounts}/${id}`,
+    { signal },
+  );
+}
+
+export function createTransfer(input: InventoryTransferInput) {
+  return requestJson<InventoryTransferDetail>(inventoryApiPaths.transfers, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+}
+
+export function getTransferCandidate(
+  sourceWarehouseId: string,
+  productId: string,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams({ sourceWarehouseId, productId });
+  return requestJson<InventoryTransferCandidate>(
+    `${inventoryApiPaths.transferCandidate}?${parameters}`,
+    { signal },
+  );
+}
+
+export function getTransfers(
+  query: InventoryTransferListQuery,
+  signal?: AbortSignal,
+) {
+  const parameters = new URLSearchParams();
+  Object.entries(query).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") parameters.set(key, String(value));
+  });
+  return requestJson<PagedInventoryTransfers>(
+    `${inventoryApiPaths.transfers}?${parameters}`,
+    { signal },
+  );
+}
+
+export function getTransfer(id: string, signal?: AbortSignal) {
+  return requestJson<InventoryTransferDetail>(
+    `${inventoryApiPaths.transfers}/${id}`,
     { signal },
   );
 }

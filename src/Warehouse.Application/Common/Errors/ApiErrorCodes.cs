@@ -45,6 +45,8 @@ public static class ApiErrorCodes
     public const string InventoryAdjustmentNotFound = "inventory.adjustment_not_found";
     public const string InventoryCycleCountNotFound = "inventory.cycle_count_not_found";
     public const string InventoryCycleCountStaleBalance = "inventory.cycle_count_stale_balance";
+    public const string InventoryTransferNotFound = "inventory.transfer_not_found";
+    public const string InventoryTransferStaleBalance = "inventory.transfer_stale_balance";
     public const string PurchaseOrderNotFound = "purchase_order.not_found";
     public const string PurchaseOrderImmutable = "purchase_order.immutable";
     public const string PurchaseOrderCatalogueInvalid = "purchase_order.catalogue_invalid";

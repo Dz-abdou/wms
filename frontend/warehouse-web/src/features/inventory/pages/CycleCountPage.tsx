@@ -7,9 +7,7 @@ import {
   InputNumber,
   Select,
   Spin,
-  Tooltip,
 } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +24,7 @@ import { useReturnDestination } from "../../../shared/navigation/returnNavigatio
 import { useProducts } from "../../products/api/useProducts";
 import type { Product } from "../../products/api/productTypes";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
+import { ReloadableQuantityField } from "../components/ReloadableQuantityField";
 import { getCycleCountCandidate } from "../api/inventoryApi";
 import { useCreateCycleCount } from "../api/useInventory";
 import type {
@@ -37,7 +36,6 @@ import {
   inventoryPageSize,
   inventoryRoutes,
 } from "../inventoryConstants";
-import styles from "./CycleCountPage.module.css";
 
 type CycleCountRow = object;
 
@@ -142,37 +140,35 @@ export function CycleCountPage() {
       title: t("inventory.cycleCounts.systemQuantity"),
       key: "systemQuantity",
       width: 330,
-      render: (_, row) => (
-        <div className={styles.systemQuantity}>
-          <Form.Item
-            className={styles.systemQuantityField}
-            name={[row.fieldName, "systemQuantityInBase"]}
-            style={{ marginBottom: 0 }}
-          >
-            <InputNumber
-              aria-label={t("inventory.cycleCounts.systemQuantity")}
-              disabled
-            />
-          </Form.Item>
-          <Tooltip title={t("inventory.cycleCounts.reloadLine")}>
-            <Button
-              aria-label={t("inventory.cycleCounts.reloadLine")}
-              className={styles.reloadButton}
-              disabled={!lines[row.fieldName]?.productId}
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                const productId = lines[row.fieldName]?.productId;
-                if (productId) void loadCandidate(row.fieldName, productId);
-              }}
-              size="small"
-              type="text"
-            />
-          </Tooltip>
-          <Form.Item hidden name={[row.fieldName, "systemBalanceVersion"]}>
-            <Input />
-          </Form.Item>
-        </div>
-      ),
+      render: (_, row) => {
+        const line = lines[row.fieldName];
+        const product = products.data?.items.find(
+          (item) => item.id === line?.productId,
+        );
+        return (
+          <>
+            <Form.Item
+              name={[row.fieldName, "systemQuantityInBase"]}
+              style={{ marginBottom: 0 }}
+            >
+              <ReloadableQuantityField
+                disabled={!line?.productId}
+                label={t("inventory.cycleCounts.systemQuantity")}
+                onReload={() => {
+                  if (line?.productId) {
+                    void loadCandidate(row.fieldName, line.productId);
+                  }
+                }}
+                reloadLabel={t("inventory.cycleCounts.reloadLine")}
+                unitOfMeasure={product?.baseUnitOfMeasure}
+              />
+            </Form.Item>
+            <Form.Item hidden name={[row.fieldName, "systemBalanceVersion"]}>
+              <Input />
+            </Form.Item>
+          </>
+        );
+      },
     },
     {
       title: t("inventory.cycleCounts.unit"),

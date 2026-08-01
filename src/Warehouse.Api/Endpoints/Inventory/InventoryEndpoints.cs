@@ -40,6 +40,18 @@ public static class InventoryEndpoints
         group.MapPost(InventoryApiRoutes.CycleCountPath, CreateCycleCountAsync)
             .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
             .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
+        group.MapGet(InventoryApiRoutes.TransferPath, GetTransfersAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapGet(InventoryApiRoutes.TransferCandidatePath, GetTransferCandidateAsync)
+            .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
+        group.MapGet(InventoryApiRoutes.TransferByIdPath, GetTransferByIdAsync)
+            .RequireAuthorization(AuthorizationPolicies.ReadInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.ReadInventory));
+        group.MapPost(InventoryApiRoutes.TransferPath, CreateTransferAsync)
+            .RequireAuthorization(AuthorizationPolicies.AdjustInventory)
+            .AddEndpointFilter(new CatalogAuthorizationEndpointFilter(AuthorizationPolicies.AdjustInventory));
 
         return endpoints;
     }
@@ -126,5 +138,43 @@ public static class InventoryEndpoints
         if (validationProblem is not null) return validationProblem;
         var cycleCount = await inventoryService.CreateCycleCountAsync(input, cancellationToken);
         return Results.Created($"{InventoryApiRoutes.CycleCountPath}/{cycleCount.Id}", cycleCount);
+    }
+
+    private static async Task<IResult> GetTransfersAsync(
+        [AsParameters] InventoryTransferListQuery query,
+        IValidator<InventoryTransferListQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetTransfersAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetTransferCandidateAsync(
+        [AsParameters] InventoryTransferCandidateQuery query,
+        IValidator<InventoryTransferCandidateQuery> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(query, cancellationToken);
+        return validationProblem ?? Results.Ok(await inventoryService.GetTransferCandidateAsync(query, cancellationToken));
+    }
+
+    private static async Task<IResult> GetTransferByIdAsync(
+        Guid id,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken) =>
+        Results.Ok(await inventoryService.GetTransferByIdAsync(id, cancellationToken));
+
+    private static async Task<IResult> CreateTransferAsync(
+        InventoryTransferInput input,
+        IValidator<InventoryTransferInput> validator,
+        InventoryService inventoryService,
+        CancellationToken cancellationToken)
+    {
+        var validationProblem = await validator.ValidateRequestAsync(input, cancellationToken);
+        if (validationProblem is not null) return validationProblem;
+        var transfer = await inventoryService.CreateTransferAsync(input, cancellationToken);
+        return Results.Created($"{InventoryApiRoutes.TransferPath}/{transfer.Id}", transfer);
     }
 }

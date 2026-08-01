@@ -8,6 +8,9 @@ import {
   createCycleCount,
   getCycleCount,
   getCycleCounts,
+  createTransfer,
+  getTransfer,
+  getTransfers,
 } from "./inventoryApi";
 import type {
   InventoryAdjustmentInput,
@@ -16,6 +19,8 @@ import type {
   InventoryOverviewQuery,
   CycleCountInput,
   CycleCountListQuery,
+  InventoryTransferInput,
+  InventoryTransferListQuery,
 } from "./inventoryTypes";
 
 export const inventoryKeys = {
@@ -31,6 +36,9 @@ export const inventoryKeys = {
     [...inventoryKeys.all, "cycle-counts", query] as const,
   cycleCount: (id: string) =>
     [...inventoryKeys.all, "cycle-count", id] as const,
+  transfers: (query: InventoryTransferListQuery) =>
+    [...inventoryKeys.all, "transfers", query] as const,
+  transfer: (id: string) => [...inventoryKeys.all, "transfer", id] as const,
 };
 
 export function useMovementHistory(filter: InventoryMovementFilter) {
@@ -92,6 +100,31 @@ export function useCreateCycleCount() {
 
   return useMutation({
     mutationFn: (input: CycleCountInput) => createCycleCount(input),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+  });
+}
+
+export function useTransfers(query: InventoryTransferListQuery) {
+  return useQuery({
+    queryKey: inventoryKeys.transfers(query),
+    queryFn: ({ signal }) => getTransfers(query, signal),
+  });
+}
+
+export function useTransfer(id: string | undefined) {
+  return useQuery({
+    queryKey: inventoryKeys.transfer(id ?? ""),
+    queryFn: ({ signal }) => getTransfer(id ?? "", signal),
+    enabled: Boolean(id),
+  });
+}
+
+export function useCreateTransfer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: InventoryTransferInput) => createTransfer(input),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
   });

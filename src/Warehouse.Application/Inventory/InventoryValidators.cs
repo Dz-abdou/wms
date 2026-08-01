@@ -30,6 +30,56 @@ public sealed class InventoryAdjustmentLineInputValidator : AbstractValidator<In
     }
 }
 
+public sealed class InventoryTransferInputValidator : AbstractValidator<InventoryTransferInput>
+{
+    public InventoryTransferInputValidator()
+    {
+        RuleFor(input => input.SourceWarehouseId).NotEmpty();
+        RuleFor(input => input.DestinationWarehouseId).NotEmpty();
+        RuleFor(input => input.DestinationWarehouseId)
+            .NotEqual(input => input.SourceWarehouseId)
+            .WithMessage("Source and destination warehouses must be different.");
+        RuleFor(input => input.Reference).MaximumLength(InventoryTransferRules.MaxReferenceLength);
+        RuleFor(input => input.Note).MaximumLength(InventoryTransferRules.MaxNoteLength);
+        RuleFor(input => input.Lines).NotEmpty();
+        RuleForEach(input => input.Lines).SetValidator(new InventoryTransferLineInputValidator());
+        RuleFor(input => input.Lines)
+            .Must(lines => lines.Select(line => line.ProductId).Distinct().Count() == lines.Count)
+            .WithMessage("Each product can appear only once in a transfer.");
+    }
+}
+
+public sealed class InventoryTransferLineInputValidator : AbstractValidator<InventoryTransferLineInput>
+{
+    public InventoryTransferLineInputValidator()
+    {
+        RuleFor(input => input.ProductId).NotEmpty();
+        RuleFor(input => input.Quantity).GreaterThan(0m);
+        RuleFor(input => input.UnitOfMeasure).NotEmpty();
+        RuleFor(input => input.SourceQuantityInBase).GreaterThanOrEqualTo(0m);
+        RuleFor(input => input.SourceBalanceVersion).GreaterThanOrEqualTo(0);
+    }
+}
+
+public sealed class InventoryTransferCandidateQueryValidator : AbstractValidator<InventoryTransferCandidateQuery>
+{
+    public InventoryTransferCandidateQueryValidator()
+    {
+        RuleFor(query => query.SourceWarehouseId).NotEmpty();
+        RuleFor(query => query.ProductId).NotEmpty();
+    }
+}
+
+public sealed class InventoryTransferListQueryValidator : PagedRequestValidator<InventoryTransferListQuery>
+{
+    public InventoryTransferListQueryValidator()
+    {
+        RuleFor(query => query.Reference).MaximumLength(InventoryTransferRules.MaxReferenceLength);
+        RuleFor(query => query.ToUtc).GreaterThanOrEqualTo(query => query.FromUtc)
+            .When(query => query.FromUtc.HasValue && query.ToUtc.HasValue);
+    }
+}
+
 public sealed class InventoryMovementListQueryValidator : PagedRequestValidator<InventoryMovementListQuery>
 {
     public InventoryMovementListQueryValidator()

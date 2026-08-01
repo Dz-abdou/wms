@@ -27,6 +27,7 @@
     "movementHistory": "Movement history",
     "adjustments": "Adjustments",
     "cycleCounts": "Cycle counts",
+    "transfers": "Transfers",
     "users": "Users",
     "roles": "Roles",
     "masterData": "Master data",
@@ -113,7 +114,9 @@
       "inventory.insufficient_stock": "The quantity exceeds available stock in {{warehouse}}. Available: {{availableQuantity}} {{baseUnitOfMeasure}}.",
       "inventory.adjustment_not_found": "The inventory adjustment was not found.",
       "inventory.cycle_count_not_found": "The cycle count was not found.",
-      "inventory.cycle_count_stale_balance": "Stock changed. Current system quantity is {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Reload this line."
+      "inventory.cycle_count_stale_balance": "Stock changed. Current system quantity is {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Reload this line.",
+      "inventory.transfer_not_found": "The inventory transfer was not found.",
+      "inventory.transfer_stale_balance": "Source stock changed. Current availability is {{currentQuantityInBase}} {{baseUnitOfMeasure}} in {{warehouse}}. Reload this line."
     }
   },
   "products": {
@@ -591,7 +594,9 @@
       "decrease": "Decrease",
       "goodsReceipt": "Goods receipt",
       "cycleCountIncrease": "Cycle count increase",
-      "cycleCountDecrease": "Cycle count decrease"
+      "cycleCountDecrease": "Cycle count decrease",
+      "transferOut": "Transfer out",
+      "transferIn": "Transfer in"
     },
     "reasons": {
       "StockCorrection": "Stock correction",
@@ -640,7 +645,11 @@
       "loadCountCandidate": "The current stock quantity could not be loaded.",
       "createCycleCount": "The cycle count could not be posted.",
       "loadCycleCounts": "Cycle counts could not be loaded.",
-      "loadCycleCount": "The cycle count could not be loaded."
+      "loadCycleCount": "The cycle count could not be loaded.",
+      "loadTransferCandidate": "The available source quantity could not be loaded.",
+      "createTransfer": "The inventory transfer could not be posted.",
+      "loadTransfers": "Inventory transfers could not be loaded.",
+      "loadTransfer": "The inventory transfer could not be loaded."
     },
     "cycleCounts": {
       "title": "Cycle counts",
@@ -662,6 +671,29 @@
       "loading": "Loading cycle counts…",
       "loadingOne": "Loading cycle count…",
       "empty": "No cycle counts exist yet."
+    },
+    "transfers": {
+      "title": "Transfers",
+      "subtitle": "Move stock between warehouses and retain the resulting ledger evidence.",
+      "createTitle": "Record transfer",
+      "createSubtitle": "Move selected stock from one warehouse to another in one atomic operation.",
+      "detailTitle": "Inventory transfer",
+      "document": "Transfer",
+      "post": "Post transfer",
+      "sourceWarehouse": "Source warehouse",
+      "destinationWarehouse": "Destination warehouse",
+      "sourceRequired": "A source warehouse is required.",
+      "destinationRequired": "A destination warehouse is required.",
+      "availableAtSource": "Available at source",
+      "reloadLine": "Reload availability",
+      "quantity": "Transfer quantity",
+      "baseQuantity": "Base quantity",
+      "sourceBalanceAfter": "Source balance after",
+      "destinationBalanceAfter": "Destination balance after",
+      "transferredAt": "Transferred at",
+      "loading": "Loading transfers…",
+      "loadingOne": "Loading transfer…",
+      "empty": "No inventory transfers exist yet."
     }
   }
 }

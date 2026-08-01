@@ -24,6 +24,30 @@ public sealed record InventoryAdjustmentInput(
     string? Note,
     IReadOnlyList<InventoryAdjustmentLineInput> Lines);
 
+public sealed record InventoryTransferLineInput(
+    Guid ProductId,
+    decimal Quantity,
+    string? UnitOfMeasure,
+    decimal SourceQuantityInBase,
+    int SourceBalanceVersion);
+
+public sealed record InventoryTransferInput(
+    Guid SourceWarehouseId,
+    Guid DestinationWarehouseId,
+    string? Reference,
+    string? Note,
+    IReadOnlyList<InventoryTransferLineInput> Lines);
+
+public sealed record InventoryTransferCandidateQuery(
+    Guid SourceWarehouseId,
+    Guid ProductId);
+
+public sealed record InventoryTransferCandidateResponse(
+    Guid ProductId,
+    string BaseUnitOfMeasure,
+    decimal AvailableQuantityInBase,
+    int SourceBalanceVersion);
+
 public sealed record InventoryBalanceResponse(
     Guid ProductId,
     Guid WarehouseId,
@@ -86,6 +110,7 @@ public sealed record InventoryMovementResponse(
     Guid? InventoryAdjustmentId,
     Guid? GoodsReceiptId,
     Guid? CycleCountId,
+    Guid? InventoryTransferId,
     Guid ProductId,
     string ProductSku,
     string ProductName,
@@ -95,12 +120,61 @@ public sealed record InventoryMovementResponse(
     string? AdjustmentReference,
     string? GoodsReceiptNumber,
     string? CycleCountReference,
+    string? TransferReference,
     string Type,
     string UnitOfMeasure,
     decimal QuantityDeltaInUnit,
     decimal QuantityDelta,
     decimal BalanceAfter,
     DateTime CreatedAtUtc);
+
+public sealed record InventoryTransferListQuery(
+    int Page = PaginationConstants.DefaultPage,
+    int PageSize = PaginationConstants.DefaultPageSize,
+    Guid? SourceWarehouseId = null,
+    Guid? DestinationWarehouseId = null,
+    string? Reference = null,
+    DateTime? FromUtc = null,
+    DateTime? ToUtc = null) : IPagedRequest;
+
+public sealed record InventoryTransferListItemResponse(
+    Guid Id,
+    Guid SourceWarehouseId,
+    string SourceWarehouseCode,
+    string SourceWarehouseName,
+    Guid DestinationWarehouseId,
+    string DestinationWarehouseCode,
+    string DestinationWarehouseName,
+    string? Reference,
+    DateTime TransferredAtUtc,
+    int LineCount);
+
+public sealed record InventoryTransferDetailResponse(
+    Guid Id,
+    Guid SourceWarehouseId,
+    string SourceWarehouseCode,
+    string SourceWarehouseName,
+    Guid DestinationWarehouseId,
+    string DestinationWarehouseCode,
+    string DestinationWarehouseName,
+    string? Reference,
+    string? Note,
+    DateTime TransferredAtUtc,
+    IReadOnlyList<InventoryTransferLineResponse> Lines);
+
+public sealed record InventoryTransferLineResponse(
+    Guid Id,
+    int LineNumber,
+    Guid ProductId,
+    string ProductSku,
+    string ProductName,
+    string UnitOfMeasure,
+    decimal QuantityInUnit,
+    decimal QuantityInBaseUnit,
+    Guid TransferOutMovementId,
+    decimal SourceBalanceAfter,
+    Guid TransferInMovementId,
+    decimal DestinationBalanceAfter);
 
 public sealed record InventoryMovementListQuery(
     Guid? ProductId = null,

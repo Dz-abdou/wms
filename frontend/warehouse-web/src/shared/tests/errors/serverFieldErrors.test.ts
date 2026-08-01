@@ -46,4 +46,44 @@ describe("applyServerFieldErrors", () => {
       },
     ]);
   });
+
+  it("maps a stale transfer response to the available-source cell", () => {
+    const setFields = vi.fn();
+    const form = { setFields } as unknown as FormInstance;
+    const error = new ApiError(422, {
+      code: "inventory.transfer_stale_balance",
+      errors: {
+        "Lines[0].SourceQuantityInBase": ["diagnostic only"],
+      },
+      errorCodes: {
+        "Lines[0].SourceQuantityInBase": ["inventory.transfer_stale_balance"],
+      },
+      errorParameters: {
+        "Lines[0].SourceQuantityInBase": [
+          {
+            baseUnitOfMeasure: "EA",
+            currentQuantityInBase: 8,
+            warehouse: "MAIN — Main warehouse",
+          },
+        ],
+      },
+    });
+
+    const handled = applyServerFieldErrors(
+      form,
+      error,
+      i18n.t.bind(i18n),
+      "errors.validationFailed",
+    );
+
+    expect(handled).toBe(true);
+    expect(setFields).toHaveBeenCalledWith([
+      {
+        name: ["lines", 0, "sourceQuantityInBase"],
+        errors: [
+          "Source stock changed. Current availability is 8 EA in MAIN — Main warehouse. Reload this line.",
+        ],
+      },
+    ]);
+  });
 });
