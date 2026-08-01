@@ -35,6 +35,8 @@
     "categories": "Catégories de produits",
     "currencies": "Devises",
     "inbound": "Réception",
+    "outbound": "Expédition",
+    "salesOrders": "Commandes clients",
     "administration": "Administration"
   },
   "language": {
@@ -124,7 +126,18 @@
       "inventory.cycle_count_not_found": "L’inventaire tournant est introuvable.",
       "inventory.cycle_count_stale_balance": "Le stock a changé. La quantité système actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}}. Rechargez cette ligne.",
       "inventory.transfer_not_found": "Le transfert de stock est introuvable.",
-      "inventory.transfer_stale_balance": "Le stock source a changé. La disponibilité actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}} dans {{warehouse}}. Rechargez cette ligne."
+      "inventory.transfer_stale_balance": "Le stock source a changé. La disponibilité actuelle est de {{currentQuantityInBase}} {{baseUnitOfMeasure}} dans {{warehouse}}. Rechargez cette ligne.",
+      "sales_order.not_found": "La commande client est introuvable.",
+      "sales_order.customer_unavailable": "Sélectionnez un client actif.",
+      "sales_order.shipping_address_unavailable": "Sélectionnez une adresse de livraison appartenant au client sélectionné.",
+      "sales_order.fulfillment_warehouse_unavailable": "Sélectionnez un entrepôt de préparation actif.",
+      "sales_order.currency_unavailable": "Sélectionnez une devise active.",
+      "sales_order.product_unavailable": "Sélectionnez un produit actif.",
+      "sales_order.duplicate_product": "Un produit ne peut apparaître qu’une seule fois dans une commande client.",
+      "sales_order.quantity_unit_invalid": "La quantité ou l’unité de mesure n’est pas valide pour ce produit.",
+      "sales_order.immutable": "Seules les commandes clients à l’état brouillon peuvent être modifiées.",
+      "sales_order.concurrency_conflict": "Cette commande client a été modifiée par un autre utilisateur. Rechargez-la avant de réessayer.",
+      "sales_order.invalid_transition": "Cette commande client ne peut pas effectuer ce changement de statut."
     }
   },
   "products": {
@@ -593,6 +606,71 @@
       "parentHelp": "Facultatif. Utilisez-le seulement pour placer cette catégorie sous une catégorie plus large.",
       "errors": {
         "save": "La catégorie de produit n’a pas pu être enregistrée."
+      }
+    }
+  },
+  "sales": {
+    "view": "Voir",
+    "edit": "Modifier",
+    "status": {
+      "draft": "Brouillon",
+      "submitted": "Validée",
+      "cancelled": "Annulée"
+    },
+    "orders": {
+      "title": "Commandes clients",
+      "subtitle": "Enregistrez les commandes clients avant les futurs flux d’allocation et d’expédition.",
+      "createTitle": "Créer une commande client",
+      "editTitle": "Modifier la commande client",
+      "detailTitle": "Commande client",
+      "create": "Créer la commande client",
+      "number": "Numéro",
+      "customer": "Client",
+      "shippingAddress": "Adresse de livraison",
+      "fulfillmentWarehouse": "Entrepôt de préparation",
+      "currency": "Devise",
+      "orderDate": "Date de commande",
+      "requestedShipDate": "Date d’expédition demandée",
+      "customerReference": "Référence client",
+      "deliveryInstructions": "Instructions de livraison",
+      "status": "Statut",
+      "lineCount": "Lignes",
+      "lines": "Lignes",
+      "lineNumber": "Ligne",
+      "product": "Produit",
+      "unit": "Unité",
+      "quantity": "Quantité",
+      "baseQuantity": "Quantité de base",
+      "availableAtWarehouse": "Disponible",
+      "reloadAvailability": "Recharger la disponibilité",
+      "actions": "Actions",
+      "fromDate": "Du",
+      "toDate": "Au",
+      "customerRequired": "Un client est obligatoire.",
+      "shippingAddressRequired": "Une adresse de livraison est obligatoire.",
+      "fulfillmentWarehouseRequired": "Un entrepôt de préparation est obligatoire.",
+      "productRequired": "Un produit est obligatoire.",
+      "unitRequired": "Une unité de mesure est obligatoire.",
+      "quantityRequired": "Une quantité est obligatoire.",
+      "shortage": "Manque de {{quantity}} {{unit}}",
+      "addLine": "Ajouter une ligne",
+      "removeLine": "Supprimer",
+      "submit": "Valider",
+      "submitTitle": "Valider la commande client",
+      "submitDescription": "Valider cette commande client pour la prochaine étape d’exécution ?",
+      "cancelOrder": "Annuler la commande client",
+      "submittedReadOnly": "Les commandes validées ou annulées sont en lecture seule.",
+      "refresh": "Recharger",
+      "concurrencyHint": "Rechargez la dernière version, puis appliquez de nouveau vos modifications.",
+      "loading": "Chargement des commandes clients…",
+      "loadingOne": "Chargement de la commande client…",
+      "empty": "Aucune commande client n’existe encore.",
+      "errors": {
+        "load": "Les commandes clients n’ont pas pu être chargées.",
+        "create": "La commande client n’a pas pu être créée.",
+        "update": "La commande client n’a pas pu être modifiée.",
+        "submit": "La commande client n’a pas pu être validée.",
+        "cancel": "La commande client n’a pas pu être annulée."
       }
     }
   },

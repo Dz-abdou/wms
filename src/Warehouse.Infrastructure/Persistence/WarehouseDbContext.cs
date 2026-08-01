@@ -11,6 +11,7 @@ using Warehouse.Domain.Suppliers;
 using Warehouse.Domain.Receiving;
 using Warehouse.Domain.Customers;
 using Warehouse.Domain.Numbering;
+using Warehouse.Domain.Sales;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
 
@@ -34,6 +35,8 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
     public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
 
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
+
+    public DbSet<SalesOrder> SalesOrders => Set<SalesOrder>();
 
     public DbSet<DocumentNumberDefinition> DocumentNumberDefinitions => Set<DocumentNumberDefinition>();
 

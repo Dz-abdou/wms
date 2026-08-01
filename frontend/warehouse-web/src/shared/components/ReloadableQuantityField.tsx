@@ -1,5 +1,5 @@
-import { Button, Input, Space, Tooltip } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
+import { Button, Input, Space, Tooltip } from "antd";
 
 type ReloadableQuantityFieldProps = {
   disabled?: boolean;
@@ -11,6 +11,7 @@ type ReloadableQuantityFieldProps = {
   value?: number;
 };
 
+/** A consistent read-only quantity display with an explicit refresh action. */
 export function ReloadableQuantityField({
   disabled,
   label,

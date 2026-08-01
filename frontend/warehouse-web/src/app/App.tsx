@@ -33,6 +33,11 @@ import { PurchaseOrderDetailPage } from "../features/purchasing/pages/PurchaseOr
 import { PurchaseOrderEditPage } from "../features/purchasing/pages/PurchaseOrderEditPage";
 import { PurchaseOrderListPage } from "../features/purchasing/pages/PurchaseOrderListPage";
 import { purchasingRoutes } from "../features/purchasing/purchasingConstants";
+import { salesRoutes } from "../features/sales/salesConstants";
+import { SalesOrderCreatePage } from "../features/sales/pages/SalesOrderCreatePage";
+import { SalesOrderDetailPage } from "../features/sales/pages/SalesOrderDetailPage";
+import { SalesOrderEditPage } from "../features/sales/pages/SalesOrderEditPage";
+import { SalesOrderListPage } from "../features/sales/pages/SalesOrderListPage";
 import { GoodsReceiptCreatePage } from "../features/receiving/pages/GoodsReceiptCreatePage";
 import { GoodsReceiptDetailPage } from "../features/receiving/pages/GoodsReceiptDetailPage";
 import { GoodsReceiptListPage } from "../features/receiving/pages/GoodsReceiptListPage";
@@ -252,6 +257,22 @@ export function App() {
                     <Route
                       path={purchasingRoutes.orderEditPattern}
                       element={<PurchaseOrderEditPage />}
+                    />
+                    <Route
+                      path={salesRoutes.ordersPattern}
+                      element={<SalesOrderListPage />}
+                    />
+                    <Route
+                      path={salesRoutes.createPattern}
+                      element={<SalesOrderCreatePage />}
+                    />
+                    <Route
+                      path={salesRoutes.detailPattern}
+                      element={<SalesOrderDetailPage />}
+                    />
+                    <Route
+                      path={salesRoutes.editPattern}
+                      element={<SalesOrderEditPage />}
                     />
                     <Route
                       path={receivingRoutes.listPattern}

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Warehouse.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Warehouse.Infrastructure.Persistence;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801181551_AddSalesOrders")]
+    partial class AddSalesOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1383,19 +1386,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("FulfillmentWarehouseCode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
-
-                    b.Property<Guid>("FulfillmentWarehouseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("FulfillmentWarehouseName")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<string>("Number")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -1437,8 +1427,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.HasIndex("ShippingAddressId");
 
                     b.HasIndex("CustomerId", "Status");
-
-                    b.HasIndex("FulfillmentWarehouseId", "Status");
 
                     b.ToTable("SalesOrders", null, t =>
                         {
@@ -2206,12 +2194,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.HasOne("Warehouse.Domain.Customers.Customer", null)
                         .WithMany()
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Warehouse.Domain.Warehouses.Warehouse", null)
-                        .WithMany()
-                        .HasForeignKey("FulfillmentWarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

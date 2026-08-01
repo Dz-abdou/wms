@@ -40,7 +40,8 @@ public sealed class DocumentNumberDefinition
         CreateSeed(DocumentNumberCodes.GoodsReceipt, "Goods receipt", "GR"),
         CreateSeed(DocumentNumberCodes.InventoryAdjustment, "Inventory adjustment", "IA"),
         CreateSeed(DocumentNumberCodes.CycleCount, "Cycle count", "CC"),
-        CreateSeed(DocumentNumberCodes.InventoryTransfer, "Inventory transfer", "TR")
+        CreateSeed(DocumentNumberCodes.InventoryTransfer, "Inventory transfer", "TR"),
+        CreateSeed(DocumentNumberCodes.SalesOrder, "Sales order", "SO")
     ];
 
     private static DocumentNumberDefinition CreateSeed(string code, string description, string prefix) =>
@@ -59,6 +60,7 @@ public static class DocumentNumberCodes
     public const string InventoryAdjustment = "IA";
     public const string CycleCount = "CC";
     public const string InventoryTransfer = "TR";
+    public const string SalesOrder = "SO";
 }
 
 public static class DocumentNumberRules
