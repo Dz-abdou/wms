@@ -7,6 +7,7 @@ public sealed class InventoryTransfer : PersistentEntity
 {
     private InventoryTransfer(
         Guid id,
+        string number,
         Guid sourceWarehouseId,
         Guid destinationWarehouseId,
         string? reference,
@@ -18,12 +19,15 @@ public sealed class InventoryTransfer : PersistentEntity
         Guid? updatedByUserId)
         : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
+        Number = number;
         SourceWarehouseId = sourceWarehouseId;
         DestinationWarehouseId = destinationWarehouseId;
         Reference = reference;
         Note = note;
         TransferredAtUtc = transferredAtUtc;
     }
+
+    public string Number { get; private set; } = null!;
 
     public Guid SourceWarehouseId { get; private set; }
 
@@ -41,7 +45,8 @@ public sealed class InventoryTransfer : PersistentEntity
         string? reference,
         string? note,
         DateTime transferredAtUtc,
-        Guid? actorUserId = null)
+        Guid? actorUserId = null,
+        string? number = null)
     {
         if (sourceWarehouseId == Guid.Empty || destinationWarehouseId == Guid.Empty)
         {
@@ -60,6 +65,7 @@ public sealed class InventoryTransfer : PersistentEntity
 
         return new InventoryTransfer(
             Guid.NewGuid(),
+            NormalizeNumber(number),
             sourceWarehouseId,
             destinationWarehouseId,
             NormalizeOptional(reference, InventoryTransferRules.MaxReferenceLength, nameof(reference)),
@@ -85,6 +91,22 @@ public sealed class InventoryTransfer : PersistentEntity
         }
 
         return trimmed;
+    }
+
+    private static string NormalizeNumber(string? number)
+    {
+        var normalized = number?.Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return Guid.NewGuid().ToString("N").ToUpperInvariant();
+        }
+
+        if (normalized.Length > InventoryTransferRules.MaxNumberLength)
+        {
+            throw new ArgumentException($"Number cannot exceed {InventoryTransferRules.MaxNumberLength} characters.", nameof(number));
+        }
+
+        return normalized;
     }
 }
 
@@ -182,6 +204,7 @@ public sealed class InventoryTransferLine : PersistentEntity
 
 public static class InventoryTransferRules
 {
+    public const int MaxNumberLength = 32;
     public const int MaxReferenceLength = 100;
     public const int MaxNoteLength = 1000;
 }

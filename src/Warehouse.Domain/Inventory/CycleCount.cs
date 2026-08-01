@@ -7,6 +7,7 @@ public sealed class CycleCount : PersistentEntity
 {
     private CycleCount(
         Guid id,
+        string number,
         Guid warehouseId,
         string? reference,
         string? note,
@@ -17,11 +18,14 @@ public sealed class CycleCount : PersistentEntity
         Guid? updatedByUserId)
         : base(id, createdAtUtc, updatedAtUtc, createdByUserId, updatedByUserId)
     {
+        Number = number;
         WarehouseId = warehouseId;
         Reference = reference;
         Note = note;
         CountedAtUtc = countedAtUtc;
     }
+
+    public string Number { get; private set; } = null!;
 
     public Guid WarehouseId { get; private set; }
 
@@ -36,7 +40,8 @@ public sealed class CycleCount : PersistentEntity
         string? reference,
         string? note,
         DateTime countedAtUtc,
-        Guid? actorUserId = null)
+        Guid? actorUserId = null,
+        string? number = null)
     {
         if (warehouseId == Guid.Empty)
         {
@@ -50,6 +55,7 @@ public sealed class CycleCount : PersistentEntity
 
         return new CycleCount(
             Guid.NewGuid(),
+            NormalizeNumber(number),
             warehouseId,
             NormalizeOptional(reference, CycleCountRules.MaxReferenceLength, nameof(reference)),
             NormalizeOptional(note, CycleCountRules.MaxNoteLength, nameof(note)),
@@ -74,6 +80,22 @@ public sealed class CycleCount : PersistentEntity
         }
 
         return trimmed;
+    }
+
+    private static string NormalizeNumber(string? number)
+    {
+        var normalized = number?.Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return Guid.NewGuid().ToString("N").ToUpperInvariant();
+        }
+
+        if (normalized.Length > CycleCountRules.MaxNumberLength)
+        {
+            throw new ArgumentException($"Number cannot exceed {CycleCountRules.MaxNumberLength} characters.", nameof(number));
+        }
+
+        return normalized;
     }
 }
 
@@ -183,6 +205,7 @@ public sealed class CycleCountLine : PersistentEntity
 
 public static class CycleCountRules
 {
+    public const int MaxNumberLength = 32;
     public const int MaxReferenceLength = 100;
     public const int MaxNoteLength = 1000;
 }

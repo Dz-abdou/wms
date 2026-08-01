@@ -10,6 +10,7 @@ public sealed class InventoryAdjustmentConfiguration : IEntityTypeConfiguration<
     {
         builder.ToTable("InventoryAdjustments");
         builder.HasKey(adjustment => adjustment.Id);
+        builder.Property(adjustment => adjustment.Number).HasMaxLength(InventoryAdjustmentRules.MaxNumberLength).HasDefaultValue(string.Empty).IsRequired();
         builder.Property(adjustment => adjustment.Reason).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(adjustment => adjustment.Reference).HasMaxLength(InventoryAdjustmentRules.MaxReferenceLength);
         builder.Property(adjustment => adjustment.Note).HasMaxLength(InventoryAdjustmentRules.MaxNoteLength);
@@ -18,5 +19,6 @@ public sealed class InventoryAdjustmentConfiguration : IEntityTypeConfiguration<
         builder.Property(adjustment => adjustment.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(adjustment => adjustment.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(adjustment => adjustment.CreatedAtUtc);
+        builder.HasIndex(adjustment => adjustment.Number).IsUnique().HasFilter("\"Number\" <> ''");
     }
 }

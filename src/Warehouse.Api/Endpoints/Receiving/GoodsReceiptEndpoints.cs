@@ -2,6 +2,7 @@ using FluentValidation;
 using Warehouse.Api.Auth;
 using Warehouse.Api.Endpoints;
 using Warehouse.Application.Common.Errors;
+using Warehouse.Application.Common.Numbering;
 using Warehouse.Application.Receiving;
 
 namespace Warehouse.Api.Endpoints.Receiving;
@@ -38,6 +39,8 @@ public sealed class GoodsReceiptExceptionEndpointFilter : IEndpointFilter
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
         try { return await next(context); }
+        catch (DocumentNumberDefinitionUnavailableException exception) { return Problem(422, "Document number is unavailable.", exception.Message, ApiErrorCodes.DocumentNumberDefinitionUnavailable); }
+        catch (DocumentNumberCapacityExceededException exception) { return Problem(409, "Document number capacity is exhausted.", exception.Message, ApiErrorCodes.DocumentNumberCapacityExceeded); }
         catch (GoodsReceiptNotFoundException exception) { return Problem(404, "Goods receipt not found.", exception.Message, ApiErrorCodes.GoodsReceiptNotFound); }
         catch (GoodsReceiptPurchaseOrderUnavailableException exception) { return Problem(422, "Purchase order cannot be received.", exception.Message, ApiErrorCodes.GoodsReceiptPurchaseOrderUnavailable); }
         catch (GoodsReceiptConcurrencyException exception) { return Problem(409, "Purchase order was updated.", exception.Message, ApiErrorCodes.GoodsReceiptPurchaseOrderConcurrencyConflict); }

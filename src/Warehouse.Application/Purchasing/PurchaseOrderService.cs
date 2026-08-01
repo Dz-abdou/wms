@@ -4,10 +4,12 @@ using Warehouse.Application.Common.Errors;
 using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Application.Common.Numbering;
 using Warehouse.Application.Products;
 using Warehouse.Application.Suppliers;
 using Warehouse.Domain.Products;
 using Warehouse.Domain.Purchasing;
+using Warehouse.Domain.Numbering;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 
 namespace Warehouse.Application.Purchasing;
@@ -15,7 +17,8 @@ namespace Warehouse.Application.Purchasing;
 public sealed class PurchaseOrderService(
     IWarehouseDbContext dbContext,
     TimeProvider timeProvider,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    IDocumentNumberService documentNumbers)
 {
     public async Task<PagedResult<PurchaseOrderResponse>> GetListAsync(PurchaseOrderListQuery query, CancellationToken cancellationToken)
     {
@@ -60,20 +63,23 @@ public sealed class PurchaseOrderService(
 
     public async Task<PurchaseOrderResponse> CreateAsync(PurchaseOrderInput input, CancellationToken cancellationToken)
     {
-        var supplier = await EnsureSupplierIsActiveAsync(input.SupplierId, cancellationToken);
-        await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, cancellationToken);
-        var currencyCode = await ResolvePurchaseOrderCurrencyAsync(supplier, input.CurrencyCode, cancellationToken);
-        var lines = await ResolveLinesAsync(input.SupplierId, currencyCode, input.Lines ?? [], cancellationToken);
-        var now = UtcNow();
-        var sequence = PurchaseOrderNumberSequence.Create(now.Year);
-        dbContext.PurchaseOrderNumberSequences.Add(sequence);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        var buyerUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
-        var purchaseOrder = PurchaseOrder.Create(sequence.ToNumber(), input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
-        purchaseOrder.ReplaceLines(lines, UtcNow(), currentUser.UserId);
-        dbContext.PurchaseOrders.Add(purchaseOrder);
-        await SaveWithConcurrencyHandlingAsync(purchaseOrder.Id, cancellationToken);
-        return await GetByIdAsync(purchaseOrder.Id, cancellationToken);
+        PurchaseOrderResponse? response = null;
+        await dbContext.ExecuteInTransactionAsync(async token =>
+        {
+            var supplier = await EnsureSupplierIsActiveAsync(input.SupplierId, token);
+            await EnsureWarehouseIsActiveAsync(input.DestinationWarehouseId, token);
+            var currencyCode = await ResolvePurchaseOrderCurrencyAsync(supplier, input.CurrencyCode, token);
+            var lines = await ResolveLinesAsync(input.SupplierId, currencyCode, input.Lines ?? [], token);
+            var now = UtcNow();
+            var number = await documentNumbers.AllocateAsync(DocumentNumberCodes.PurchaseOrder, now, token);
+            var buyerUserId = currentUser.UserId ?? throw new PurchaseOrderCatalogueInvalidException("An authenticated buyer is required.");
+            var purchaseOrder = PurchaseOrder.Create(number, input.SupplierId, input.DestinationWarehouseId, currencyCode, input.OrderDate, input.ExpectedDeliveryDate, buyerUserId, input.SupplierReference, input.Notes, now);
+            purchaseOrder.ReplaceLines(lines, now, currentUser.UserId);
+            dbContext.PurchaseOrders.Add(purchaseOrder);
+            await SaveWithConcurrencyHandlingAsync(purchaseOrder.Id, token);
+            response = await GetByIdAsync(purchaseOrder.Id, token);
+        }, cancellationToken);
+        return response ?? throw new InvalidOperationException("Purchase order did not produce a result.");
     }
 
     public async Task<PurchaseOrderResponse> UpdateAsync(Guid id, PurchaseOrderInput input, CancellationToken cancellationToken)

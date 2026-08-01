@@ -1,4 +1,5 @@
 using Warehouse.Application.Common.Errors;
+using Warehouse.Application.Common.Numbering;
 using Warehouse.Application.Products;
 using Warehouse.Application.Purchasing;
 using Warehouse.Application.Suppliers;
@@ -12,6 +13,14 @@ public sealed class PurchasingExceptionEndpointFilter : IEndpointFilter
         try
         {
             return await next(context);
+        }
+        catch (DocumentNumberDefinitionUnavailableException exception)
+        {
+            return Problem(StatusCodes.Status422UnprocessableEntity, "Document number is unavailable.", exception.Message, ApiErrorCodes.DocumentNumberDefinitionUnavailable);
+        }
+        catch (DocumentNumberCapacityExceededException exception)
+        {
+            return Problem(StatusCodes.Status409Conflict, "Document number capacity is exhausted.", exception.Message, ApiErrorCodes.DocumentNumberCapacityExceeded);
         }
         catch (SupplierNotFoundException exception)
         {

@@ -3,12 +3,14 @@ using Warehouse.Application.Common.Identity;
 using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Application.Common.Numbering;
 using Warehouse.Domain.Inventory;
+using Warehouse.Domain.Numbering;
 using Warehouse.Domain.Products;
 
 namespace Warehouse.Application.Inventory;
 
-public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider timeProvider, ICurrentUser currentUser)
+public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider timeProvider, ICurrentUser currentUser, IDocumentNumberService documentNumbers)
 {
     public async Task<InventoryAdjustmentResponse> AdjustAsync(InventoryAdjustmentInput input, CancellationToken cancellationToken)
     {
@@ -18,7 +20,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             await dbContext.ExecuteInTransactionAsync(async token =>
             {
                 var timestamp = UtcNow();
-                var adjustment = InventoryAdjustment.Create(input.Reason, input.Reference, input.Note, timestamp, currentUser.UserId);
+                var number = await documentNumbers.AllocateAsync(DocumentNumberCodes.InventoryAdjustment, timestamp, token);
+                var adjustment = InventoryAdjustment.Create(input.Reason, input.Reference, input.Note, timestamp, currentUser.UserId, number);
                 dbContext.InventoryAdjustments.Add(adjustment);
                 var results = new List<InventoryBalanceResponse>();
                 for (var lineIndex = 0; lineIndex < input.Lines.Count; lineIndex++)
@@ -61,7 +64,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                     results.Add(ToResponse(balance, product.BaseUnitOfMeasure));
                 }
                 await dbContext.SaveChangesAsync(token);
-                response = new InventoryAdjustmentResponse(adjustment.Id, adjustment.Reason, adjustment.Reference, adjustment.Note, adjustment.CreatedAtUtc, results);
+                response = new InventoryAdjustmentResponse(adjustment.Id, adjustment.Number, adjustment.Reason, adjustment.Reference, adjustment.Note, adjustment.CreatedAtUtc, results);
             }, cancellationToken);
         }
         catch (DbUpdateConcurrencyException exception) { throw new InventoryConcurrencyException(exception); }
@@ -75,7 +78,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         if (!string.IsNullOrWhiteSpace(query.Reference))
         {
             var reference = query.Reference.Trim();
-            adjustments = adjustments.Where(adjustment => adjustment.Reference != null && adjustment.Reference.Contains(reference));
+            adjustments = adjustments.Where(adjustment => adjustment.Number.Contains(reference) || (adjustment.Reference != null && adjustment.Reference.Contains(reference)));
         }
         if (query.FromUtc is { } fromUtc) adjustments = adjustments.Where(adjustment => adjustment.CreatedAtUtc >= fromUtc);
         if (query.ToUtc is { } toUtc) adjustments = adjustments.Where(adjustment => adjustment.CreatedAtUtc <= toUtc);
@@ -87,6 +90,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .Take(query.PageSize)
             .Select(adjustment => new InventoryAdjustmentListItemResponse(
                 adjustment.Id,
+                adjustment.Number,
                 adjustment.Reason,
                 adjustment.Reference,
                 adjustment.CreatedAtUtc,
@@ -130,6 +134,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .ToList();
         return new InventoryAdjustmentDetailResponse(
             adjustment.Id,
+            adjustment.Number,
             adjustment.Reason,
             adjustment.Reference,
             adjustment.Note,
@@ -159,7 +164,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                     input.Reference,
                     input.Note,
                     now,
-                    currentUser.UserId);
+                    currentUser.UserId,
+                    await documentNumbers.AllocateAsync(DocumentNumberCodes.InventoryTransfer, now, token));
                 dbContext.InventoryTransfers.Add(transfer);
                 var responseLines = new List<InventoryTransferLineResponse>();
 
@@ -259,6 +265,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 await dbContext.SaveChangesAsync(token);
                 response = new InventoryTransferDetailResponse(
                     transfer.Id,
+                    transfer.Number,
                     sourceWarehouse.Id,
                     sourceWarehouse.Code,
                     sourceWarehouse.Name,
@@ -323,7 +330,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         if (!string.IsNullOrWhiteSpace(query.Reference))
         {
             var reference = query.Reference.Trim();
-            transfers = transfers.Where(item => item.transfer.Reference != null && item.transfer.Reference.Contains(reference));
+            transfers = transfers.Where(item => item.transfer.Number.Contains(reference) || (item.transfer.Reference != null && item.transfer.Reference.Contains(reference)));
         }
         if (query.FromUtc is { } fromUtc) transfers = transfers.Where(item => item.transfer.TransferredAtUtc >= fromUtc);
         if (query.ToUtc is { } toUtc) transfers = transfers.Where(item => item.transfer.TransferredAtUtc <= toUtc);
@@ -336,6 +343,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .Take(query.PageSize)
             .Select(item => new InventoryTransferListItemResponse(
                 item.transfer.Id,
+                item.transfer.Number,
                 item.sourceWarehouse.Id,
                 item.sourceWarehouse.Code,
                 item.sourceWarehouse.Name,
@@ -381,6 +389,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .ToListAsync(cancellationToken);
         return new InventoryTransferDetailResponse(
             header.transfer.Id,
+            header.transfer.Number,
             header.sourceWarehouse.Id,
             header.sourceWarehouse.Code,
             header.sourceWarehouse.Name,
@@ -416,10 +425,10 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         {
             var reference = query.Reference.Trim();
             movements = movements.Where(item =>
-                (item.adjustment != null && item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference))
+                (item.adjustment != null && (item.adjustment.Number.Contains(reference) || (item.adjustment.Reference != null && item.adjustment.Reference.Contains(reference))))
                 || (item.receipt != null && item.receipt.Number.Contains(reference))
-                || (item.cycleCount != null && item.cycleCount.Reference != null && item.cycleCount.Reference.Contains(reference))
-                || (item.transfer != null && item.transfer.Reference != null && item.transfer.Reference.Contains(reference)));
+                || (item.cycleCount != null && (item.cycleCount.Number.Contains(reference) || (item.cycleCount.Reference != null && item.cycleCount.Reference.Contains(reference))))
+                || (item.transfer != null && (item.transfer.Number.Contains(reference) || (item.transfer.Reference != null && item.transfer.Reference.Contains(reference)))));
         }
         var totalCount = await movements.CountAsync(cancellationToken);
         var items = await movements
@@ -439,6 +448,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 item.warehouse.Id,
                 item.warehouse.Code,
                 item.warehouse.Name,
+                item.adjustment != null ? item.adjustment.Number : item.receipt != null ? item.receipt.Number : item.cycleCount != null ? item.cycleCount.Number : item.transfer != null ? item.transfer.Number : null,
+                item.adjustment != null ? item.adjustment.Reference : item.cycleCount != null ? item.cycleCount.Reference : item.transfer != null ? item.transfer.Reference : null,
                 item.adjustment == null ? null : item.adjustment.Reference,
                 item.receipt == null ? null : item.receipt.Number,
                 item.cycleCount == null ? null : item.cycleCount.Reference,
@@ -548,7 +559,8 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 var warehouse = await dbContext.Warehouses.SingleOrDefaultAsync(
                     candidate => candidate.Id == input.WarehouseId && candidate.IsActive,
                     token) ?? throw new InventoryWarehouseNotFoundException(input.WarehouseId);
-                var count = CycleCount.Create(input.WarehouseId, input.Reference, input.Note, now, currentUser.UserId);
+                var number = await documentNumbers.AllocateAsync(DocumentNumberCodes.CycleCount, now, token);
+                var count = CycleCount.Create(input.WarehouseId, input.Reference, input.Note, now, currentUser.UserId, number);
                 dbContext.CycleCounts.Add(count);
                 var responseLines = new List<CycleCountLineResponse>();
 
@@ -613,6 +625,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
                 await dbContext.SaveChangesAsync(token);
                 response = new CycleCountDetailResponse(
                     count.Id,
+                    count.Number,
                     warehouse.Id,
                     warehouse.Code,
                     warehouse.Name,
@@ -641,7 +654,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         if (!string.IsNullOrWhiteSpace(query.Reference))
         {
             var reference = query.Reference.Trim();
-            counts = counts.Where(item => item.count.Reference != null && item.count.Reference.Contains(reference));
+            counts = counts.Where(item => item.count.Number.Contains(reference) || (item.count.Reference != null && item.count.Reference.Contains(reference)));
         }
         if (query.FromUtc is { } fromUtc) counts = counts.Where(item => item.count.CountedAtUtc >= fromUtc);
         if (query.ToUtc is { } toUtc) counts = counts.Where(item => item.count.CountedAtUtc <= toUtc);
@@ -653,6 +666,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .Take(query.PageSize)
             .Select(item => new CycleCountListItemResponse(
                 item.count.Id,
+                item.count.Number,
                 item.warehouse.Id,
                 item.warehouse.Code,
                 item.warehouse.Name,
@@ -693,6 +707,7 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
             .ToListAsync(cancellationToken);
         return new CycleCountDetailResponse(
             header.count.Id,
+            header.count.Number,
             header.warehouse.Id,
             header.warehouse.Code,
             header.warehouse.Name,

@@ -7,6 +7,8 @@ using Warehouse.Application.Administration;
 using Warehouse.Infrastructure.Auditing;
 using Warehouse.Infrastructure.Identity;
 using Warehouse.Infrastructure.Persistence;
+using Warehouse.Infrastructure.Numbering;
+using Warehouse.Application.Common.Numbering;
 
 namespace Warehouse.Infrastructure;
 
@@ -36,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<IdentityBootstrapper>();
         services.AddScoped<IAdministrationUserQueryService, AdministrationUserQueryService>();
         services.AddScoped<IWarehouseDbContext>(provider => provider.GetRequiredService<WarehouseDbContext>());
+        services.AddScoped<IDocumentNumberService, DocumentNumberService>();
 
         return services;
     }

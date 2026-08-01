@@ -17,6 +17,7 @@ public sealed class InventoryTransferConfiguration : IEntityTypeConfiguration<In
                 "\"SourceWarehouseId\" <> \"DestinationWarehouseId\"");
         });
         builder.HasKey(transfer => transfer.Id);
+        builder.Property(transfer => transfer.Number).HasMaxLength(InventoryTransferRules.MaxNumberLength).HasDefaultValue(string.Empty).IsRequired();
         builder.Property(transfer => transfer.SourceWarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(transfer => transfer.DestinationWarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(transfer => transfer.Reference).HasMaxLength(InventoryTransferRules.MaxReferenceLength);
@@ -27,6 +28,7 @@ public sealed class InventoryTransferConfiguration : IEntityTypeConfiguration<In
         builder.Property(transfer => transfer.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(transfer => transfer.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(transfer => new { transfer.SourceWarehouseId, transfer.TransferredAtUtc });
+        builder.HasIndex(transfer => transfer.Number).IsUnique().HasFilter("\"Number\" <> ''");
         builder.HasIndex(transfer => new { transfer.DestinationWarehouseId, transfer.TransferredAtUtc });
         builder.HasOne<WarehouseEntity>()
             .WithMany()

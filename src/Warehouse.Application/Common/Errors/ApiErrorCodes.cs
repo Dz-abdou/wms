@@ -2,6 +2,8 @@ namespace Warehouse.Application.Common.Errors;
 
 public static class ApiErrorCodes
 {
+    public const string DocumentNumberDefinitionUnavailable = "document_number.definition_unavailable";
+    public const string DocumentNumberCapacityExceeded = "document_number.capacity_exceeded";
     public const string SystemUnexpected = "system.unexpected";
     public const string ValidationFailed = "validation.failed";
     public const string ValidationMaxLength = "validation.max_length";

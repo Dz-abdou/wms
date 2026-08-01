@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Warehouse.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Warehouse.Infrastructure.Persistence;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260801171839_AddDocumentNumberingFoundation")]
+    partial class AddDocumentNumberingFoundation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -474,13 +477,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("");
-
                     b.Property<string>("Reference")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -495,10 +491,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Number")
-                        .IsUnique()
-                        .HasFilter("\"Number\" <> ''");
 
                     b.HasIndex("WarehouseId", "CountedAtUtc");
 
@@ -603,13 +595,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("");
-
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -628,10 +613,6 @@ namespace Warehouse.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAtUtc");
-
-                    b.HasIndex("Number")
-                        .IsUnique()
-                        .HasFilter("\"Number\" <> ''");
 
                     b.ToTable("InventoryAdjustments", (string)null);
                 });
@@ -784,13 +765,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("");
-
                     b.Property<string>("Reference")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -808,10 +782,6 @@ namespace Warehouse.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Number")
-                        .IsUnique()
-                        .HasFilter("\"Number\" <> ''");
 
                     b.HasIndex("DestinationWarehouseId", "TransferredAtUtc");
 
@@ -1209,6 +1179,22 @@ namespace Warehouse.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Warehouse.Domain.Purchasing.PurchaseOrderNumberSequence", b =>
+                {
+                    b.Property<long>("Value")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Value"));
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Value");
+
+                    b.ToTable("PurchaseOrderNumberSequences", (string)null);
+                });
+
             modelBuilder.Entity("Warehouse.Domain.Purchasing.SupplierProduct", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1333,6 +1319,22 @@ namespace Warehouse.Infrastructure.Migrations
                     b.HasIndex("PurchaseOrderId", "ReceivedAtUtc");
 
                     b.ToTable("GoodsReceipts", (string)null);
+                });
+
+            modelBuilder.Entity("Warehouse.Domain.Receiving.GoodsReceiptNumberSequence", b =>
+                {
+                    b.Property<long>("Value")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Value"));
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Value");
+
+                    b.ToTable("GoodsReceiptNumberSequences", (string)null);
                 });
 
             modelBuilder.Entity("Warehouse.Domain.Suppliers.Supplier", b =>
