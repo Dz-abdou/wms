@@ -606,6 +606,7 @@
       "InitialBalance": "Initial balance"
     },
     "table": {
+      "lineNumber": "#",
       "type": "Type",
       "product": "Product",
       "warehouse": "Warehouse",

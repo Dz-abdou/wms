@@ -188,6 +188,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             $"/api/inventory/adjustments/{adjustment.Id}");
         Assert.NotNull(detail);
         var line = Assert.Single(detail.Lines);
+        Assert.Equal(1, line.LineNumber);
         Assert.Equal(product.Sku, line.ProductSku);
         Assert.Equal(warehouse.Code, line.WarehouseCode);
         Assert.Equal("ManualIncrease", line.Type);

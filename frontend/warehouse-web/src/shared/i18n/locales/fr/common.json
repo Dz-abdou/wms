@@ -608,6 +608,7 @@
       "InitialBalance": "Stock initial"
     },
     "table": {
+      "lineNumber": "N°",
       "type": "Type",
       "product": "Produit",
       "warehouse": "Entrepôt",

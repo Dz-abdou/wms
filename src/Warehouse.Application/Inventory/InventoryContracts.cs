@@ -103,7 +103,10 @@ public sealed record InventoryAdjustmentLineResponse(
     decimal QuantityDeltaInUnit,
     decimal QuantityDelta,
     decimal BalanceAfter,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc)
+{
+    public int LineNumber { get; init; }
+}
 
 public sealed record InventoryMovementResponse(
     Guid Id,

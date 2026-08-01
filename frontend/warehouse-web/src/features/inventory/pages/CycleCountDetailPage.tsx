@@ -1,4 +1,4 @@
-import { Alert, Card, Descriptions, Spin, Table } from "antd";
+import { Alert, Descriptions, Spin, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -45,6 +45,12 @@ export function CycleCountDetailPage() {
   const item = cycleCount.data;
   const columns: ColumnsType<CycleCountLine> = [
     {
+      title: t("inventory.table.lineNumber"),
+      dataIndex: "lineNumber",
+      key: "lineNumber",
+      width: 72,
+    },
+    {
       title: t("inventory.table.product"),
       key: "product",
       render: (_, line) => `${line.productSku} — ${line.productName}`,
@@ -75,44 +81,45 @@ export function CycleCountDetailPage() {
       backTo={returnTo}
       title={t("inventory.cycleCounts.detailTitle")}
     >
-      <Card>
-        <Descriptions
-          column={1}
-          items={[
-            {
-              key: "warehouse",
-              label: t("inventory.table.warehouse"),
-              children: `${item.warehouseCode} — ${item.warehouseName}`,
-            },
-            {
-              key: "reference",
-              label: t("inventory.table.reference"),
-              children: item.reference ?? "—",
-            },
-            {
-              key: "note",
-              label: t("inventory.form.note"),
-              children: item.note ?? "—",
-            },
-            {
-              key: "countedAt",
-              label: t("inventory.cycleCounts.countedAt"),
-              children: formatDateTime(
-                item.countedAtUtc,
-                toAppLanguage(i18n.resolvedLanguage),
-              ),
-            },
-          ]}
-        />
-      </Card>
-      <Card className="inventory-history-card" title={t("inventory.lines")}>
+      <Descriptions
+        bordered
+        column={1}
+        items={[
+          {
+            key: "warehouse",
+            label: t("inventory.table.warehouse"),
+            children: `${item.warehouseCode} — ${item.warehouseName}`,
+          },
+          {
+            key: "reference",
+            label: t("inventory.table.reference"),
+            children: item.reference ?? "—",
+          },
+          {
+            key: "note",
+            label: t("inventory.form.note"),
+            children: item.note ?? "—",
+          },
+          {
+            key: "countedAt",
+            label: t("inventory.cycleCounts.countedAt"),
+            children: formatDateTime(
+              item.countedAtUtc,
+              toAppLanguage(i18n.resolvedLanguage),
+            ),
+          },
+        ]}
+      />
+      <div className="page-section">
+        <Typography.Title level={3}>{t("inventory.lines")}</Typography.Title>
         <Table
           columns={columns}
           dataSource={item.lines}
           pagination={false}
           rowKey="id"
+          scroll={{ x: 1050 }}
         />
-      </Card>
+      </div>
     </DetailPageLayout>
   );
 }

@@ -90,26 +90,28 @@ public sealed class InventoryService(IWarehouseDbContext dbContext, TimeProvider
         var adjustment = await dbContext.InventoryAdjustments.AsNoTracking()
             .SingleOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
             ?? throw new InventoryAdjustmentNotFoundException(id);
-        var lines = await (from movement in dbContext.InventoryMovements.AsNoTracking()
-                           join product in dbContext.Products.AsNoTracking() on movement.ProductId equals product.Id
-                           join warehouse in dbContext.Warehouses.AsNoTracking() on movement.WarehouseId equals warehouse.Id
-                           where movement.InventoryAdjustmentId == adjustment.Id
-                           orderby movement.CreatedAtUtc, movement.Id
-                           select new InventoryAdjustmentLineResponse(
-                               movement.Id,
-                               product.Id,
-                               product.Sku,
-                               product.Name,
-                               warehouse.Id,
-                               warehouse.Code,
-                               warehouse.Name,
-                               movement.Type.ToString(),
-                               movement.UnitOfMeasure,
-                               movement.QuantityDeltaInUnit,
-                               movement.QuantityDelta,
-                               movement.BalanceAfter,
-                               movement.CreatedAtUtc))
-            .ToListAsync(cancellationToken);
+        var lines = (await (from movement in dbContext.InventoryMovements.AsNoTracking()
+                            join product in dbContext.Products.AsNoTracking() on movement.ProductId equals product.Id
+                            join warehouse in dbContext.Warehouses.AsNoTracking() on movement.WarehouseId equals warehouse.Id
+                            where movement.InventoryAdjustmentId == adjustment.Id
+                            orderby movement.CreatedAtUtc, movement.Id
+                            select new InventoryAdjustmentLineResponse(
+                                movement.Id,
+                                product.Id,
+                                product.Sku,
+                                product.Name,
+                                warehouse.Id,
+                                warehouse.Code,
+                                warehouse.Name,
+                                movement.Type.ToString(),
+                                movement.UnitOfMeasure,
+                                movement.QuantityDeltaInUnit,
+                                movement.QuantityDelta,
+                                movement.BalanceAfter,
+                                movement.CreatedAtUtc))
+            .ToListAsync(cancellationToken))
+            .Select((line, index) => line with { LineNumber = index + 1 })
+            .ToList();
         return new InventoryAdjustmentDetailResponse(
             adjustment.Id,
             adjustment.Reason,

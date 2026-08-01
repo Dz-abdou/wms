@@ -1,4 +1,4 @@
-import { Alert, Card, Descriptions, Spin, Table } from "antd";
+import { Alert, Descriptions, Spin, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -44,6 +44,12 @@ export function InventoryTransferDetailPage() {
   const item = transfer.data;
   const columns: ColumnsType<InventoryTransferLine> = [
     {
+      title: t("inventory.table.lineNumber"),
+      dataIndex: "lineNumber",
+      key: "lineNumber",
+      width: 72,
+    },
+    {
       title: t("inventory.table.product"),
       key: "product",
       render: (_, line) => `${line.productSku} — ${line.productName}`,
@@ -73,42 +79,42 @@ export function InventoryTransferDetailPage() {
       backTo={returnTo}
       title={t("inventory.transfers.detailTitle")}
     >
-      <Card>
-        <Descriptions
-          column={1}
-          items={[
-            {
-              key: "source",
-              label: t("inventory.transfers.sourceWarehouse"),
-              children: `${item.sourceWarehouseCode} — ${item.sourceWarehouseName}`,
-            },
-            {
-              key: "destination",
-              label: t("inventory.transfers.destinationWarehouse"),
-              children: `${item.destinationWarehouseCode} — ${item.destinationWarehouseName}`,
-            },
-            {
-              key: "reference",
-              label: t("inventory.table.reference"),
-              children: item.reference ?? "—",
-            },
-            {
-              key: "note",
-              label: t("inventory.form.note"),
-              children: item.note ?? "—",
-            },
-            {
-              key: "transferredAt",
-              label: t("inventory.transfers.transferredAt"),
-              children: formatDateTime(
-                item.transferredAtUtc,
-                toAppLanguage(i18n.resolvedLanguage),
-              ),
-            },
-          ]}
-        />
-      </Card>
-      <Card className="inventory-history-card" title={t("inventory.lines")}>
+      <Descriptions
+        bordered
+        column={1}
+        items={[
+          {
+            key: "source",
+            label: t("inventory.transfers.sourceWarehouse"),
+            children: `${item.sourceWarehouseCode} — ${item.sourceWarehouseName}`,
+          },
+          {
+            key: "destination",
+            label: t("inventory.transfers.destinationWarehouse"),
+            children: `${item.destinationWarehouseCode} — ${item.destinationWarehouseName}`,
+          },
+          {
+            key: "reference",
+            label: t("inventory.table.reference"),
+            children: item.reference ?? "—",
+          },
+          {
+            key: "note",
+            label: t("inventory.form.note"),
+            children: item.note ?? "—",
+          },
+          {
+            key: "transferredAt",
+            label: t("inventory.transfers.transferredAt"),
+            children: formatDateTime(
+              item.transferredAtUtc,
+              toAppLanguage(i18n.resolvedLanguage),
+            ),
+          },
+        ]}
+      />
+      <div className="page-section">
+        <Typography.Title level={3}>{t("inventory.lines")}</Typography.Title>
         <Table
           columns={columns}
           dataSource={item.lines}
@@ -116,7 +122,7 @@ export function InventoryTransferDetailPage() {
           rowKey="id"
           scroll={{ x: 960 }}
         />
-      </Card>
+      </div>
     </DetailPageLayout>
   );
 }

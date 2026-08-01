@@ -38,6 +38,7 @@ export type InventoryAdjustmentDetail = Omit<InventoryAdjustment, "lines"> & {
 };
 
 export type InventoryAdjustmentLine = {
+  lineNumber: number;
   movementId: string;
   productId: string;
   productSku: string;
