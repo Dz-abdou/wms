@@ -6,11 +6,8 @@ import {
   Input,
   InputNumber,
   Select,
-  Space,
   Spin,
-  Tooltip,
 } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +24,7 @@ import { useReturnDestination } from "../../../shared/navigation/returnNavigatio
 import { useProducts } from "../../products/api/useProducts";
 import type { Product } from "../../products/api/productTypes";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
+import { ReloadableQuantityField } from "../components/ReloadableQuantityField";
 import { getTransferCandidate } from "../api/inventoryApi";
 import { useCreateTransfer } from "../api/useInventory";
 import type {
@@ -150,39 +148,28 @@ export function InventoryTransferPage() {
         const line = lines[row.fieldName];
         return (
           <>
-            <Form.Item hidden name={[row.fieldName, "sourceQuantityInBase"]}>
-              <Input />
-            </Form.Item>
             <Form.Item hidden name={[row.fieldName, "baseUnitOfMeasure"]}>
               <Input />
             </Form.Item>
             <Form.Item hidden name={[row.fieldName, "sourceBalanceVersion"]}>
               <Input />
             </Form.Item>
-            <Space.Compact block>
-              <Input
-                aria-label={t("inventory.transfers.availableAtSource")}
-                disabled
-                placeholder="—"
-                value={
-                  line?.sourceQuantityInBase === undefined
-                    ? undefined
-                    : `${line.sourceQuantityInBase} ${line.baseUnitOfMeasure}`
-                }
+            <Form.Item
+              name={[row.fieldName, "sourceQuantityInBase"]}
+              style={{ marginBottom: 0 }}
+            >
+              <ReloadableQuantityField
+                disabled={!line?.productId}
+                label={t("inventory.transfers.availableAtSource")}
+                onReload={() => {
+                  if (line?.productId) {
+                    void loadAvailability(row.fieldName, line.productId);
+                  }
+                }}
+                reloadLabel={t("inventory.transfers.reloadLine")}
+                unitOfMeasure={line?.baseUnitOfMeasure}
               />
-              <Tooltip title={t("inventory.transfers.reloadLine")}>
-                <Button
-                  aria-label={t("inventory.transfers.reloadLine")}
-                  disabled={!line?.productId}
-                  icon={<ReloadOutlined />}
-                  onClick={() => {
-                    if (line?.productId) {
-                      void loadAvailability(row.fieldName, line.productId);
-                    }
-                  }}
-                />
-              </Tooltip>
-            </Space.Compact>
+            </Form.Item>
           </>
         );
       },

@@ -68,6 +68,6 @@ Let an inventory operator move stock between two active warehouses while preserv
 - [ ] Post a transfer and verify the source quantity decreases while the destination quantity increases by exactly the same base quantity.
 - [ ] Open the transfer detail and confirm the reference, both warehouses, quantity, and resulting balances are preserved.
 - [ ] Open movement history, filter by **Transfer out** or **Transfer in**, and confirm both rows link back to the transfer document.
-- [ ] Change source stock after loading a transfer line; confirm the quantity cell shows the localized stale-stock error, reload availability, then post successfully.
+- [ ] Change source stock after loading a transfer line; confirm the available-source cell shows the localized stale-stock error, reload availability, then post successfully.
 - [ ] Attempt to transfer more than the available source stock; confirm the quantity cell shows the localized error and no balances or transfer document change.
 - [ ] Switch the source or destination warehouse after adding lines; confirm the lines reset before posting.

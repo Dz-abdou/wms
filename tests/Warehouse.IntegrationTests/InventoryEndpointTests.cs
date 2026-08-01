@@ -493,7 +493,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(ApiErrorCodes.InventoryTransferStaleBalance, problem.Code);
         Assert.Equal(
             ApiErrorCodes.InventoryTransferStaleBalance,
-            Assert.Single(problem.ErrorCodes!["Lines[0].Quantity"]));
+            Assert.Single(problem.ErrorCodes!["Lines[0].SourceQuantityInBase"]));
 
         using var scope = fixture.Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();

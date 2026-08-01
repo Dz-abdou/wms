@@ -47,7 +47,7 @@ public sealed class InventoryTransferStaleBalanceException(
     string warehouse)
     : Exception("Source inventory changed after this transfer line was loaded.")
 {
-    public string PropertyName => $"Lines[{lineIndex}].Quantity";
+    public string PropertyName => $"Lines[{lineIndex}].SourceQuantityInBase";
 
     public decimal CurrentQuantityInBase { get; } = currentQuantityInBase;
 
