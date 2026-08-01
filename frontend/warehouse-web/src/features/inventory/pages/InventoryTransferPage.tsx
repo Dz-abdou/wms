@@ -24,7 +24,7 @@ import { useReturnDestination } from "../../../shared/navigation/returnNavigatio
 import { useProducts } from "../../products/api/useProducts";
 import type { Product } from "../../products/api/productTypes";
 import { useWarehouses } from "../../warehouses/api/useWarehouses";
-import { ReloadableQuantityField } from "../components/ReloadableQuantityField";
+import { ReloadableQuantityField } from "../../../shared/components/ReloadableQuantityField";
 import { getTransferCandidate } from "../api/inventoryApi";
 import { useCreateTransfer } from "../api/useInventory";
 import type {

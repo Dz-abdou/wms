@@ -16,7 +16,7 @@ Create a reliable outbound commitment before reservations, picking, and shipment
 - Customer code/name and selected shipping-address snapshots on the order; product SKU/name, UoM conversion, and ordered quantities on each line.
 - Product/UoM/whole-quantity validation, server-side customer/status/date filtering, warehouse-scoped current availability, English/French API errors, and a localized list/create/edit/detail UI.
 - Currency defaults from the selected customer's default currency; each new product line defaults to the product base UoM. Both remain editable within valid active values.
-- Each line shows the selected fulfilment warehouse's current on-hand quantity in the product base UoM and a clear shortage warning when the requested base quantity exceeds it. Shortages do not block draft saving or submission: they represent an allowed backorder until allocation is introduced.
+- Each line shows the selected fulfilment warehouse's current on-hand quantity in the product base UoM through the shared reloadable quantity display and a clear shortage warning when the requested base quantity exceeds it. Shortages do not block draft saving or submission: they represent an allowed backorder until allocation is introduced.
 
 ## Explicitly Excluded
 

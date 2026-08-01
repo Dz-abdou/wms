@@ -642,6 +642,7 @@
       "quantity": "Quantité",
       "baseQuantity": "Quantité de base",
       "availableAtWarehouse": "Disponible",
+      "reloadAvailability": "Recharger la disponibilité",
       "actions": "Actions",
       "fromDate": "Du",
       "toDate": "Au",

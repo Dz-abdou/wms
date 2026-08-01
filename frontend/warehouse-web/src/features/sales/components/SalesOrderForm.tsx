@@ -7,6 +7,7 @@ import {
   type EditableFormListTableRow,
 } from "../../../shared/components/EditableFormListTable";
 import { FormPageActions } from "../../../shared/components/FormPageActions";
+import { ReloadableQuantityField } from "../../../shared/components/ReloadableQuantityField";
 import { applyServerFieldErrors } from "../../../shared/errors/serverFieldErrors";
 import { useApiFeedback } from "../../../shared/feedback/ApiFeedbackProvider";
 import { useCustomer, useCustomers } from "../../customers/api/useCustomers";
@@ -182,9 +183,14 @@ export function SalesOrderForm({
           requestedInBase > candidate.availableQuantityInBase;
         return (
           <>
-            <div>
-              {candidate.availableQuantityInBase} {candidate.baseUnitOfMeasure}
-            </div>
+            <ReloadableQuantityField
+              disabled={!product || availability.isFetching}
+              label={t("sales.orders.availableAtWarehouse")}
+              onReload={() => void availability.refetch()}
+              reloadLabel={t("sales.orders.reloadAvailability")}
+              unitOfMeasure={candidate.baseUnitOfMeasure}
+              value={candidate.availableQuantityInBase}
+            />
             {shortage ? (
               <Typography.Text type="danger">
                 {t("sales.orders.shortage", {
