@@ -2,6 +2,8 @@ namespace Warehouse.Application.Common.Errors;
 
 public static class ApiErrorCodes
 {
+    #region Cross-cutting
+
     public const string DocumentNumberDefinitionUnavailable = "document_number.definition_unavailable";
     public const string DocumentNumberCapacityExceeded = "document_number.capacity_exceeded";
     public const string SystemUnexpected = "system.unexpected";
@@ -9,8 +11,18 @@ public static class ApiErrorCodes
     public const string ValidationMaxLength = "validation.max_length";
     public const string ValidationInvalid = "validation.invalid";
     public const string ValidationRequired = "validation.required";
+
+    #endregion
+
+    #region Warehouses
+
     public const string WarehouseNotFound = "warehouse.not_found";
     public const string WarehouseCodeConflict = "warehouse.code_conflict";
+
+    #endregion
+
+    #region Products
+
     public const string ProductNotFound = "product.not_found";
     public const string ProductSkuConflict = "product.sku_conflict";
     public const string ProductMeasurementWeightUnitRequired = "product.measurement_weight_unit_required";
@@ -22,14 +34,29 @@ public static class ApiErrorCodes
     public const string ProductMeasurementDimensionUnitRequired = "product.measurement_dimension_unit_required";
     public const string ProductMeasurementDimensionInvalid = "product.measurement_dimension_invalid";
     public const string ProductMeasurementDimensionUnitInvalid = "product.measurement_dimension_unit_invalid";
+
+    #endregion
+
+    #region Suppliers
+
     public const string SupplierNotFound = "supplier.not_found";
     public const string SupplierCodeConflict = "supplier.code_conflict";
     public const string SupplierDefaultCurrencyNotSupported = "supplier.default_currency_not_supported";
+
+    #endregion
+
+    #region Customers
+
     public const string CustomerNotFound = "customer.not_found";
     public const string CustomerCodeConflict = "customer.code_conflict";
     public const string CustomerDefaultCurrencyNotSupported = "customer.default_currency_not_supported";
     public const string CustomerContactNotFound = "customer.contact_not_found";
     public const string CustomerAddressNotFound = "customer.address_not_found";
+
+    #endregion
+
+    #region Supplier catalogue
+
     public const string SupplierProductNotFound = "supplier_product.not_found";
     public const string SupplierProductConflict = "supplier_product.conflict";
     public const string SupplierProductCurrencyNotSupported = "supplier_product.currency_not_supported";
@@ -37,13 +64,28 @@ public static class ApiErrorCodes
     public const string SupplierProductProductUnavailable = "supplier_product.product_unavailable";
     public const string SupplierProductPurchaseUnitUnavailable = "supplier_product.purchase_unit_unavailable";
     public const string SupplierProductMinimumOrderQuantityInvalid = "supplier_product.minimum_order_quantity_invalid";
+
+    #endregion
+
+    #region Currencies
+
     public const string CurrencyNotFound = "currency.not_found";
     public const string CurrencyCodeConflict = "currency.code_conflict";
     public const string CurrencyDefaultRequired = "currency.default_required";
     public const string CurrencyInactive = "currency.inactive";
+
+    #endregion
+
+    #region Product categories
+
     public const string ProductCategoryNotFound = "product_category.not_found";
     public const string ProductCategoryCodeConflict = "product_category.code_conflict";
     public const string ProductCategoryInvalidParent = "product_category.invalid_parent";
+
+    #endregion
+
+    #region Inventory
+
     public const string InventoryProductNotFound = "inventory.product_not_found";
     public const string InventoryWarehouseNotFound = "inventory.warehouse_not_found";
     public const string InventoryInsufficientStock = "inventory.insufficient_stock";
@@ -54,6 +96,11 @@ public static class ApiErrorCodes
     public const string InventoryCycleCountStaleBalance = "inventory.cycle_count_stale_balance";
     public const string InventoryTransferNotFound = "inventory.transfer_not_found";
     public const string InventoryTransferStaleBalance = "inventory.transfer_stale_balance";
+
+    #endregion
+
+    #region Purchase orders
+
     public const string PurchaseOrderNotFound = "purchase_order.not_found";
     public const string PurchaseOrderImmutable = "purchase_order.immutable";
     public const string PurchaseOrderCatalogueInvalid = "purchase_order.catalogue_invalid";
@@ -69,6 +116,11 @@ public static class ApiErrorCodes
     public const string PurchaseOrderSubmissionInvalid = "purchase_order.submission_invalid";
     public const string PurchaseOrderConcurrencyConflict = "purchase_order.concurrency_conflict";
     public const string PurchaseOrderInvalidTransition = "purchase_order.invalid_transition";
+
+    #endregion
+
+    #region Sales orders
+
     public const string SalesOrderNotFound = "sales_order.not_found";
     public const string SalesOrderCustomerUnavailable = "sales_order.customer_unavailable";
     public const string SalesOrderShippingAddressUnavailable = "sales_order.shipping_address_unavailable";
@@ -79,10 +131,17 @@ public static class ApiErrorCodes
     public const string SalesOrderImmutable = "sales_order.immutable";
     public const string SalesOrderConcurrencyConflict = "sales_order.concurrency_conflict";
     public const string SalesOrderInvalidTransition = "sales_order.invalid_transition";
+
+    #endregion
+
+    #region Goods receipts
+
     public const string GoodsReceiptPurchaseOrderUnavailable = "goods_receipt.purchase_order_unavailable";
     public const string GoodsReceiptNotFound = "goods_receipt.not_found";
     public const string GoodsReceiptPurchaseOrderConcurrencyConflict = "goods_receipt.purchase_order_concurrency_conflict";
     public const string GoodsReceiptOverReceipt = "goods_receipt.over_receipt";
     public const string GoodsReceiptPurchaseOrderLineUnavailable = "goods_receipt.purchase_order_line_unavailable";
     public const string GoodsReceiptDuplicatePurchaseOrderLine = "goods_receipt.duplicate_purchase_order_line";
+
+    #endregion
 }
