@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Domain.Purchasing;
 
@@ -90,7 +91,9 @@ public sealed record PurchaseOrderLineResponse(
 
 public sealed record PurchaseOrderStatusHistoryResponse(
     Guid Id,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     PurchaseOrderStatus? PreviousStatus,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     PurchaseOrderStatus Status,
     DateTime ChangedAtUtc,
     Guid ActorUserId,
@@ -111,6 +114,7 @@ public sealed record PurchaseOrderResponse(
     Guid? BuyerUserId,
     string? SupplierReference,
     string? Notes,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     PurchaseOrderStatus Status,
     IReadOnlyCollection<PurchaseOrderLineResponse> Lines,
     decimal TotalAmount,

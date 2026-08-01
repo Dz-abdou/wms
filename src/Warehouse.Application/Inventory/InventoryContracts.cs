@@ -69,6 +69,7 @@ public sealed record InventoryOverviewItemResponse(
 
 public sealed record InventoryAdjustmentResponse(
     Guid Id,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
     string? Note,
@@ -77,6 +78,7 @@ public sealed record InventoryAdjustmentResponse(
 
 public sealed record InventoryAdjustmentListItemResponse(
     Guid Id,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
     DateTime CreatedAtUtc,
@@ -84,6 +86,7 @@ public sealed record InventoryAdjustmentListItemResponse(
 
 public sealed record InventoryAdjustmentDetailResponse(
     Guid Id,
+    [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
     string? Note,
