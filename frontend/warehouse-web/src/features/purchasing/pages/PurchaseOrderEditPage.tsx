@@ -42,7 +42,7 @@ export function PurchaseOrderEditPage() {
       />
     );
   const order = orderQuery.data;
-  if (order.status !== 0)
+  if (order.status !== "Draft")
     return (
       <Alert
         message={t("purchasing.orders.submittedReadOnly")}

@@ -97,9 +97,11 @@ export function PurchaseOrderDetailPage() {
   return (
     <DetailPageLayout
       actions={
-        order.status === 0 || order.status === 1 || order.status === 2 ? (
+        order.status === "Draft" ||
+        order.status === "Submitted" ||
+        order.status === "PartiallyReceived" ? (
           <>
-            {order.status === 0 ? (
+            {order.status === "Draft" ? (
               <>
                 <RouteActionButton to={purchasingRoutes.orderEdit(id)}>
                   {t("purchasing.edit")}
@@ -117,7 +119,8 @@ export function PurchaseOrderDetailPage() {
                 </Popconfirm>
               </>
             ) : null}
-            {order.status === 1 || order.status === 2 ? (
+            {order.status === "Submitted" ||
+            order.status === "PartiallyReceived" ? (
               <RouteActionButton
                 to={receivingRoutes.create(order.id)}
                 type="primary"
@@ -125,7 +128,7 @@ export function PurchaseOrderDetailPage() {
                 {t("receiving.record")}
               </RouteActionButton>
             ) : null}
-            {order.status === 0 || order.status === 1 ? (
+            {order.status === "Draft" || order.status === "Submitted" ? (
               <Popconfirm
                 cancelText={t("purchasing.cancel")}
                 okText={t("purchasing.orders.cancelOrder")}

@@ -10,6 +10,7 @@ using Warehouse.Domain.Currencies;
 using Warehouse.Domain.Suppliers;
 using Warehouse.Domain.Receiving;
 using Warehouse.Domain.Customers;
+using Warehouse.Domain.Numbering;
 using WarehouseEntity = Warehouse.Domain.Warehouses.Warehouse;
 using Warehouse.Infrastructure.Identity;
 
@@ -34,11 +35,13 @@ public sealed class WarehouseDbContext(DbContextOptions<WarehouseDbContext> opti
 
     public DbSet<CustomerAddress> CustomerAddresses => Set<CustomerAddress>();
 
+    public DbSet<DocumentNumberDefinition> DocumentNumberDefinitions => Set<DocumentNumberDefinition>();
+
+    public DbSet<DocumentNumberSeries> DocumentNumberSeries => Set<DocumentNumberSeries>();
+
     public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
 
-    public DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences => Set<PurchaseOrderNumberSequence>();
     public DbSet<GoodsReceipt> GoodsReceipts => Set<GoodsReceipt>();
-    public DbSet<GoodsReceiptNumberSequence> GoodsReceiptNumberSequences => Set<GoodsReceiptNumberSequence>();
 
     public DbSet<Currency> Currencies => Set<Currency>();
 

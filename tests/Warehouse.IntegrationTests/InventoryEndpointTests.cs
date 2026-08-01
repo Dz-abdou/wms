@@ -181,12 +181,15 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
             "/api/inventory/adjustments?page=1&pageSize=20");
         Assert.NotNull(list);
         var listItem = Assert.Single(list.Items.Where(item => item.Id == adjustment.Id));
+        Assert.Matches("^IA-2026-\\d{6}$", adjustment.Number);
+        Assert.Equal(adjustment.Number, listItem.Number);
         Assert.Equal("COUNT-2026-001", listItem.Reference);
         Assert.Equal(1, listItem.LineCount);
 
         var detail = await fixture.Client.GetFromJsonAsync<InventoryAdjustmentDetailResponse>(
             $"/api/inventory/adjustments/{adjustment.Id}");
         Assert.NotNull(detail);
+        Assert.Equal(adjustment.Number, detail.Number);
         var line = Assert.Single(detail.Lines);
         Assert.Equal(1, line.LineNumber);
         Assert.Equal(product.Sku, line.ProductSku);
@@ -200,6 +203,8 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(product.Name, movement.ProductName);
         Assert.Equal(warehouse.Name, movement.WarehouseName);
         Assert.Equal("COUNT-2026-001", movement.AdjustmentReference);
+        Assert.Equal(adjustment.Number, movement.DocumentNumber);
+        Assert.Equal("COUNT-2026-001", movement.ExternalReference);
 
         using var scope = fixture.Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
@@ -272,6 +277,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var cycleCount = await response.Content.ReadFromJsonAsync<CycleCountDetailResponse>();
         Assert.NotNull(cycleCount);
+        Assert.Matches("^CC-2026-\\d{6}$", cycleCount.Number);
         var line = Assert.Single(cycleCount.Lines);
         Assert.Equal(-3m, line.VarianceQuantityInBase);
         Assert.NotNull(line.InventoryMovementId);
@@ -293,11 +299,14 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.NotNull(history);
         var historyItem = Assert.Single(history.Items.Where(item => item.CycleCountId == cycleCount.Id));
         Assert.Equal("CC-2026-001", historyItem.CycleCountReference);
+        Assert.Equal(cycleCount.Number, historyItem.DocumentNumber);
+        Assert.Equal("CC-2026-001", historyItem.ExternalReference);
 
         var list = await fixture.Client.GetFromJsonAsync<PagedResult<CycleCountListItemResponse>>(
             "/api/inventory/cycle-counts?page=1&pageSize=20");
         Assert.NotNull(list);
         var listItem = Assert.Single(list.Items.Where(item => item.Id == cycleCount.Id));
+        Assert.Equal(cycleCount.Number, listItem.Number);
         Assert.Equal(1, listItem.LineCount);
         Assert.Equal(1, listItem.VarianceLineCount);
     }
@@ -387,6 +396,7 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         var transfer = await response.Content.ReadFromJsonAsync<InventoryTransferDetailResponse>();
         Assert.NotNull(transfer);
+        Assert.Matches("^TR-2026-\\d{6}$", transfer.Number);
         var line = Assert.Single(transfer.Lines);
         Assert.Equal(3m, line.QuantityInBaseUnit);
         Assert.Equal(7m, line.SourceBalanceAfter);
@@ -416,11 +426,15 @@ public sealed class InventoryEndpointTests(ProductApiFixture fixture)
         var historyItem = Assert.Single(history.Items);
         Assert.Equal(transfer.Id, historyItem.InventoryTransferId);
         Assert.Equal("TR-2026-001", historyItem.TransferReference);
+        Assert.Equal(transfer.Number, historyItem.DocumentNumber);
+        Assert.Equal("TR-2026-001", historyItem.ExternalReference);
 
         var list = await fixture.Client.GetFromJsonAsync<PagedResult<InventoryTransferListItemResponse>>(
             $"/api/inventory/transfers?sourceWarehouseId={sourceWarehouse.Id}&page=1&pageSize=20");
         Assert.NotNull(list);
-        Assert.Equal(transfer.Id, Assert.Single(list.Items).Id);
+        var listItem = Assert.Single(list.Items);
+        Assert.Equal(transfer.Id, listItem.Id);
+        Assert.Equal(transfer.Number, listItem.Number);
     }
 
     [Fact]

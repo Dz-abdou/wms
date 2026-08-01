@@ -91,8 +91,13 @@ export function CycleCountDetailPage() {
             children: `${item.warehouseCode} — ${item.warehouseName}`,
           },
           {
+            key: "number",
+            label: t("inventory.table.number"),
+            children: item.number,
+          },
+          {
             key: "reference",
-            label: t("inventory.table.reference"),
+            label: t("inventory.table.externalReference"),
             children: item.reference ?? "—",
           },
           {

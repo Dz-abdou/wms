@@ -170,7 +170,7 @@ export function PurchaseOrderForm({
         >
           <InputNumber
             aria-label={t("purchasing.orders.quantity")}
-            min={row.supplierProduct?.minimumOrderQuantity ?? 0.000001}
+            min={0.000001}
             precision={6}
           />
         </Form.Item>

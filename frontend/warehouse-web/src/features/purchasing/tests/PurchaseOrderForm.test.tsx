@@ -184,14 +184,14 @@ describe("PurchaseOrderForm", () => {
     ).toHaveClass("ant-select-disabled");
   });
 
-  it("shows the MOQ error beside an existing invalid quantity", async () => {
+  it("keeps a quantity below MOQ and shows its inline error", async () => {
     const user = userEvent.setup();
     render(
       <PurchaseOrderForm
         errorMessageKey="purchasing.orders.errors.create"
         initialValues={{
           supplierId: "supplier-1",
-          lines: [{ supplierProductId: "catalogue-1", quantity: 1 }],
+          lines: [{ supplierProductId: "catalogue-1", quantity: 2 }],
         }}
         isSubmitting={false}
         onSubmit={async () => undefined}
@@ -199,11 +199,15 @@ describe("PurchaseOrderForm", () => {
       />,
     );
 
+    const quantity = screen.getByRole("spinbutton", { name: "Quantity" });
+    await user.clear(quantity);
+    await user.type(quantity, "1");
     await user.click(screen.getByRole("button", { name: "Create draft" }));
 
     expect(
       await screen.findByText("Quantity must be at least 2."),
     ).toBeInTheDocument();
+    expect(quantity).toHaveValue("1.000000");
   });
 
   it("preserves the loaded version when submitting an edit", async () => {

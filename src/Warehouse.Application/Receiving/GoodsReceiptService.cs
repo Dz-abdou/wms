@@ -3,13 +3,15 @@ using Warehouse.Application.Common.Identity;
 using Warehouse.Application.Common.Models;
 using Warehouse.Application.Common.Pagination;
 using Warehouse.Application.Common.Persistence;
+using Warehouse.Application.Common.Numbering;
 using Warehouse.Domain.Inventory;
 using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Receiving;
+using Warehouse.Domain.Numbering;
 
 namespace Warehouse.Application.Receiving;
 
-public sealed class GoodsReceiptService(IWarehouseDbContext db, TimeProvider clock, ICurrentUser user)
+public sealed class GoodsReceiptService(IWarehouseDbContext db, TimeProvider clock, ICurrentUser user, IDocumentNumberService documentNumbers)
 {
     public async Task<PagedResult<GoodsReceiptListItemResponse>> GetListAsync(
         GoodsReceiptListQuery query,
@@ -126,8 +128,8 @@ public sealed class GoodsReceiptService(IWarehouseDbContext db, TimeProvider clo
                 var actor = user.UserId ?? throw new GoodsReceiptPurchaseOrderUnavailableException();
                 var existing = await db.GoodsReceipts.AsNoTracking().Where(receipt => receipt.PurchaseOrderId == order.Id).SelectMany(receipt => receipt.Lines).GroupBy(line => line.PurchaseOrderLineId).ToDictionaryAsync(group => group.Key, group => group.Sum(line => line.AcceptedQuantity), token);
                 var now = clock.GetUtcNow().UtcDateTime;
-                var sequence = GoodsReceiptNumberSequence.Create(now.Year); db.GoodsReceiptNumberSequences.Add(sequence); await db.SaveChangesAsync(token);
-                var receipt = GoodsReceipt.Create(sequence.ToNumber(), order.Id, order.DestinationWarehouseId ?? throw new GoodsReceiptPurchaseOrderUnavailableException(), input.ReceivedAtUtc, input.SupplierDeliveryNote, input.Notes, actor);
+                var number = await documentNumbers.AllocateAsync(DocumentNumberCodes.GoodsReceipt, now, token);
+                var receipt = GoodsReceipt.Create(number, order.Id, order.DestinationWarehouseId ?? throw new GoodsReceiptPurchaseOrderUnavailableException(), input.ReceivedAtUtc, input.SupplierDeliveryNote, input.Notes, actor);
                 db.GoodsReceipts.Add(receipt);
                 var receiptLines = new List<GoodsReceiptLine>();
                 foreach (var (lineInput, index) in input.Lines.Select((line, index) => (line, index)))

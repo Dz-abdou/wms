@@ -12,6 +12,7 @@ public sealed class CycleCountConfiguration : IEntityTypeConfiguration<CycleCoun
     {
         builder.ToTable("CycleCounts");
         builder.HasKey(count => count.Id);
+        builder.Property(count => count.Number).HasMaxLength(CycleCountRules.MaxNumberLength).HasDefaultValue(string.Empty).IsRequired();
         builder.Property(count => count.WarehouseId).HasColumnType("uuid").IsRequired();
         builder.Property(count => count.Reference).HasMaxLength(CycleCountRules.MaxReferenceLength);
         builder.Property(count => count.Note).HasMaxLength(CycleCountRules.MaxNoteLength);
@@ -21,6 +22,7 @@ public sealed class CycleCountConfiguration : IEntityTypeConfiguration<CycleCoun
         builder.Property(count => count.CreatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.Property(count => count.UpdatedAtUtc).HasColumnType("timestamp with time zone").IsRequired();
         builder.HasIndex(count => new { count.WarehouseId, count.CountedAtUtc });
+        builder.HasIndex(count => count.Number).IsUnique().HasFilter("\"Number\" <> ''");
         builder.HasOne<WarehouseEntity>()
             .WithMany()
             .HasForeignKey(count => count.WarehouseId)

@@ -30,6 +30,10 @@ export function InventoryTransferListPage() {
   });
   const columns: ColumnsType<InventoryTransferListItem> = [
     {
+      title: t("inventory.table.number"),
+      dataIndex: "number",
+    },
+    {
       title: t("inventory.transfers.sourceWarehouse"),
       key: "sourceWarehouse",
       render: (_, item) =>
@@ -42,7 +46,7 @@ export function InventoryTransferListPage() {
         `${item.destinationWarehouseCode} — ${item.destinationWarehouseName}`,
     },
     {
-      title: t("inventory.table.reference"),
+      title: t("inventory.table.externalReference"),
       dataIndex: "reference",
       render: (value) => value ?? "—",
     },
@@ -112,16 +116,19 @@ export function InventoryTransferListPage() {
               value={listQuery.get("destinationWarehouseId")}
             />
           </ListFilter>
-          <ListFilter label={t("inventory.table.reference")} width="regular">
+          <ListFilter
+            label={t("inventory.filters.documentSearch")}
+            width="regular"
+          >
             <Input
               allowClear
-              aria-label={t("inventory.table.reference")}
+              aria-label={t("inventory.filters.documentSearch")}
               defaultValue={listQuery.get("reference")}
               key={listQuery.get("reference") ?? "reference"}
               onPressEnter={(event) =>
                 listQuery.update({ reference: event.currentTarget.value })
               }
-              placeholder={t("inventory.table.reference")}
+              placeholder={t("inventory.filters.documentSearch")}
             />
           </ListFilter>
           <ListFilter label={t("inventory.filters.fromDate")} width="compact">

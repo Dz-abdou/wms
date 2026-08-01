@@ -69,6 +69,7 @@ public sealed record InventoryOverviewItemResponse(
 
 public sealed record InventoryAdjustmentResponse(
     Guid Id,
+    string Number,
     [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
@@ -78,6 +79,7 @@ public sealed record InventoryAdjustmentResponse(
 
 public sealed record InventoryAdjustmentListItemResponse(
     Guid Id,
+    string Number,
     [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
@@ -86,6 +88,7 @@ public sealed record InventoryAdjustmentListItemResponse(
 
 public sealed record InventoryAdjustmentDetailResponse(
     Guid Id,
+    string Number,
     [property: JsonConverter(typeof(JsonStringEnumConverter))]
     InventoryAdjustmentReason Reason,
     string? Reference,
@@ -123,6 +126,8 @@ public sealed record InventoryMovementResponse(
     Guid WarehouseId,
     string WarehouseCode,
     string WarehouseName,
+    string? DocumentNumber,
+    string? ExternalReference,
     string? AdjustmentReference,
     string? GoodsReceiptNumber,
     string? CycleCountReference,
@@ -145,6 +150,7 @@ public sealed record InventoryTransferListQuery(
 
 public sealed record InventoryTransferListItemResponse(
     Guid Id,
+    string Number,
     Guid SourceWarehouseId,
     string SourceWarehouseCode,
     string SourceWarehouseName,
@@ -157,6 +163,7 @@ public sealed record InventoryTransferListItemResponse(
 
 public sealed record InventoryTransferDetailResponse(
     Guid Id,
+    string Number,
     Guid SourceWarehouseId,
     string SourceWarehouseCode,
     string SourceWarehouseName,
@@ -241,6 +248,7 @@ public sealed record CycleCountListQuery(
 
 public sealed record CycleCountListItemResponse(
     Guid Id,
+    string Number,
     Guid WarehouseId,
     string WarehouseCode,
     string WarehouseName,
@@ -251,6 +259,7 @@ public sealed record CycleCountListItemResponse(
 
 public sealed record CycleCountDetailResponse(
     Guid Id,
+    string Number,
     Guid WarehouseId,
     string WarehouseCode,
     string WarehouseName,

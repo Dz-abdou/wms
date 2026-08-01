@@ -18,6 +18,7 @@ export type InventoryAdjustmentLineInput = {
 
 export type InventoryAdjustment = {
   id: string;
+  number: string;
   reason: InventoryAdjustmentInput["reason"];
   reference: string | null;
   note: string | null;
@@ -27,6 +28,7 @@ export type InventoryAdjustment = {
 
 export type InventoryAdjustmentListItem = {
   id: string;
+  number: string;
   reason: InventoryAdjustmentInput["reason"];
   reference: string | null;
   createdAtUtc: string;
@@ -87,6 +89,8 @@ export type InventoryMovement = {
   warehouseId: string;
   warehouseCode: string;
   warehouseName: string;
+  documentNumber: string | null;
+  externalReference: string | null;
   adjustmentReference: string | null;
   goodsReceiptNumber: string | null;
   cycleCountReference: string | null;
@@ -191,6 +195,7 @@ export type CycleCountListQuery = {
 
 export type CycleCountListItem = {
   id: string;
+  number: string;
   warehouseId: string;
   warehouseCode: string;
   warehouseName: string;
@@ -213,6 +218,7 @@ export type CycleCountLine = CycleCountLineInput & {
 
 export type CycleCountDetail = Omit<CycleCountInput, "lines"> & {
   id: string;
+  number: string;
   warehouseCode: string;
   warehouseName: string;
   countedAtUtc: string;
@@ -261,6 +267,7 @@ export type InventoryTransferListQuery = {
 
 export type InventoryTransferListItem = {
   id: string;
+  number: string;
   sourceWarehouseId: string;
   sourceWarehouseCode: string;
   sourceWarehouseName: string;
@@ -289,6 +296,7 @@ export type InventoryTransferLine = {
 
 export type InventoryTransferDetail = Omit<InventoryTransferInput, "lines"> & {
   id: string;
+  number: string;
   sourceWarehouseCode: string;
   sourceWarehouseName: string;
   destinationWarehouseCode: string;

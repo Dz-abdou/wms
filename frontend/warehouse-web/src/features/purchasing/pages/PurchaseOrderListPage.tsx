@@ -29,7 +29,7 @@ export function PurchaseOrderListPage() {
   const orders = usePurchaseOrders({
     ...listQuery.request,
     supplierId: listQuery.get("supplierId"),
-    status: status ? (Number(status) as PurchaseOrder["status"]) : undefined,
+    status: status as PurchaseOrder["status"] | undefined,
     warehouseId: listQuery.get("warehouseId"),
     fromOrderDate: listQuery.get("fromOrderDate"),
     toOrderDate: listQuery.get("toOrderDate"),
@@ -137,11 +137,14 @@ export function PurchaseOrderListPage() {
               aria-label={t("purchasing.orders.status")}
               onChange={(value) => listQuery.update({ status: value })}
               options={[
-                { value: "0", label: t("purchasing.status.draft") },
-                { value: "1", label: t("purchasing.status.submitted") },
-                { value: "2", label: t("purchasing.status.partiallyReceived") },
-                { value: "3", label: t("purchasing.status.received") },
-                { value: "4", label: t("purchasing.status.cancelled") },
+                { value: "Draft", label: t("purchasing.status.draft") },
+                { value: "Submitted", label: t("purchasing.status.submitted") },
+                {
+                  value: "PartiallyReceived",
+                  label: t("purchasing.status.partiallyReceived"),
+                },
+                { value: "Received", label: t("purchasing.status.received") },
+                { value: "Cancelled", label: t("purchasing.status.cancelled") },
               ]}
               placeholder={t("purchasing.orders.status")}
               value={status}

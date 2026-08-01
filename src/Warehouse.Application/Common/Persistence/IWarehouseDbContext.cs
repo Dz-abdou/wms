@@ -7,6 +7,7 @@ using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Currencies;
 using Warehouse.Domain.Receiving;
 using Warehouse.Domain.Customers;
+using Warehouse.Domain.Numbering;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -39,11 +40,13 @@ public interface IWarehouseDbContext
 
     DbSet<CustomerAddress> CustomerAddresses { get; }
 
+    DbSet<DocumentNumberDefinition> DocumentNumberDefinitions { get; }
+
+    DbSet<DocumentNumberSeries> DocumentNumberSeries { get; }
+
     DbSet<PurchaseOrder> PurchaseOrders { get; }
 
-    DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences { get; }
     DbSet<GoodsReceipt> GoodsReceipts { get; }
-    DbSet<GoodsReceiptNumberSequence> GoodsReceiptNumberSequences { get; }
 
     DbSet<Currency> Currencies { get; }
 
