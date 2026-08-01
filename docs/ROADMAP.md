@@ -23,6 +23,37 @@ Every future business document or multi-line warehouse operation must be designe
 - For a batch stock adjustment, the header owns reason, optional reference/note, actor and timestamp; the lines own product, warehouse/location where applicable, direction, UoM, and quantity. The API must reject or explicitly consolidate duplicate product/warehouse lines and validate the final projected balance.
 - New feature specifications must name the table columns, derived values, header fields, empty/loading/error states, responsive horizontal-scroll behavior, validation rules, and frontend/API tests before implementation starts.
 
+## Business Identifier and Document-Numbering Standard
+
+Every feature specification must classify its identifiers before implementation. A UUID remains the technical primary key; it is not a user-facing business identifier.
+
+| Record kind | Required identifier rule | Examples |
+| --- | --- | --- |
+| Master data | A required, immutable-after-use business `Code`, unique within its documented scope, plus a required readable `Name`/designation. | Product code/SKU, warehouse code, supplier code, customer code, category code, currency code. |
+| Operational document | A required, immutable, system-generated `Number`, unique within its documented scope. It is generated at the document's creation or posting boundary, not typed as a substitute for a code. | `PO-2026-000001`, `GR-2026-000001`, future adjustment/count/transfer/sales-order/shipment numbers. |
+| External reference | An optional, non-unique `ExternalReference`/`Reference` supplied by a user or external party. It never replaces the document number. | Supplier delivery note, customer reference, paper-form or incident reference. |
+| Child line | A stable, one-based `LineNumber`, unique within its parent. | Purchase-order, receipt, adjustment, count, transfer, and future outbound lines. |
+| Join/detail record | No separate business code unless a documented integration or business rule needs one. Use the parent context and its UUID internally. | Supplier catalogue item, customer contact, customer address, document-line snapshots. |
+
+- Keep `Name` as the domain-property convention; use the appropriate localized display label, such as **Name** or **Désignation**. Legal/trading names remain the exception for legal entities. Do not rename database fields merely to change a UI label.
+- Existing `Product.Sku` is the product business code. The UI must label it consistently as **Product code / SKU** rather than introducing another product-code field.
+- Master-data codes are manually entered and required by default. An automatic master-code policy needs an explicit business or integration reason; it is not the default.
+- Document numbers are automatic and immutable by default. A manual override may be enabled only per document type through a documented policy, with duplicate validation and audit information.
+- A generated number must be concurrency-safe and unique. Do not promise gap-free numbering for ordinary WMS documents; generate as late as practical in the successful persistence transaction. Statutory/fiscal numbering is a separate, explicitly scoped future requirement.
+
+### Planned Cross-Cutting Slice — Identifier and Document Numbering Foundation
+
+Complete this slice after Customer management is merged and before Sales Orders begin. It replaces one-off document-sequence implementations with a shared, deliberately small numbering foundation; it does not attempt to reproduce every multi-company/legislation feature of a full ERP counter engine.
+
+- Introduce a `DocumentNumberDefinition` for each supported document type: stable code, localized description, prefix/template, digit count, reset period, active state, and manual-entry policy.
+- Introduce a transactional `DocumentNumberSeries` keyed by definition, reset period, and the future scope context (global now; company/site later). Its unique constraint and concurrency strategy must make duplicate allocation impossible.
+- Add a single `DocumentNumberService` used by all document commands. It allocates the number inside the persistence transaction and returns a stable validation/configuration error when an active definition is unavailable or exhausted.
+- Migrate Purchase Orders and Goods Receipts from their hard-coded sequence entities to the shared service without changing their existing visible number formats unless a reviewed definition says otherwise.
+- Add required unique automatic `Number` fields to Inventory Adjustments, Cycle Counts, and Inventory Transfers. Preserve their current optional `Reference` as an external reference, not a replacement number.
+- Add required database constraints and API/frontend contracts for document numbers; display the generated number in list, detail, movement-history, and related-document contexts.
+- Establish definitions for future `SO` (Sales Order), `SH` (Shipment), customer return, supplier return, and other document types before those features are built. Every new business object must apply the identifier table above in its feature specification.
+- Cover allocation under concurrent creation, uniqueness, reset-period behaviour, missing/inactive definitions, manual-override policy, and failed-transaction/gap semantics with unit and PostgreSQL integration tests. Frontend tests cover read-only generated numbers and localized configuration/validation failures.
+
 ## Application UI/UX Standard
 
 Every authenticated screen must use the shared application layout and one of the shared page layouts below. A feature may add business-specific content, but it must not invent a competing header, action placement, return path, feedback state, or table/form structure.
@@ -47,21 +78,11 @@ Every authenticated screen must use the shared application layout and one of the
 
 ## Current Planning State
 
-Supplier management, Purchase Order Operational Hardening, Goods Receipts, and the implemented Inventory Control Operations are complete. This includes operational PO snapshots/concurrency/status history, partial receiving, inventory overview, adjustment documents, movement history, cycle counts, and inter-warehouse transfers.
+Supplier management, Purchase Order Operational Hardening, Goods Receipts, Inventory Control Operations, and Master-Detail Detail Normalization are complete. This includes operational PO snapshots/concurrency/status history, partial receiving, inventory overview, adjustment documents, movement history, cycle counts, inter-warehouse transfers, and consistent document detail pages.
 
-The active branch is the cross-cutting **Master-Detail Detail Normalization** slice. It applies the documented detail-page pattern to the existing completed documents without changing their business workflow, API behaviour, or data model beyond the persisted adjustment line number. Once it is merged, the next business workflow is **Phase 6 — Customers and Sales Orders**, beginning with a focused Customer management branch. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
+The active branch is **Customer management**, the first focused slice of Phase 6. After its review, manual testing, and merge, complete the planned **Identifier and Document Numbering Foundation** cross-cutting slice before beginning Sales Orders. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
 
 The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
-
-### Active Cross-Cutting UI/UX Slice — Master-Detail Detail Normalization
-
-Before the Customer-management branch begins, complete one focused UI/UX consistency PR that normalizes existing master-detail detail pages to the Purchase Order pattern. It includes cycle counts, transfers, goods receipts, purchase orders, and any other existing document detail page with lines.
-
-- Remove redundant `Lines` card wrappers/headings around the primary line table.
-- Add the stable **Line number** (`#`) column where it is missing, including cycle-count and transfer detail tables.
-- Retain separate summary, totals, timeline, history, and exception sections only where they convey distinct information.
-- Verify each normalized table at narrow widths and keep an existing row-level Actions column fixed right when one exists.
-- Add/adjust frontend regression tests for the common structure before treating the consistency work as complete.
 
 ## Phase 0 — Foundation
 

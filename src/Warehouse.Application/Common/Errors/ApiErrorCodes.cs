@@ -23,6 +23,11 @@ public static class ApiErrorCodes
     public const string SupplierNotFound = "supplier.not_found";
     public const string SupplierCodeConflict = "supplier.code_conflict";
     public const string SupplierDefaultCurrencyNotSupported = "supplier.default_currency_not_supported";
+    public const string CustomerNotFound = "customer.not_found";
+    public const string CustomerCodeConflict = "customer.code_conflict";
+    public const string CustomerDefaultCurrencyNotSupported = "customer.default_currency_not_supported";
+    public const string CustomerContactNotFound = "customer.contact_not_found";
+    public const string CustomerAddressNotFound = "customer.address_not_found";
     public const string SupplierProductNotFound = "supplier_product.not_found";
     public const string SupplierProductConflict = "supplier_product.conflict";
     public const string SupplierProductCurrencyNotSupported = "supplier_product.currency_not_supported";

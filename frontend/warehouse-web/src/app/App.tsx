@@ -20,6 +20,11 @@ import { SupplierDetailPage } from "../features/suppliers/pages/SupplierDetailPa
 import { SupplierEditPage } from "../features/suppliers/pages/SupplierEditPage";
 import { SupplierListPage } from "../features/suppliers/pages/SupplierListPage";
 import { supplierRoutes } from "../features/suppliers/supplierConstants";
+import { CustomerCreatePage } from "../features/customers/pages/CustomerCreatePage";
+import { CustomerDetailPage } from "../features/customers/pages/CustomerDetailPage";
+import { CustomerEditPage } from "../features/customers/pages/CustomerEditPage";
+import { CustomerListPage } from "../features/customers/pages/CustomerListPage";
+import { customerRoutes } from "../features/customers/customerConstants";
 import { SupplierCatalogueCreatePage } from "../features/purchasing/pages/SupplierCatalogueCreatePage";
 import { SupplierCatalogueEditPage } from "../features/purchasing/pages/SupplierCatalogueEditPage";
 import { SupplierCatalogueListPage } from "../features/purchasing/pages/SupplierCatalogueListPage";
@@ -191,6 +196,22 @@ export function App() {
                     <Route
                       path={supplierRoutes.editPattern}
                       element={<SupplierEditPage />}
+                    />
+                    <Route
+                      path={customerRoutes.listPattern}
+                      element={<CustomerListPage />}
+                    />
+                    <Route
+                      path={customerRoutes.create}
+                      element={<CustomerCreatePage />}
+                    />
+                    <Route
+                      path={customerRoutes.detailPattern}
+                      element={<CustomerDetailPage />}
+                    />
+                    <Route
+                      path={customerRoutes.editPattern}
+                      element={<CustomerEditPage />}
                     />
                     <Route
                       path={purchasingRoutes.cataloguePattern}

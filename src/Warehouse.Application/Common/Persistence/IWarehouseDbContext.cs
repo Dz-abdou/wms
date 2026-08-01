@@ -6,6 +6,7 @@ using Warehouse.Domain.Suppliers;
 using Warehouse.Domain.Purchasing;
 using Warehouse.Domain.Currencies;
 using Warehouse.Domain.Receiving;
+using Warehouse.Domain.Customers;
 
 namespace Warehouse.Application.Common.Persistence;
 
@@ -31,6 +32,12 @@ public interface IWarehouseDbContext
     DbSet<Supplier> Suppliers { get; }
 
     DbSet<SupplierProduct> SupplierProducts { get; }
+
+    DbSet<Customer> Customers { get; }
+
+    DbSet<CustomerContact> CustomerContacts { get; }
+
+    DbSet<CustomerAddress> CustomerAddresses { get; }
 
     DbSet<PurchaseOrder> PurchaseOrders { get; }
 
