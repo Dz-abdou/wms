@@ -47,15 +47,15 @@ Every authenticated screen must use the shared application layout and one of the
 
 ## Current Planning State
 
-The supplier-management and core purchase-order slices are merged. They establish supplier records, supplier catalogue entries, and draft/submitted purchase orders.
+Supplier management, Purchase Order Operational Hardening, Goods Receipts, and the implemented Inventory Control Operations are complete. This includes operational PO snapshots/concurrency/status history, partial receiving, inventory overview, adjustment documents, movement history, cycle counts, and inter-warehouse transfers.
 
-The active branch is the approved cross-cutting **UI/UX Consistency** slice. It applies the Application UI/UX Standard to the existing completed screens without changing business workflow sequencing, APIs, or data models. Once it is merged, the next business workflow is **Phase 4.1 — Purchase Order Operational Hardening**. Phase 5 must not start until Phase 4.1 exit criteria pass.
+The active branch is the cross-cutting **Master-Detail Detail Normalization** slice. It applies the documented detail-page pattern to the existing completed documents without changing their business workflow, API behaviour, or data model beyond the persisted adjustment line number. Once it is merged, the next business workflow is **Phase 6 — Customers and Sales Orders**, beginning with a focused Customer management branch. Priority 5 master-data additions remain demand-driven and are not a prerequisite for Customers.
 
 The phase status must be updated when work begins or completes. A feature specification may say a slice is implemented on a branch; it is only complete after its documented verification and merge requirements are met.
 
-### Next Cross-Cutting UI/UX Follow-Up — Master-Detail Detail Normalization
+### Active Cross-Cutting UI/UX Slice — Master-Detail Detail Normalization
 
-After the current inter-warehouse-transfer branch is merged and before the next new master-detail workflow starts, complete one focused UI/UX consistency PR that normalizes existing master-detail detail pages to the Purchase Order pattern. It includes cycle counts, transfers, goods receipts, purchase orders, and any other existing document detail page with lines.
+Before the Customer-management branch begins, complete one focused UI/UX consistency PR that normalizes existing master-detail detail pages to the Purchase Order pattern. It includes cycle counts, transfers, goods receipts, purchase orders, and any other existing document detail page with lines.
 
 - Remove redundant `Lines` card wrappers/headings around the primary line table.
 - Add the stable **Line number** (`#`) column where it is missing, including cycle-count and transfer detail tables.

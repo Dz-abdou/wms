@@ -2,7 +2,7 @@
 
 ## Status
 
-In progress — Phase 4.1 on `features/purchase-order-hardening`.
+Implemented and verified — Phase 4.1. The completed workflow now supports the downstream Goods Receipt phase.
 
 ## Goal
 
